@@ -1,17 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace GraphExpectedValue
 {
@@ -36,19 +25,19 @@ namespace GraphExpectedValue
 
         public int Number
         {
-            get => (int) GetValue(NumberProperty);
+            get => (int)GetValue(NumberProperty);
             set => SetValue(NumberProperty, value);
         }
 
-        public SolidColorBrush CircleColor
+        public Brush CircleColor
         {
-            get =>(SolidColorBrush) GetValue(ColorProperty);
+            get => (Brush)GetValue(ColorProperty);
             set => SetValue(ColorProperty, value);
         }
 
         public VertexType VertexType
         {
-            get => (VertexType) GetValue(VertexTypeProperty);
+            get => (VertexType)GetValue(VertexTypeProperty);
             set
             {
                 switch (value)
@@ -68,7 +57,7 @@ namespace GraphExpectedValue
         }
 
         static Vertex()
-        { 
+        {
             NumberProperty = DependencyProperty.Register(
                 "Number",
                 typeof(int),
@@ -77,21 +66,42 @@ namespace GraphExpectedValue
             VertexTypeProperty = DependencyProperty.Register(
                 "VertexType",
                 typeof(VertexType),
-                typeof(Vertex)
+                typeof(Vertex),
+                new FrameworkPropertyMetadata(
+                    VertexType.PathVertex
+                )
             );
             ColorProperty = DependencyProperty.Register(
                 "Color",
                 typeof(SolidColorBrush),
-                typeof(Vertex)
+                typeof(Vertex),
+                new FrameworkPropertyMetadata(
+                    BlackColorBrush,
+                    OnColorChanged
+                )
             );
+        }
+
+        private static void OnColorChanged(DependencyObject sender,
+            DependencyPropertyChangedEventArgs e)
+        {
+            var vertex = sender as Vertex;
+            var newColorBrush = e.NewValue as SolidColorBrush;
+            vertex?.SetBorderBackground(newColorBrush);
+        }
+
+        private void SetBorderBackground(Brush brush)
+        {
+            if (Border != null)
+            {
+                Border.Background = brush;
+            }
         }
         public Vertex()
         {
-            VertexType = VertexType.PathVertex;
-
             InitializeComponent();
         }
-        public Vertex(int number):this()
+        public Vertex(int number) : this()
         {
             Number = number;
         }

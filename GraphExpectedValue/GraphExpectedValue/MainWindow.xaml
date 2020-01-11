@@ -23,7 +23,7 @@
 
         <Button Name="addEdgeButton" Grid.Column="1" Content="Add Edge" Click="AddEdgeButton_OnClick"/>
         <Button Name="removeEdgeButton" Grid.Column="2" Content="Remove edge" Click="RemoveEdgeButton_OnClick"/>
-        <Button Name="removeVertexButton"  Grid.Column="3" Content="Remove vertex"></Button>
+        <Button Name="removeVertexButton"  Grid.Column="3" Content="Remove vertex" Click="RemoveVertexButton_OnClick"/>
         <Canvas
             Name="testCanvas"
             Grid.Row="1"
