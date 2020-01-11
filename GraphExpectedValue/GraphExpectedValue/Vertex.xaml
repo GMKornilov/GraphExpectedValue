@@ -15,7 +15,13 @@
         BorderBrush="Black"
         BorderThickness="1"
     >
-        <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding ElementName=vertex, Path=Number}"/>
+        <TextBlock
+            VerticalAlignment="Center"
+            HorizontalAlignment="Center"
+            Text="{Binding ElementName=vertex, Path=Number}"
+            Foreground="White"
+            FontWeight="Bold"
+        />
     </Border>
     
 </UserControl>

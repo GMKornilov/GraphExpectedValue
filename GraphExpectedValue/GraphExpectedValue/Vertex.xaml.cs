@@ -40,9 +40,9 @@ namespace GraphExpectedValue
             set => SetValue(NumberProperty, value);
         }
 
-        public Color CircleColor
+        public SolidColorBrush CircleColor
         {
-            get => (Color) GetValue(ColorProperty);
+            get =>(SolidColorBrush) GetValue(ColorProperty);
             set => SetValue(ColorProperty, value);
         }
 
@@ -54,16 +54,13 @@ namespace GraphExpectedValue
                 switch (value)
                 {
                     case VertexType.EndVertex:
-                        CircleColor = Colors.Blue;
-                        //Background = BlueColorBrush;
+                        CircleColor = BlueColorBrush;
                         break;
                     case VertexType.PathVertex:
-                        CircleColor = Colors.Black;
-                        //Background = BlackColorBrush;
+                        CircleColor = BlackColorBrush;
                         break;
                     case VertexType.StartVertex:
-                        CircleColor = Colors.Red;
-                        //Background = RedColorBrush;
+                        CircleColor = RedColorBrush;
                         break;
                 }
                 SetValue(VertexTypeProperty, value);
@@ -71,7 +68,7 @@ namespace GraphExpectedValue
         }
 
         static Vertex()
-        {
+        { 
             NumberProperty = DependencyProperty.Register(
                 "Number",
                 typeof(int),
@@ -84,25 +81,13 @@ namespace GraphExpectedValue
             );
             ColorProperty = DependencyProperty.Register(
                 "Color",
-                typeof(Color),
-                typeof(Vertex),
-                new FrameworkPropertyMetadata(
-                    new PropertyChangedCallback(OnCircleColorChanged)
-                )
+                typeof(SolidColorBrush),
+                typeof(Vertex)
             );
-        }
-
-        private static void OnCircleColorChanged(DependencyObject sender,
-            DependencyPropertyChangedEventArgs e)
-        {
-            Color newColor = (Color) e.NewValue;
-            Vertex vertex = (Vertex) sender;
-            vertex.CircleColor = newColor;
         }
         public Vertex()
         {
-            VertexType = VertexType.StartVertex;
-            //CircleColor = Colors.Orange;
+            VertexType = VertexType.PathVertex;
 
             InitializeComponent();
         }

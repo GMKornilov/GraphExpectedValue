@@ -75,12 +75,12 @@ namespace GraphExpectedValue
 
         private void AddEdgeButton_OnClick(object sender, RoutedEventArgs e)
         {
-            vertex.Number++;
+            vertex.VertexType = VertexType.StartVertex;
         }
 
         private void RemoveEdgeButton_OnClick(object sender, RoutedEventArgs e)
         {
-            vertex.Number--;
+            vertex.VertexType = VertexType.PathVertex;
         }
     }
 }
