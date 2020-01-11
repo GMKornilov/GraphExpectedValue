@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.Diagnostics;
+using System.Windows;
 
 namespace GraphExpectedValue
 {
@@ -15,6 +17,7 @@ namespace GraphExpectedValue
             vertex = new Vertex(1);
             testCanvas.Children.Add(vertex);
         }
+
 
         private void AddEdgeButton_OnClick(object sender, RoutedEventArgs e)
         {

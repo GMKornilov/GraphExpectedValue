@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
@@ -13,7 +15,7 @@ namespace GraphExpectedValue
     /// <summary>
     /// Interaction logic for Vertex.xaml
     /// </summary>
-    public partial class Vertex : UserControl
+    public partial class Vertex : UserControl, INotifyPropertyChanged
     {
         private static readonly SolidColorBrush BlackColorBrush = new SolidColorBrush(Colors.Black);
         private static readonly SolidColorBrush RedColorBrush = new SolidColorBrush(Colors.Red);
@@ -26,13 +28,20 @@ namespace GraphExpectedValue
         public int Number
         {
             get => (int)GetValue(NumberProperty);
-            set => SetValue(NumberProperty, value);
+            set {
+                SetValue(NumberProperty, value);
+                OnPropertyChanged();
+            }
         }
 
         public Brush CircleColor
         {
             get => (Brush)GetValue(ColorProperty);
-            set => SetValue(ColorProperty, value);
+            set
+            {
+                SetValue(ColorProperty, value);
+                OnPropertyChanged();
+            }
         }
 
         public VertexType VertexType
@@ -53,6 +62,7 @@ namespace GraphExpectedValue
                         break;
                 }
                 SetValue(VertexTypeProperty, value);
+                OnPropertyChanged();
             }
         }
 
@@ -72,30 +82,13 @@ namespace GraphExpectedValue
                 )
             );
             ColorProperty = DependencyProperty.Register(
-                "Color",
+                "CircleColor",
                 typeof(SolidColorBrush),
                 typeof(Vertex),
                 new FrameworkPropertyMetadata(
-                    BlackColorBrush,
-                    OnColorChanged
+                    BlackColorBrush
                 )
             );
-        }
-
-        private static void OnColorChanged(DependencyObject sender,
-            DependencyPropertyChangedEventArgs e)
-        {
-            var vertex = sender as Vertex;
-            var newColorBrush = e.NewValue as SolidColorBrush;
-            vertex?.SetBorderBackground(newColorBrush);
-        }
-
-        private void SetBorderBackground(Brush brush)
-        {
-            if (Border != null)
-            {
-                Border.Background = brush;
-            }
         }
         public Vertex()
         {
@@ -105,5 +98,13 @@ namespace GraphExpectedValue
         {
             Number = number;
         }
+        #region INotifyPropertyChanged implementation
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+        #endregion
     }
 }
