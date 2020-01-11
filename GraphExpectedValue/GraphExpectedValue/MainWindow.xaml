@@ -5,8 +5,36 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GraphExpectedValue"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
+        Title="MainWindow" Height="720" Width="1080">
+    <Grid ShowGridLines="True">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+
+        <Button Name="addEdgeButton" Grid.Column="1" Content="Add Edge" Click="AddEdgeButton_OnClick"/>
+        <Button Name="removeEdgeButton" Grid.Column="2" Content="Remove edge" Click="RemoveEdgeButton_OnClick"/>
+        <Button Name="removeVertexButton"  Grid.Column="3" Content="Remove vertex"></Button>
+        <Canvas
+            Name="testCanvas"
+            Grid.Row="1"
+            Grid.RowSpan="3"
+            Grid.Column="0"
+            Grid.ColumnSpan="5"
+            Background="White">
+            <!--
+            <TextBlock Text="Hello world!" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <local:MyWeirdShape Height="150" Width="150" Stroke="Black" StrokeThickness="2" />
+            -->
+        </Canvas>
     </Grid>
 </Window>
