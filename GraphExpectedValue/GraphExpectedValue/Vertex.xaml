@@ -6,11 +6,12 @@
              Name="vertex"
              xmlns:local="clr-namespace:GraphExpectedValue"
              mc:Ignorable="d" 
-             d:DesignHeight="50" d:DesignWidth="50">
+             d:DesignHeight="{Binding ElementName=vertex, Path=Size}"
+             d:DesignWidth="{Binding ElementName=vertex, Path=Size}">
     <Border 
-        CornerRadius="50"
-        Width="50"
-        Height="50"
+        CornerRadius="{Binding ElementName=vertex, Path=Size}"
+        Width="{Binding ElementName=vertex, Path=Size}"
+        Height="{Binding ElementName=vertex, Path=Size}"
         Background="{Binding ElementName=vertex, Path=CircleColor}"
         BorderBrush="Black"
         BorderThickness="1"

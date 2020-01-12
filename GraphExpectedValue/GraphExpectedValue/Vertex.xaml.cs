@@ -17,6 +17,8 @@ namespace GraphExpectedValue
     /// </summary>
     public partial class Vertex : UserControl, INotifyPropertyChanged
     {
+        public const int size = 30;
+
         private static readonly SolidColorBrush BlackColorBrush = new SolidColorBrush(Colors.Black);
         private static readonly SolidColorBrush RedColorBrush = new SolidColorBrush(Colors.Red);
         private static readonly SolidColorBrush BlueColorBrush = new SolidColorBrush(Colors.Blue);
@@ -25,6 +27,7 @@ namespace GraphExpectedValue
         public static DependencyProperty VertexTypeProperty;
         public static DependencyProperty ColorProperty;
 
+        public int Size => size;
         public int Number
         {
             get => (int)GetValue(NumberProperty);
@@ -97,6 +100,12 @@ namespace GraphExpectedValue
         public Vertex(int number) : this()
         {
             Number = number;
+        }
+
+        public Vertex(double X, double Y, int number) : this(number)
+        {
+            Canvas.SetLeft(this, X - size / 2);
+            Canvas.SetTop(this, Y - size / 2);
         }
         #region INotifyPropertyChanged implementation
         public event PropertyChangedEventHandler PropertyChanged;
