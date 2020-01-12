@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,7 +18,9 @@ namespace GraphExpectedValue
     /// </summary>
     public partial class Vertex : UserControl, INotifyPropertyChanged
     {
-        public const int size = 30;
+        private const int size = 30;
+
+        private double x, y;
 
         private static readonly SolidColorBrush BlackColorBrush = new SolidColorBrush(Colors.Black);
         private static readonly SolidColorBrush RedColorBrush = new SolidColorBrush(Colors.Red);
@@ -27,7 +30,7 @@ namespace GraphExpectedValue
         public static DependencyProperty VertexTypeProperty;
         public static DependencyProperty ColorProperty;
 
-        public int Size => size;
+        public static int Size => size;
         public int Number
         {
             get => (int)GetValue(NumberProperty);
@@ -45,6 +48,15 @@ namespace GraphExpectedValue
                 SetValue(ColorProperty, value);
                 OnPropertyChanged();
             }
+        }
+
+        public bool CheckIntersection(Point vertexCenter)
+        {
+            double distance = Math.Sqrt(
+                Math.Pow(x - vertexCenter.X, 2) +
+                Math.Pow(y - vertexCenter.Y, 2)
+            );
+            return distance > Size;
         }
 
         public VertexType VertexType
@@ -102,10 +114,12 @@ namespace GraphExpectedValue
             Number = number;
         }
 
-        public Vertex(double X, double Y, int number) : this(number)
+        public Vertex(double x, double y, int number) : this(number)
         {
-            Canvas.SetLeft(this, X - size / 2);
-            Canvas.SetTop(this, Y - size / 2);
+            this.x = x;
+            this.y = y;
+            Canvas.SetLeft(this, x - size / 2);
+            Canvas.SetTop(this, y - size / 2);
         }
         #region INotifyPropertyChanged implementation
         public event PropertyChangedEventHandler PropertyChanged;

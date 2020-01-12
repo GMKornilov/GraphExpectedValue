@@ -6,24 +6,51 @@
         xmlns:local="clr-namespace:GraphExpectedValue"
         mc:Ignorable="d"
         Title="MainWindow" Height="720" Width="1080">
-    <Grid ShowGridLines="True">
+    <Grid ShowGridLines="False">
         <Grid.RowDefinitions>
             <RowDefinition Height="50"></RowDefinition>
-            <RowDefinition></RowDefinition>
-            <RowDefinition></RowDefinition>
-            <RowDefinition></RowDefinition>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition></ColumnDefinition>
-            <ColumnDefinition></ColumnDefinition>
-            <ColumnDefinition></ColumnDefinition>
-            <ColumnDefinition></ColumnDefinition>
-            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-
-        <Button Name="addEdgeButton" Grid.Column="1" Content="Add Edge" Click="AddEdgeButton_OnClick"/>
-        <Button Name="removeEdgeButton" Grid.Column="2" Content="Remove edge" Click="RemoveEdgeButton_OnClick"/>
-        <Button Name="removeVertexButton"  Grid.Column="3" Content="Remove vertex" Click="RemoveVertexButton_OnClick"/>
+        <StackPanel HorizontalAlignment="Center" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" Orientation="Horizontal">
+            <StackPanel.Resources>
+                <Style TargetType="{x:Type Button}">
+                    <Setter Property="Margin" Value="20 0 20 0"/>
+                    <Setter Property="MinHeight" Value="20"/>
+                    <Setter Property="Width" Value="100"/>
+                </Style>
+                <Style TargetType="{x:Type TextBlock}">
+                    <Setter Property="TextAlignment" Value="Center"/>
+                    <Setter Property="TextWrapping" Value="Wrap"/>
+                </Style>
+            </StackPanel.Resources>
+            <Button Name="AddEdgeButton" Content="Add Edge" Click="AddEdgeButton_OnClick" />
+            <Button Name="RemoveEdgeButton" Content="Remove edge" Click="RemoveEdgeButton_OnClick" />
+            <Button Name="RemoveVertexButton" Content="Remove vertex" Click="RemoveVertexButton_OnClick" />
+            <Button Name="StartVertexButton">
+                <TextBlock>
+                    Choose starting vertex
+                </TextBlock>
+            </Button>
+            <Button Name="EndVertexButton">
+                <TextBlock>
+                    Choose ending vertex
+                </TextBlock>
+            </Button>
+            <Button Name="CalculateButton">
+                <TextBlock>
+                    Calculate expected passage time
+                </TextBlock>
+            </Button>
+        </StackPanel>
         <Canvas
             Name="testCanvas"
             Grid.Row="1"
@@ -31,10 +58,6 @@
             Grid.Column="0"
             Grid.ColumnSpan="5"
             Background="White">
-            <!--
-            <TextBlock Text="Hello world!" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            <local:MyWeirdShape Height="150" Width="150" Stroke="Black" StrokeThickness="2" />
-            -->
         </Canvas>
     </Grid>
 </Window>

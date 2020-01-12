@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 
 namespace GraphExpectedValue
@@ -11,8 +13,7 @@ namespace GraphExpectedValue
     /// </summary>
     public partial class MainWindow : Window
     {
-        private Vertex vertex;
-        private int total_vertexes = 0;
+        private List<Vertex> vertexes = new List<Vertex>();
 
         public MainWindow()
         {
@@ -26,9 +27,12 @@ namespace GraphExpectedValue
             Debug.WriteLine("Click!!!");
             Debug.WriteLine(e.GetPosition(testCanvas).X + " " + e.GetPosition(testCanvas).Y);
             var point = e.GetPosition(testCanvas);
-            var vertex = new Vertex(point.X, point.Y, ++total_vertexes);
-            testCanvas.Children.Add(vertex);
-
+            if (vertexes.TrueForAll((Vertex v) => v.CheckIntersection(point)))
+            {
+                var vertex = new Vertex(point.X, point.Y, vertexes.Count + 1);
+                vertexes.Add(vertex);
+                testCanvas.Children.Add(vertex);
+            }
         }
 
 
