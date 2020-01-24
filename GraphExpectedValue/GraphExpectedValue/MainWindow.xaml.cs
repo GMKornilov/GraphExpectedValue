@@ -38,13 +38,12 @@ namespace GraphExpectedValue
 
         private void AddEdgeButton_OnClick(object sender, RoutedEventArgs e)
         {
-            //vertex.VertexType = VertexType.StartVertex;
+            Vertex.Size += 10;
         }
 
         private void RemoveEdgeButton_OnClick(object sender, RoutedEventArgs e)
         {
-            //vertex.VertexType = VertexType.PathVertex;
-            //vertex.Number++;
+            Vertex.Size -= 10;
         }
 
         private void RemoveVertexButton_OnClick(object sender, RoutedEventArgs e)

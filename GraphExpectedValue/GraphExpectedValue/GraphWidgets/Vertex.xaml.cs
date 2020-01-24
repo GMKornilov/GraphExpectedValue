@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace GraphExpectedValue
 {
@@ -18,7 +19,7 @@ namespace GraphExpectedValue
     /// </summary>
     public partial class Vertex : UserControl, INotifyPropertyChanged
     {
-        private const int size = 30;
+        private static int size = 30;
 
         private double x, y;
 
@@ -30,7 +31,14 @@ namespace GraphExpectedValue
         public static DependencyProperty VertexTypeProperty;
         public static DependencyProperty ColorProperty;
 
-        public static int Size => size;
+        public static int Size
+        {
+            get => size;
+            set => size = value;
+        }
+
+        public Point Center => new Point(x, y);
+
         public int Number
         {
             get => (int)GetValue(NumberProperty);
