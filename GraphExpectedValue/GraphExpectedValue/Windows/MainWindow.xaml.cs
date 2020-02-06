@@ -2,18 +2,18 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
+using GraphExpectedValue.GraphWidgets;
 
-namespace GraphExpectedValue
+namespace GraphExpectedValue.Windows
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
-        private List<Vertex> vertexes = new List<Vertex>();
+        private readonly Random random = new Random();
+        private readonly List<Vertex> vertexes = new List<Vertex>();
 
         public MainWindow()
         {
@@ -38,12 +38,24 @@ namespace GraphExpectedValue
 
         private void AddEdgeButton_OnClick(object sender, RoutedEventArgs e)
         {
-            Vertex.Size += 10;
+            /*
+            if(vertexes.Count < 2)return;
+            var from = vertexes[vertexes.Count - 1];
+            var to = vertexes[vertexes.Count - 2];
+            var edge = new Edge(from, to, random.NextDouble());
+            edge.AddToCanvas(testCanvas);
+            */
+            if(vertexes.Count < 2)return;
+            var edgePickWindow = new EdgePickWindow {TotalVertexes = vertexes.Count};
+            if (edgePickWindow.ShowDialog() == true)
+            {
+                Debug.WriteLine($"{edgePickWindow.StartVertexNumber} {edgePickWindow.EndVertexNumber} {edgePickWindow.EdgeLength}");
+            }
         }
 
         private void RemoveEdgeButton_OnClick(object sender, RoutedEventArgs e)
         {
-            Vertex.Size -= 10;
+            
         }
 
         private void RemoveVertexButton_OnClick(object sender, RoutedEventArgs e)

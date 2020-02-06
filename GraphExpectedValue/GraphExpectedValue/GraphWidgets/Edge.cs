@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -19,6 +14,7 @@ namespace GraphExpectedValue.GraphWidgets
     }
     public class Edge
     {
+        private const double TOLERANCE = 1e-6;
         private const int offset = 5;
 
         private event Action<ChangeType> EdgeChangedEvent;
@@ -62,12 +58,36 @@ namespace GraphExpectedValue.GraphWidgets
             }
         }
 
+        private Size TextSize
+        {
+            get
+            {
+                var formattedText = new FormattedText(
+                    Text,
+                    CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight,
+                    new Typeface(edgeText.FontFamily, edgeText.FontStyle, edgeText.FontWeight, edgeText.FontStretch),
+                    edgeText.FontSize,
+                    Brushes.Black,
+                    new NumberSubstitution(),
+                    1
+                );
+                return new Size(formattedText.Width, formattedText.Height);
+            }
+        }
+
         private double Angle
         {
             get
             {
                 var a = EndPoint - StartPoint;
-                return Math.Atan2(a.Y, a.X) / Math.PI * 180;
+                if (Math.Abs(a.X) > TOLERANCE)
+                {
+                    a *= Math.Sign(a.X);
+                }
+                var angle = Math.Atan2(a.Y, a.X) / Math.PI * 180;
+                return angle <= 90 ? angle : 180 - angle;
+                //return angle;
             }
         }
 
@@ -97,16 +117,37 @@ namespace GraphExpectedValue.GraphWidgets
 
         private void TransformText()
         {
-            double xOffset, yOffset;
+            var s = new Vector(){X = EndPoint.X - StartPoint.X, Y = EndPoint.Y - StartPoint.Y};
 
-            var textWidth = edgeText.ActualWidth;
-            var line = EndPoint - StartPoint;
+            var textWidth = TextSize.Width;
+            var lineLength = s.Length;
+            var widthOffset = (lineLength - textWidth) / 2;
 
-            xOffset = line.X / 2;
-            yOffset = -offset - edgeText.Height;
+            var offsetPoint = s.X > 0 ? StartPoint : EndPoint;
 
-            Canvas.SetLeft(edgeText, StartPoint.X + xOffset);
-            Canvas.SetTop(edgeText, StartPoint.Y + yOffset);
+            if (Math.Abs(s.X) > TOLERANCE)
+            {
+                s *= Math.Sign(s.X);
+            }
+            else
+            {
+                offsetPoint = StartPoint;
+            }
+
+            s.Normalize();
+
+            var widthOffsetVector = s * widthOffset;
+
+            var heightOffsetVector = new Vector {X = s.Y, Y = -s.X};
+            heightOffsetVector.Normalize();
+            var heightOffset = offset + TextSize.Height;
+            heightOffsetVector *= heightOffset;
+
+            var offsetVector = heightOffsetVector + widthOffsetVector;
+
+            var textBlockPoint = offsetPoint + offsetVector;
+            Canvas.SetLeft(edgeText, textBlockPoint.X);
+            Canvas.SetTop(edgeText, textBlockPoint.Y);
 
             edgeText.RenderTransform = new RotateTransform(Angle);
         }
@@ -129,6 +170,7 @@ namespace GraphExpectedValue.GraphWidgets
             edgeLine = new Line {Stroke = new SolidColorBrush(Colors.Black)};
             edgeText = new TextBlock();
             edgeText.Height = edgeText.FontSize + 3;
+            edgeText.Width = 100;
         }
 
         public Edge(Vertex from, Vertex to, double val) : this()
