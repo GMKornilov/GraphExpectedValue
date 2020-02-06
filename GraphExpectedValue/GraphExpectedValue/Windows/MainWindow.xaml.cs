@@ -14,7 +14,8 @@ namespace GraphExpectedValue.Windows
     {
         private readonly Random random = new Random();
         private readonly List<Vertex> vertexes = new List<Vertex>();
-        private readonly Dictionary<Tuple<int, int>, Edge> edges;
+        private readonly Dictionary<Tuple<Vertex, Vertex>, Edge> edges = new Dictionary<Tuple<Vertex, Vertex>, Edge>(); 
+        private Vertex startVertex = null, endVertex = null;
 
         public MainWindow()
         {
@@ -52,17 +53,21 @@ namespace GraphExpectedValue.Windows
             
             var startVertexNumber = edgePickWindow.StartVertexNumber - 1;
             var endVertexNumber = edgePickWindow.EndVertexNumber - 1;
+
+            var startVertex = vertexes[startVertexNumber];
+            var endVertex = vertexes[endVertexNumber];
             var edgeLength = edgePickWindow.EdgeLength;
             
-            var edge = new Edge(vertexes[startVertexNumber], vertexes[endVertexNumber], edgeLength);
+            var edge = new Edge(startVertex, endVertex, edgeLength);
             edge.AddToCanvas(testCanvas);
 
-            edges.Add(new Tuple<int, int>(startVertexNumber, endVertexNumber), edge);
+            // TODO: check if edge between this two vertexes already exists
+
+            edges.Add(new Tuple<Vertex, Vertex>(startVertex, endVertex), edge);
         }
 
         private void RemoveEdgeButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            
+        { 
         }
 
         private void RemoveVertexButton_OnClick(object sender, RoutedEventArgs e)
@@ -77,13 +82,82 @@ namespace GraphExpectedValue.Windows
             if (vertexPickWindow.ShowDialog() == true)
             {
                 var chosenVertexNumber = vertexPickWindow.ChosenVertex - 1;
+                var chosenVertex = vertexes[chosenVertexNumber];
                 // Debug.WriteLine(chosenVertexNumber);
-                testCanvas.Children.Remove(vertexes[chosenVertexNumber]);
+                testCanvas.Children.Remove(chosenVertex);
+                
+                // TODO: remove all edges connected with this vertex
+                
+                if (chosenVertex == startVertex)
+                {
+                    startVertex = null;
+                }
+                else if (chosenVertex == endVertex)
+                {
+                    endVertex = null;
+                }
+
                 vertexes.RemoveAt(chosenVertexNumber);
                 for (var i = chosenVertexNumber; i < vertexes.Count; i++)
                 {
                     vertexes[i].Number--;
                 }
+            }
+        }
+
+        private void StartVertexButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (vertexes.Count == 0) return;
+            var vertexPickWindow = new VertexChooseWindow()
+            {
+                Prompt = "Choose start vertex",
+                TotalVertexes = vertexes.Count,
+                ConfirmButtonText = "Choose start vertex"
+            };
+            if (vertexPickWindow.ShowDialog() == true)
+            {
+                var chosenVertexNumber = vertexPickWindow.ChosenVertex - 1;
+                var chosenVertex = vertexes[chosenVertexNumber];
+                if (startVertex != null && startVertex.Number != chosenVertexNumber + 1)
+                {
+                    startVertex.VertexType = VertexType.PathVertex;
+                    startVertex = null;
+                }
+
+                if (chosenVertex == endVertex)
+                {
+                    endVertex = null;
+                }
+                chosenVertex.VertexType = VertexType.StartVertex;
+                startVertex = chosenVertex;
+            }
+        }
+
+        private void EndVertexButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (vertexes.Count == 0) return;
+            var vertexPickWindow = new VertexChooseWindow()
+            {
+                Prompt = "Choose end vertex",
+                TotalVertexes = vertexes.Count,
+                ConfirmButtonText = "Choose end vertex"
+            };
+            if (vertexPickWindow.ShowDialog() == true)
+            {
+                var chosenVertexNumber = vertexPickWindow.ChosenVertex - 1;
+                var chosenVertex = vertexes[chosenVertexNumber];
+                if (endVertex != null && endVertex.Number != chosenVertexNumber + 1)
+                {
+                    endVertex.VertexType = VertexType.PathVertex;
+                    endVertex = null;
+                }
+
+                if (chosenVertex == startVertex)
+                {
+                    startVertex = null;
+                }
+                chosenVertex.VertexType = VertexType.EndVertex;
+                endVertex = chosenVertex;
             }
         }
     }

@@ -35,12 +35,12 @@
             <Button Name="AddEdgeButton" Content="Add Edge" Click="AddEdgeButton_OnClick" />
             <Button Name="RemoveEdgeButton" Content="Remove edge" Click="RemoveEdgeButton_OnClick" />
             <Button Name="RemoveVertexButton" Content="Remove vertex" Click="RemoveVertexButton_OnClick" />
-            <Button Name="StartVertexButton">
+            <Button Name="StartVertexButton" Click="StartVertexButton_OnClick">
                 <TextBlock>
                     Choose starting vertex
                 </TextBlock>
             </Button>
-            <Button Name="EndVertexButton">
+            <Button Name="EndVertexButton" Click="EndVertexButton_OnClick">
                 <TextBlock>
                     Choose ending vertex
                 </TextBlock>
