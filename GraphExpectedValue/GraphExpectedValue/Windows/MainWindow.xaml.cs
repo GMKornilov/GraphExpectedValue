@@ -57,17 +57,53 @@ namespace GraphExpectedValue.Windows
             var startVertex = vertexes[startVertexNumber];
             var endVertex = vertexes[endVertexNumber];
             var edgeLength = edgePickWindow.EdgeLength;
-            
+
+            if (edges.TryGetValue(new Tuple<Vertex, Vertex>(startVertex, endVertex), out _))
+            {
+                MessageBox.Show(
+                    "Such edge already exists",
+                    "",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+                return;
+            }
+
             var edge = new Edge(startVertex, endVertex, edgeLength);
             edge.AddToCanvas(testCanvas);
 
             // TODO: check if edge between this two vertexes already exists
+            
 
             edges.Add(new Tuple<Vertex, Vertex>(startVertex, endVertex), edge);
         }
 
         private void RemoveEdgeButton_OnClick(object sender, RoutedEventArgs e)
-        { 
+        {
+            Func<Tuple<int, int>, bool> checker = tuple =>
+            {
+                var (num1, num2) = tuple;
+                var startVertex = vertexes[num1 - 1];
+                var endVertex = vertexes[num2 - 1];
+                return edges.TryGetValue(new Tuple<Vertex, Vertex>(startVertex, endVertex), out _);
+            };
+            var edgeChooseWindow = new EdgeChooseWindow(checker){TotalVertexes = vertexes.Count};
+            if (edgeChooseWindow.ShowDialog() == true)
+            {
+                var chosenStartVertexNumber = edgeChooseWindow.ChosenStartVertex - 1;
+                var chosenEndVertexNumber = edgeChooseWindow.ChosenEndVertex - 1;
+
+                var chosenStartVertex = vertexes[chosenStartVertexNumber];
+                var chosenEndVertex = vertexes[chosenEndVertexNumber];
+
+                if (!edges.TryGetValue(new Tuple<Vertex, Vertex>(chosenStartVertex, chosenEndVertex), out var edge))
+                {
+                    Debug.WriteLine("??????????????");
+                }
+
+                edges.Remove(new Tuple<Vertex, Vertex>(chosenStartVertex, chosenEndVertex));
+                edge.RemoveFromCanvas(testCanvas);
+            }
         }
 
         private void RemoveVertexButton_OnClick(object sender, RoutedEventArgs e)

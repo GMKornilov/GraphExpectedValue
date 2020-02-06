@@ -1,0 +1,44 @@
+﻿<Window x:Class="GraphExpectedValue.Windows.EdgeChooseWindow"
+        x:Name="this"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:n="clr-namespace:GraphExpectedValue"
+        xmlns:local="clr-namespace:GraphExpectedValue.Windows"
+        mc:Ignorable="d"
+        Title="EdgeChooseWindow" Height="500" Width="500">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition Height="50"></RowDefinition>
+        </Grid.RowDefinitions>
+        <TextBlock
+            Grid.Row="0"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Text="{Binding StringFormat=Select edge parameters. You have totally {0} vertexes, ElementName=this, Path=TotalVertexes}"
+        />
+        <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Number of starting vertex" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <n:NumericUpDownPicker
+                Width="200"
+                Minimum="1"
+                Maximum="{Binding ElementName=this, Path=TotalVertexes}"
+                Value="{Binding ElementName=this, Path=ChosenStartVertex, Mode=OneWayToSource}"
+            />
+        </StackPanel>
+        <StackPanel Grid.Row="2" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Number of end vertex" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <n:NumericUpDownPicker
+                Width="200"
+                Minimum="1"
+                Maximum="{Binding ElementName=this, Path=TotalVertexes}"
+                Value="{Binding ElementName=this, Path=ChosenEndVertex, Mode=OneWayToSource}"
+            />
+        </StackPanel>
+        <Button Grid.Row="3" Content="Remove edge" Click="RemoveButton_OnClick"/>
+    </Grid>
+</Window>
