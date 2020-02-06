@@ -22,7 +22,8 @@ namespace GraphExpectedValue.GraphWidgets
         private string text;
         private double X1, X2, Y1, Y2;
 
-        public readonly Line edgeLine;
+        //public readonly Line edgeLine;
+        public readonly Arrow edgeLine;
         public readonly TextBlock edgeText;
 
         public string Text
@@ -167,7 +168,7 @@ namespace GraphExpectedValue.GraphWidgets
         private Edge()
         {
             EdgeChangedEvent += Update;
-            edgeLine = new Line {Stroke = new SolidColorBrush(Colors.Black)};
+            edgeLine = new Arrow {Stroke = new SolidColorBrush(Colors.Black), ArrowLength=10};
             edgeText = new TextBlock();
             edgeText.Height = edgeText.FontSize + 3;
             edgeText.Width = 100;

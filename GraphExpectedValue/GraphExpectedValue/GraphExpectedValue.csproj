@@ -66,6 +66,7 @@
     </ApplicationDefinition>
     <Compile Include="GraphLogic\EdgeMetadata.cs" />
     <Compile Include="GraphLogic\VertexMetadata.cs" />
+    <Compile Include="GraphWidgets\Arrow.cs" />
     <Compile Include="GraphWidgets\Edge.cs" />
     <Compile Include="GraphWidgets\EdgeChangeEventArgs.cs" />
     <Compile Include="NumericUpDownPicker.xaml.cs">

@@ -18,7 +18,7 @@ namespace GraphExpectedValue.Windows
             set
             {
                 _totalVertexes = value;
-                OnPropertyChanged("TotalVertexes");
+                OnPropertyChanged(nameof(TotalVertexes));
             }
         }
 
@@ -33,7 +33,7 @@ namespace GraphExpectedValue.Windows
 
         private void CreateEdgeButton_OnClick(object sender, RoutedEventArgs e)
         {
-            if (StartVertexNumber != EndVertexNumber)
+            if (StartVertexNumber == EndVertexNumber)
             {
                 MessageBox.Show("Can\'t create loop edges", "", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;

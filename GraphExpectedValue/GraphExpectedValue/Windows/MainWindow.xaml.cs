@@ -47,10 +47,13 @@ namespace GraphExpectedValue.Windows
             */
             if(vertexes.Count < 2)return;
             var edgePickWindow = new EdgePickWindow {TotalVertexes = vertexes.Count};
-            if (edgePickWindow.ShowDialog() == true)
-            {
-                Debug.WriteLine($"{edgePickWindow.StartVertexNumber} {edgePickWindow.EndVertexNumber} {edgePickWindow.EdgeLength}");
-            }
+            if (edgePickWindow.ShowDialog() != true) return;
+            Debug.WriteLine($"{edgePickWindow.StartVertexNumber} {edgePickWindow.EndVertexNumber} {edgePickWindow.EdgeLength}");
+            var startVertexNumber = edgePickWindow.StartVertexNumber - 1;
+            var endVertexNumber = edgePickWindow.EndVertexNumber - 1;
+            var edgeLength = edgePickWindow.EdgeLength;
+            var edge = new Edge(vertexes[startVertexNumber], vertexes[endVertexNumber], edgeLength);
+            edge.AddToCanvas(testCanvas);
         }
 
         private void RemoveEdgeButton_OnClick(object sender, RoutedEventArgs e)

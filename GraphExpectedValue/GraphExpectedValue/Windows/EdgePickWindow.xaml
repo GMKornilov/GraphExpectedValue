@@ -30,6 +30,7 @@
                 HorizontalAlignment="Center"
                 Minimum="1"
                 Maximum="{Binding ElementName=this, Path=TotalVertexes}"
+                Value="{Binding ElementName=this, Path=StartVertexNumber, Mode=OneWayToSource}"
                 DoubleAllowed="False"
             />
         </StackPanel>
@@ -40,6 +41,7 @@
                 HorizontalAlignment="Center"
                 Minimum="1"
                 Maximum="{Binding ElementName=this, Path=TotalVertexes}"
+                Value="{Binding ElementName=this, Path=EndVertexNumber, Mode=OneWayToSource}"
                 DoubleAllowed="False"
             />
         </StackPanel>
@@ -50,6 +52,7 @@
                 Width="200"
                 HorizontalAlignment="Center"
                 Minimum="0"
+                Value="{Binding ElementName=this, Path=EdgeLength, Mode=OneWayToSource}"
                 DoubleAllowed="True"
             />
         </StackPanel>
