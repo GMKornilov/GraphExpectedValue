@@ -14,18 +14,18 @@ namespace GraphExpectedValue.Windows
     {
         private readonly Random random = new Random();
         private readonly List<Vertex> vertexes = new List<Vertex>();
+        private readonly Dictionary<Tuple<int, int>, Edge> edges;
 
         public MainWindow()
         {
             InitializeComponent();
-
             testCanvas.MouseLeftButtonDown += TestCanvasOnMouseLeftButtonDown;
         }
 
         private void TestCanvasOnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            Debug.WriteLine("Click!!!");
-            Debug.WriteLine(e.GetPosition(testCanvas).X + " " + e.GetPosition(testCanvas).Y);
+            // Debug.WriteLine("Click!!!");
+            // Debug.WriteLine(e.GetPosition(testCanvas).X + " " + e.GetPosition(testCanvas).Y);
             var point = e.GetPosition(testCanvas);
             if (vertexes.TrueForAll((Vertex v) => v.CheckIntersection(point)))
             {
@@ -48,12 +48,16 @@ namespace GraphExpectedValue.Windows
             if(vertexes.Count < 2)return;
             var edgePickWindow = new EdgePickWindow {TotalVertexes = vertexes.Count};
             if (edgePickWindow.ShowDialog() != true) return;
-            Debug.WriteLine($"{edgePickWindow.StartVertexNumber} {edgePickWindow.EndVertexNumber} {edgePickWindow.EdgeLength}");
+            // Debug.WriteLine($"{edgePickWindow.StartVertexNumber} {edgePickWindow.EndVertexNumber} {edgePickWindow.EdgeLength}");
+            
             var startVertexNumber = edgePickWindow.StartVertexNumber - 1;
             var endVertexNumber = edgePickWindow.EndVertexNumber - 1;
             var edgeLength = edgePickWindow.EdgeLength;
+            
             var edge = new Edge(vertexes[startVertexNumber], vertexes[endVertexNumber], edgeLength);
             edge.AddToCanvas(testCanvas);
+
+            edges.Add(new Tuple<int, int>(startVertexNumber, endVertexNumber), edge);
         }
 
         private void RemoveEdgeButton_OnClick(object sender, RoutedEventArgs e)
@@ -63,8 +67,24 @@ namespace GraphExpectedValue.Windows
 
         private void RemoveVertexButton_OnClick(object sender, RoutedEventArgs e)
         {
-            //vertex.VertexType = VertexType.EndVertex;
-            //vertex.Number--;
+            if(vertexes.Count == 0) return;
+            var vertexPickWindow = new VertexChooseWindow()
+            {
+                Prompt = "Choose vertex to remove",
+                TotalVertexes = vertexes.Count,
+                ConfirmButtonText = "Remove vertex"
+            };
+            if (vertexPickWindow.ShowDialog() == true)
+            {
+                var chosenVertexNumber = vertexPickWindow.ChosenVertex - 1;
+                // Debug.WriteLine(chosenVertexNumber);
+                testCanvas.Children.Remove(vertexes[chosenVertexNumber]);
+                vertexes.RemoveAt(chosenVertexNumber);
+                for (var i = chosenVertexNumber; i < vertexes.Count; i++)
+                {
+                    vertexes[i].Number--;
+                }
+            }
         }
     }
 }
