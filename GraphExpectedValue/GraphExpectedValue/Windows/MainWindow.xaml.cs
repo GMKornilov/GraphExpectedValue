@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using GraphExpectedValue.GraphWidgets;
@@ -123,7 +124,13 @@ namespace GraphExpectedValue.Windows
                 testCanvas.Children.Remove(chosenVertex);
                 
                 // TODO: remove all edges connected with this vertex
-                
+                foreach (var key in edges.Keys.Where(item => item.Item1.Number == chosenVertex.Number || item.Item2.Number == chosenVertex.Number).ToList())
+                {
+                    var edge = edges[key];
+                    edges.Remove(key);
+                    edge.RemoveFromCanvas(testCanvas);
+                }
+
                 if (chosenVertex == startVertex)
                 {
                     startVertex = null;

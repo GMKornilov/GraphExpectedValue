@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using GraphExpectedValue.GraphLogic;
 
 namespace GraphExpectedValue.GraphWidgets
 {
@@ -19,6 +20,7 @@ namespace GraphExpectedValue.GraphWidgets
     public partial class Vertex : UserControl, INotifyPropertyChanged
     {
         private static int size = 30;
+        private VertexMetadata metadata;
 
         private double x, y;
 
@@ -35,6 +37,8 @@ namespace GraphExpectedValue.GraphWidgets
             get => size;
             set => size = value;
         }
+
+        public VertexMetadata Metadata => metadata;
 
         public Point Center => new Point(x, y);
 
@@ -59,7 +63,7 @@ namespace GraphExpectedValue.GraphWidgets
 
         public bool CheckIntersection(Point vertexCenter)
         {
-            double distance = Math.Sqrt(
+            var distance = Math.Sqrt(
                 Math.Pow(x - vertexCenter.X, 2) +
                 Math.Pow(y - vertexCenter.Y, 2)
             );
@@ -82,6 +86,8 @@ namespace GraphExpectedValue.GraphWidgets
                     case VertexType.StartVertex:
                         CircleColor = RedColorBrush;
                         break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(value), value, "Incorrect vertex type");
                 }
                 SetValue(VertexTypeProperty, value);
                 OnPropertyChanged();
@@ -115,6 +121,7 @@ namespace GraphExpectedValue.GraphWidgets
         public Vertex()
         {
             InitializeComponent();
+            metadata = new VertexMetadata(this);
         }
         public Vertex(int number) : this()
         {

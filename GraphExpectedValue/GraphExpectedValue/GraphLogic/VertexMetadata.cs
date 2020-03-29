@@ -1,19 +1,20 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
+using GraphExpectedValue.GraphWidgets;
 
 namespace GraphExpectedValue.GraphLogic
 {
+    [Serializable]
     public class VertexMetadata
     {
-        public int Number
-        {
-            get;
-            set;
-        }
+        private Vertex graphicRepr;
+        public int Number => graphicRepr.Number;
+        public VertexType Type => graphicRepr.VertexType;
+        public Point Position => graphicRepr.Center;
 
-        public Point Position
+        public VertexMetadata(Vertex repr)
         {
-            get;
-            set;
+            graphicRepr = repr;
         }
     }
 }

@@ -1,8 +1,11 @@
-﻿namespace GraphExpectedValue.GraphLogic
+﻿using System;
+
+namespace GraphExpectedValue.GraphLogic
 {
+    [Serializable]
     public class EdgeMetadata
     {
-        public int StartVertexNumber, EndVertexNumber;
+        public VertexMetadata StartVertexMetadata, EndVertexMetadata;
         public double Length;
     }
 }

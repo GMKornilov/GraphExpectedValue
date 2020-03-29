@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using GraphExpectedValue.GraphLogic;
 
 namespace GraphExpectedValue.GraphWidgets
 {
@@ -17,14 +18,17 @@ namespace GraphExpectedValue.GraphWidgets
         private const double TOLERANCE = 1e-6;
         private const int offset = 5;
 
+        private EdgeMetadata metadata;
+
         private event Action<ChangeType> EdgeChangedEvent;
 
         private string text;
         private double X1, X2, Y1, Y2;
 
-        //public readonly Line edgeLine;
         public readonly Arrow edgeLine;
         public readonly TextBlock edgeText;
+
+        public EdgeMetadata Metadata => metadata;
 
         public string Text
         {
@@ -176,6 +180,13 @@ namespace GraphExpectedValue.GraphWidgets
 
         public Edge(Vertex from, Vertex to, double val) : this()
         {
+            metadata = new EdgeMetadata()
+            {
+                StartVertexMetadata = from.Metadata,
+                EndVertexMetadata = to.Metadata,
+                Length = val
+            };
+
             var firstCenter = from.Center;
             var secondCenter = to.Center;
 
