@@ -7,14 +7,35 @@ namespace GraphExpectedValue.GraphLogic
     [Serializable]
     public class VertexMetadata
     {
-        private Vertex graphicRepr;
-        public int Number => graphicRepr.Number;
-        public VertexType Type => graphicRepr.VertexType;
-        public Point Position => graphicRepr.Center;
+        public int Number { get; set; }
+        public VertexType Type { get; set; }
+        public Point Position { get; set; }
 
-        public VertexMetadata(Vertex repr)
+        public VertexMetadata(Vertex graphicVertex)
         {
-            graphicRepr = repr;
+            Number = graphicVertex.Number;
+            Type = graphicVertex.VertexType;
+            Position = graphicVertex.Center;
+        }
+
+        public VertexMetadata()
+        {
+
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is VertexMetadata metadata)
+            {
+                return Number == metadata.Number;
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return Number;
         }
     }
 }

@@ -8,10 +8,11 @@
         Title="MainWindow" Height="720" Width="1080">
     <Grid ShowGridLines="False">
         <Grid.RowDefinitions>
-            <RowDefinition Height="50"></RowDefinition>
+            <RowDefinition Height="50"/>
             <RowDefinition/>
             <RowDefinition/>
             <RowDefinition/>
+            <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
@@ -59,5 +60,20 @@
             Grid.ColumnSpan="5"
             Background="White">
         </Canvas>
+        <StackPanel HorizontalAlignment="Center" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="5" Orientation="Horizontal">
+            <StackPanel.Resources>
+                <Style TargetType="{x:Type Button}">
+                    <Setter Property="Margin" Value="20 0 20 0"/>
+                    <Setter Property="MinHeight" Value="20"/>
+                    <Setter Property="Width" Value="100"/>
+                </Style>
+                <Style TargetType="{x:Type TextBlock}">
+                    <Setter Property="TextAlignment" Value="Center"/>
+                    <Setter Property="TextWrapping" Value="Wrap"/>
+                </Style>
+            </StackPanel.Resources>
+            <Button Name="SafeGraphButton" Content="Save graph" Click="SafeGraphButton_OnClick"/>
+            <Button Name="OpenGraphButton" Content="Open graph" Click="OpenGraphButton_OnClick"></Button>
+        </StackPanel>
     </Grid>
 </Window>

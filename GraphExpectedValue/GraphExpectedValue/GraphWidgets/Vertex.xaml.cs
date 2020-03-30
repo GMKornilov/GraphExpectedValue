@@ -47,6 +47,7 @@ namespace GraphExpectedValue.GraphWidgets
             get => (int)GetValue(NumberProperty);
             set {
                 SetValue(NumberProperty, value);
+                Metadata.Number = value;
                 OnPropertyChanged();
             }
         }
@@ -89,6 +90,8 @@ namespace GraphExpectedValue.GraphWidgets
                     default:
                         throw new ArgumentOutOfRangeException(nameof(value), value, "Incorrect vertex type");
                 }
+
+                Metadata.Type = value;
                 SetValue(VertexTypeProperty, value);
                 OnPropertyChanged();
             }
@@ -132,8 +135,14 @@ namespace GraphExpectedValue.GraphWidgets
         {
             this.x = x;
             this.y = y;
+            metadata.Position = Center;
             Canvas.SetLeft(this, x - size / 2);
             Canvas.SetTop(this, y - size / 2);
+        }
+
+        public Vertex(VertexMetadata metadata):this(metadata.Position.X, metadata.Position.Y, metadata.Number)
+        {
+            this.metadata = metadata;
         }
         #region INotifyPropertyChanged implementation
         public event PropertyChangedEventHandler PropertyChanged;

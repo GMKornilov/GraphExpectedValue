@@ -92,7 +92,6 @@ namespace GraphExpectedValue.GraphWidgets
                 }
                 var angle = Math.Atan2(a.Y, a.X) / Math.PI * 180;
                 return angle <= 90 ? angle : 180 - angle;
-                //return angle;
             }
         }
 
@@ -180,12 +179,7 @@ namespace GraphExpectedValue.GraphWidgets
 
         public Edge(Vertex from, Vertex to, double val) : this()
         {
-            metadata = new EdgeMetadata()
-            {
-                StartVertexMetadata = from.Metadata,
-                EndVertexMetadata = to.Metadata,
-                Length = val
-            };
+            metadata = new EdgeMetadata(from, to, val);
 
             var firstCenter = from.Center;
             var secondCenter = to.Center;
@@ -201,6 +195,11 @@ namespace GraphExpectedValue.GraphWidgets
             Text = val.ToString(CultureInfo.CurrentCulture);
             StartPoint = firstCenter;
             EndPoint = secondCenter;
+        }
+
+        public Edge(Vertex from, Vertex to, EdgeMetadata metadata) : this(from, to, metadata.Length)
+        {
+            this.metadata = metadata;
         }
     }
 }
