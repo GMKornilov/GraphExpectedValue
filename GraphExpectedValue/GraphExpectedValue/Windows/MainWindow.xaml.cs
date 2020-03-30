@@ -14,11 +14,34 @@ using Microsoft.Win32;
 
 namespace GraphExpectedValue.Windows
 {
+    public class ActionCommand : ICommand
+    {
+        private readonly Action _action;
+
+        public ActionCommand(Action action)
+        {
+            _action = action;
+        }
+
+        public void Execute(object parameter)
+        {
+            _action();
+        }
+
+        public bool CanExecute(object parameter)
+        {
+            return true;
+        }
+
+        public event EventHandler CanExecuteChanged;
+    }
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
+        public readonly ActionCommand saveActionCommand;
+        public readonly ActionCommand openActionCommand;
         private readonly Random random = new Random();
         private GraphMetadata graphMetadata = new GraphMetadata();
         private List<Vertex> vertexes = new List<Vertex>();
@@ -29,6 +52,24 @@ namespace GraphExpectedValue.Windows
         {
             InitializeComponent();
             testCanvas.MouseLeftButtonDown += TestCanvasOnMouseLeftButtonDown;
+            saveActionCommand = new ActionCommand(
+                () =>  SafeGraphButton_OnClick(this, new RoutedEventArgs())
+            );
+            openActionCommand = new ActionCommand(
+                () => OpenGraphButton_OnClick(this, new RoutedEventArgs())    
+            );
+            var openKeyBinding = new KeyBinding(
+                openActionCommand,
+                Key.O,
+                ModifierKeys.Control
+            );
+            var saveKeyBinding = new KeyBinding(
+                saveActionCommand,
+                Key.S,
+                ModifierKeys.Control
+            );
+            this.InputBindings.Add(openKeyBinding);
+            this.InputBindings.Add(saveKeyBinding);
         }
 
         private void TestCanvasOnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -161,23 +202,7 @@ namespace GraphExpectedValue.Windows
             {
                 var chosenVertexNumber = vertexPickWindow.ChosenVertex - 1;
                 var chosenVertex = vertexes[chosenVertexNumber];
-                if (startVertex != null && startVertex.Number != chosenVertexNumber + 1)
-                {
-                    startVertex.PropertyChanged -= UpdateStartVertexNumber;
-                    startVertex.VertexType = VertexType.PathVertex;
-                    startVertex = null;
-                }
-
-                if (chosenVertex == endVertex)
-                {
-                    endVertex.PropertyChanged -= UpdateEndVertexNumber;
-                    endVertex.VertexType = VertexType.PathVertex;
-                    endVertex = null;
-                }
-
-                chosenVertex.PropertyChanged += UpdateStartVertexNumber;
-                chosenVertex.VertexType = VertexType.StartVertex;
-                startVertex = chosenVertex;
+                SetStartVertex(chosenVertex);
             }
         }
 
@@ -194,23 +219,7 @@ namespace GraphExpectedValue.Windows
             {
                 var chosenVertexNumber = vertexPickWindow.ChosenVertex - 1;
                 var chosenVertex = vertexes[chosenVertexNumber];
-                if (endVertex != null && endVertex.Number != chosenVertexNumber + 1)
-                {
-                    endVertex.PropertyChanged -= UpdateEndVertexNumber;
-                    endVertex.VertexType = VertexType.PathVertex;
-                    endVertex = null;
-                }
-
-                if (chosenVertex == startVertex)
-                {
-                    startVertex.PropertyChanged -= UpdateStartVertexNumber;
-                    startVertex.VertexType = VertexType.PathVertex;
-                    startVertex = null;
-                }
-
-                chosenVertex.PropertyChanged += UpdateEndVertexNumber;
-                chosenVertex.VertexType = VertexType.EndVertex;
-                endVertex = chosenVertex;
+                SetEndVertex(chosenVertex);
             }
         }
 
@@ -265,18 +274,22 @@ namespace GraphExpectedValue.Windows
             {
                 Filter = "XML file (*.xml)|*.xml"
             };
-            if(openFileDialog.ShowDialog() != true || string.IsNullOrEmpty(openFileDialog.FileName)) return;
+            if (openFileDialog.ShowDialog() != true || string.IsNullOrEmpty(openFileDialog.FileName)) return;
             try
             {
                 var serializer = new XmlSerializer(typeof(GraphMetadata));
                 using (var stream = new FileStream(openFileDialog.FileName, FileMode.OpenOrCreate))
                 {
-                    metadata = (GraphMetadata) serializer.Deserialize(stream);
+                    metadata = (GraphMetadata)serializer.Deserialize(stream);
                 }
 
                 if (CheckMetadata(metadata))
                 {
                     LoadGraph(metadata);
+                }
+                else
+                {
+                    Debug.WriteLine("WRONG");
                 }
             }
             catch (IOException)
@@ -317,6 +330,48 @@ namespace GraphExpectedValue.Windows
             }
         }
 
+        private void SetStartVertex(Vertex vertex)
+        {
+            if (startVertex != null && !startVertex.Equals(vertex))
+            {
+                startVertex.PropertyChanged -= UpdateStartVertexNumber;
+                startVertex.VertexType = VertexType.PathVertex;
+                startVertex = null;
+            }
+
+            if (vertex == endVertex)
+            {
+                endVertex.PropertyChanged -= UpdateEndVertexNumber;
+                endVertex.VertexType = VertexType.PathVertex;
+                endVertex = null;
+            }
+
+            vertex.PropertyChanged += UpdateStartVertexNumber;
+            vertex.VertexType = VertexType.StartVertex;
+            startVertex = vertex;
+        }
+
+        private void SetEndVertex(Vertex vertex)
+        {
+            if (endVertex != null && !endVertex.Equals(vertex))
+            {
+                endVertex.PropertyChanged -= UpdateEndVertexNumber;
+                endVertex.VertexType = VertexType.PathVertex;
+                endVertex = null;
+            }
+
+            if (vertex == startVertex)
+            {
+                startVertex.PropertyChanged -= UpdateStartVertexNumber;
+                startVertex.VertexType = VertexType.PathVertex;
+                startVertex = null;
+            }
+
+            vertex.PropertyChanged += UpdateEndVertexNumber;
+            vertex.VertexType = VertexType.EndVertex;
+            endVertex = vertex;
+        }
+
         private void UpdateStartVertexNumber(object sender, PropertyChangedEventArgs e)
         {
             if (sender is Vertex vertex)
@@ -333,7 +388,7 @@ namespace GraphExpectedValue.Windows
             }
         }
 
-        private bool CheckMetadata(GraphMetadata metadata)
+        private static bool CheckMetadata(GraphMetadata metadata)
         {
             metadata.VertexMetadatas.Sort(((metadata1, metadata2) => metadata1.Number.CompareTo(metadata2.Number)));
             if (metadata.VertexMetadatas.Where((t, i) => t.Number != i + 1).Any())
@@ -396,6 +451,16 @@ namespace GraphExpectedValue.Windows
                 );
                 edges.Add(new Tuple<Vertex, Vertex>(edgeStartVertex, edgeEndVertex), edge);
                 edge.AddToCanvas(testCanvas);
+            }
+
+            if (metadata.StartVertexNumber != -1)
+            {
+                SetStartVertex(vertexes[metadata.StartVertexNumber - 1]);
+            }
+
+            if (metadata.EndVertexNumber != -1)
+            {
+                SetEndVertex(vertexes[metadata.EndVertexNumber - 1]);
             }
         }
 
