@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using System.Xml;
 using System.Xml.Serialization;
 using GraphExpectedValue.GraphLogic;
 using GraphExpectedValue.GraphWidgets;
@@ -259,7 +260,61 @@ namespace GraphExpectedValue.Windows
 
         private void OpenGraphButton_OnClick(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            GraphMetadata metadata;
+            var openFileDialog = new OpenFileDialog()
+            {
+                Filter = "XML file (*.xml)|*.xml"
+            };
+            if(openFileDialog.ShowDialog() != true || string.IsNullOrEmpty(openFileDialog.FileName)) return;
+            try
+            {
+                var serializer = new XmlSerializer(typeof(GraphMetadata));
+                using (var stream = new FileStream(openFileDialog.FileName, FileMode.OpenOrCreate))
+                {
+                    metadata = (GraphMetadata) serializer.Deserialize(stream);
+                }
+
+                if (CheckMetadata(metadata))
+                {
+                    LoadGraph(metadata);
+                }
+            }
+            catch (IOException)
+            {
+                MessageBox.Show(
+                    "Error while reading file",
+                    "",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
+            }
+            catch (UnauthorizedAccessException)
+            {
+                MessageBox.Show(
+                    "Not enough rights to write in this path. Try running program with admin rights.",
+                    "",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
+            }
+            catch (XmlException)
+            {
+                MessageBox.Show(
+                    "Incorrect xml was written in file",
+                    "",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show(
+                    $"Unknown error happened:{err.Message}",
+                    "",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
+            }
         }
 
         private void UpdateStartVertexNumber(object sender, PropertyChangedEventArgs e)
@@ -278,9 +333,47 @@ namespace GraphExpectedValue.Windows
             }
         }
 
+        private bool CheckMetadata(GraphMetadata metadata)
+        {
+            metadata.VertexMetadatas.Sort(((metadata1, metadata2) => metadata1.Number.CompareTo(metadata2.Number)));
+            if (metadata.VertexMetadatas.Where((t, i) => t.Number != i + 1).Any())
+            {
+                // vertexes numbers should be from 1 to n
+                return false;
+            }
+
+            var testEdgeDict = new Dictionary<Tuple<int, int>, EdgeMetadata>();
+            foreach (var edgeData in metadata.EdgeMetadatas)
+            {
+                if (testEdgeDict.ContainsKey(new Tuple<int, int>(edgeData.StartVertexNumber, edgeData.EndVertexNumber)))
+                {
+                    // two same edges
+                    return false;
+                }
+                testEdgeDict.Add(
+                    new Tuple<int, int>(edgeData.StartVertexNumber, edgeData.EndVertexNumber),
+                    edgeData
+                );
+            }
+
+            if (metadata.StartVertexNumber != -1 && (metadata.StartVertexNumber < 1 ||
+                                                     metadata.StartVertexNumber > metadata.VertexMetadatas.Count))
+            {
+                return false;
+            }
+
+            if (metadata.EndVertexNumber != -1 &&
+                (metadata.EndVertexNumber < 1 || metadata.EndVertexNumber > metadata.VertexMetadatas.Count))
+            {
+                return false;
+            }
+
+            return true;
+        }
         private void LoadGraph(GraphMetadata metadata)
         {
-            // TODO: remove all edges and vertexes
+            ClearGraph();
+
             metadata.VertexMetadatas.Sort(((metadata1, metadata2) => metadata1.Number.CompareTo(metadata2.Number)));
             graphMetadata = metadata;
             vertexes = new List<Vertex>(metadata.VertexMetadatas.Count);
@@ -289,7 +382,7 @@ namespace GraphExpectedValue.Windows
             {
                 var vertex = new Vertex(vertexData);
                 vertexes.Add(vertex);
-                // TODO: code for adding vertex to canvas
+                testCanvas.Children.Add(vertex);
             }
 
             foreach (var edgeData in metadata.EdgeMetadatas)
@@ -302,9 +395,22 @@ namespace GraphExpectedValue.Windows
                     edgeData
                 );
                 edges.Add(new Tuple<Vertex, Vertex>(edgeStartVertex, edgeEndVertex), edge);
-                //TODO: code for adding edge to canvas
+                edge.AddToCanvas(testCanvas);
             }
         }
 
+        private void ClearGraph()
+        {
+            foreach (var vertex in vertexes)
+            {
+                testCanvas.Children.Remove(vertex);
+            }
+
+            foreach (var edgePair in edges)
+            {
+                var edge = edgePair.Value;
+                edge.RemoveFromCanvas(testCanvas);
+            }
+        }
     }
 }
