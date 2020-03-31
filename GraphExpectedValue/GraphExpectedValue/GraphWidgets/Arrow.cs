@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using GraphExpectedValue.Annotations;
@@ -11,7 +10,7 @@ namespace GraphExpectedValue.GraphWidgets
 {
     public class Arrow : Shape, INotifyPropertyChanged
     {
-        private const int angle = 30;
+        private const int angle = 25;
         public static readonly DependencyProperty X1Property;
         public static readonly DependencyProperty X2Property;
         public static readonly DependencyProperty Y1Property;

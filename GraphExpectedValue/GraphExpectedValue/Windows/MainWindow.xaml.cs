@@ -42,7 +42,6 @@ namespace GraphExpectedValue.Windows
     {
         public readonly ActionCommand saveActionCommand;
         public readonly ActionCommand openActionCommand;
-        private readonly Random random = new Random();
         private GraphMetadata graphMetadata = new GraphMetadata();
         private List<Vertex> vertexes = new List<Vertex>();
         private Dictionary<Tuple<Vertex, Vertex>, Edge> edges = new Dictionary<Tuple<Vertex, Vertex>, Edge>();
@@ -53,10 +52,10 @@ namespace GraphExpectedValue.Windows
             InitializeComponent();
             testCanvas.MouseLeftButtonDown += TestCanvasOnMouseLeftButtonDown;
             saveActionCommand = new ActionCommand(
-                () =>  SafeGraphButton_OnClick(this, new RoutedEventArgs())
+                () => SafeGraphButton_OnClick(this, new RoutedEventArgs())
             );
             openActionCommand = new ActionCommand(
-                () => OpenGraphButton_OnClick(this, new RoutedEventArgs())    
+                () => OpenGraphButton_OnClick(this, new RoutedEventArgs())
             );
             var openKeyBinding = new KeyBinding(
                 openActionCommand,
@@ -75,15 +74,12 @@ namespace GraphExpectedValue.Windows
         private void TestCanvasOnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             var point = e.GetPosition(testCanvas);
-            if (vertexes.TrueForAll((Vertex v) => v.CheckIntersection(point)))
-            {
-                var vertex = new Vertex(point.X, point.Y, vertexes.Count + 1);
-                vertexes.Add(vertex);
-                graphMetadata.VertexMetadatas.Add(vertex.Metadata);
-                testCanvas.Children.Add(vertex);
-            }
+            if (!vertexes.TrueForAll(v => v.CheckIntersection(point))) return;
+            var vertex = new Vertex(point.X, point.Y, vertexes.Count + 1);
+            vertexes.Add(vertex);
+            graphMetadata.VertexMetadatas.Add(vertex.Metadata);
+            testCanvas.Children.Add(vertex);
         }
-
 
         private void AddEdgeButton_OnClick(object sender, RoutedEventArgs e)
         {
@@ -94,11 +90,11 @@ namespace GraphExpectedValue.Windows
             var startVertexNumber = edgePickWindow.StartVertexNumber - 1;
             var endVertexNumber = edgePickWindow.EndVertexNumber - 1;
 
-            var startVertex = vertexes[startVertexNumber];
-            var endVertex = vertexes[endVertexNumber];
+            var edgeStartVertex = vertexes[startVertexNumber];
+            var edgeEndVertex = vertexes[endVertexNumber];
             var edgeLength = edgePickWindow.EdgeLength;
 
-            if (edges.TryGetValue(new Tuple<Vertex, Vertex>(startVertex, endVertex), out _))
+            if (edges.TryGetValue(new Tuple<Vertex, Vertex>(edgeStartVertex, edgeEndVertex), out _))
             {
                 MessageBox.Show(
                     "Such edge already exists",
@@ -108,19 +104,8 @@ namespace GraphExpectedValue.Windows
                 );
                 return;
             }
-            var edge = new Edge(startVertex, endVertex, edgeLength);
-            edge.UpdateEdge();
-            if (edges.TryGetValue(new Tuple<Vertex, Vertex>(endVertex, startVertex), out var backEdge))
-            {
-                backEdge.Curved = true;
-                backEdge.UpdateEdge();
-                edge.Curved = true;
-                edge.UpdateEdge();
-            }
-
-            edge.AddToCanvas(testCanvas);
-            edges.Add(new Tuple<Vertex, Vertex>(startVertex, endVertex), edge);
-            graphMetadata.EdgeMetadatas.Add(edge.Metadata);
+            var edge = new Edge(edgeStartVertex, edgeEndVertex, edgeLength);
+            AddEdge(edge, edgeStartVertex, edgeEndVertex);
         }
 
         private void RemoveEdgeButton_OnClick(object sender, RoutedEventArgs e)
@@ -128,9 +113,9 @@ namespace GraphExpectedValue.Windows
             Func<Tuple<int, int>, bool> checker = tuple =>
             {
                 var (num1, num2) = tuple;
-                var startVertex = vertexes[num1 - 1];
-                var endVertex = vertexes[num2 - 1];
-                return edges.TryGetValue(new Tuple<Vertex, Vertex>(startVertex, endVertex), out _);
+                var startEdgeVertex = vertexes[num1 - 1];
+                var endEdgeVertex = vertexes[num2 - 1];
+                return edges.TryGetValue(new Tuple<Vertex, Vertex>(startEdgeVertex, endEdgeVertex), out _);
             };
             var edgeChooseWindow = new EdgeChooseWindow(checker) { TotalVertexes = vertexes.Count };
             if (edgeChooseWindow.ShowDialog() != true) return;
@@ -150,9 +135,7 @@ namespace GraphExpectedValue.Windows
                     MessageBoxImage.Warning
                 );
             }
-            edges.Remove(new Tuple<Vertex, Vertex>(chosenStartVertex, chosenEndVertex));
-            graphMetadata.EdgeMetadatas.Remove(edge.Metadata);
-            edge.RemoveFromCanvas(testCanvas);
+            RemoveEdge(chosenStartVertex, chosenEndVertex);
         }
 
         private void RemoveVertexButton_OnClick(object sender, RoutedEventArgs e)
@@ -164,36 +147,33 @@ namespace GraphExpectedValue.Windows
                 TotalVertexes = vertexes.Count,
                 ConfirmButtonText = "Remove vertex"
             };
-            if (vertexPickWindow.ShowDialog() == true)
+            if (vertexPickWindow.ShowDialog() != true) return;
+            var chosenVertexNumber = vertexPickWindow.ChosenVertex - 1;
+            var chosenVertex = vertexes[chosenVertexNumber];
+            testCanvas.Children.Remove(chosenVertex);
+
+            foreach (var (fromVertex, toVertex) in edges.Keys.Where(item => item.Item1.Number == chosenVertex.Number || item.Item2.Number == chosenVertex.Number).ToList())
             {
-                var chosenVertexNumber = vertexPickWindow.ChosenVertex - 1;
-                var chosenVertex = vertexes[chosenVertexNumber];
-                testCanvas.Children.Remove(chosenVertex);
+                RemoveEdge(fromVertex, toVertex);
+            }
 
-                foreach (var key in edges.Keys.Where(item => item.Item1.Number == chosenVertex.Number || item.Item2.Number == chosenVertex.Number).ToList())
-                {
-                    var edge = edges[key];
-                    edges.Remove(key);
-                    graphMetadata.EdgeMetadatas.Remove(edge.Metadata);
-                    edge.RemoveFromCanvas(testCanvas);
-                }
+            if (chosenVertex == startVertex)
+            {
+                startVertex = null;
+                graphMetadata.StartVertexNumber = -1;
+            }
+            else if (chosenVertex == endVertex)
+            {
+                endVertex = null;
+                graphMetadata.EndVertexNumber = -1;
+            }
 
-                if (chosenVertex == startVertex)
-                {
-                    startVertex = null;
-                }
-                else if (chosenVertex == endVertex)
-                {
-                    endVertex = null;
-                }
+            graphMetadata.VertexMetadatas.Remove(chosenVertex.Metadata);
+            vertexes.RemoveAt(chosenVertexNumber);
 
-                graphMetadata.VertexMetadatas.Remove(chosenVertex.Metadata);
-                vertexes.RemoveAt(chosenVertexNumber);
-
-                for (var i = chosenVertexNumber; i < vertexes.Count; i++)
-                {
-                    vertexes[i].Number--;
-                }
+            for (var i = chosenVertexNumber; i < vertexes.Count; i++)
+            {
+                vertexes[i].Number--;
             }
         }
 
@@ -206,12 +186,10 @@ namespace GraphExpectedValue.Windows
                 TotalVertexes = vertexes.Count,
                 ConfirmButtonText = "Choose start vertex"
             };
-            if (vertexPickWindow.ShowDialog() == true)
-            {
-                var chosenVertexNumber = vertexPickWindow.ChosenVertex - 1;
-                var chosenVertex = vertexes[chosenVertexNumber];
-                SetStartVertex(chosenVertex);
-            }
+            if (vertexPickWindow.ShowDialog() != true) return;
+            var chosenVertexNumber = vertexPickWindow.ChosenVertex - 1;
+            var chosenVertex = vertexes[chosenVertexNumber];
+            SetStartVertex(chosenVertex);
         }
 
         private void EndVertexButton_OnClick(object sender, RoutedEventArgs e)
@@ -241,7 +219,11 @@ namespace GraphExpectedValue.Windows
             try
             {
                 var serializer = new XmlSerializer(typeof(GraphMetadata));
-                using (var stream = new FileStream(safeFileDialog.FileName, FileMode.OpenOrCreate))
+                // if (File.Exists(safeFileDialog.FileName))
+                // {
+                //     File.Delete(safeFileDialog.FileName);
+                // }
+                using (var stream = new FileStream(safeFileDialog.FileName, FileMode.Create))
                 {
                     serializer.Serialize(stream, graphMetadata);
                 }
@@ -352,6 +334,7 @@ namespace GraphExpectedValue.Windows
                 endVertex.PropertyChanged -= UpdateEndVertexNumber;
                 endVertex.VertexType = VertexType.PathVertex;
                 endVertex = null;
+                graphMetadata.EndVertexNumber = -1;
             }
 
             vertex.PropertyChanged += UpdateStartVertexNumber;
@@ -373,11 +356,52 @@ namespace GraphExpectedValue.Windows
                 startVertex.PropertyChanged -= UpdateStartVertexNumber;
                 startVertex.VertexType = VertexType.PathVertex;
                 startVertex = null;
+                graphMetadata.StartVertexNumber = -1;
             }
 
             vertex.PropertyChanged += UpdateEndVertexNumber;
             vertex.VertexType = VertexType.EndVertex;
             endVertex = vertex;
+        }
+
+        private void AddEdge(Edge edge, Vertex edgeStartVertex, Vertex edgeEndVertex, bool addToMetadata = true)
+        {
+            if (edges.TryGetValue(new Tuple<Vertex, Vertex>(edgeEndVertex, edgeStartVertex), out var backEdge))
+            {
+                backEdge.Curved = true;
+                backEdge.UpdateEdge();
+                edge.Curved = true;
+                edge.UpdateEdge();
+            }
+
+            edge.AddToCanvas(testCanvas);
+            edges.Add(new Tuple<Vertex, Vertex>(edgeStartVertex, edgeEndVertex), edge);
+            if (addToMetadata)
+            {
+                graphMetadata.EdgeMetadatas.Add(edge.Metadata);
+            }
+        }
+
+        private void RemoveEdge(Vertex chosenStartVertex, Vertex chosenEndVertex)
+        {
+            if (!edges.TryGetValue(new Tuple<Vertex, Vertex>(chosenStartVertex, chosenEndVertex), out var edge))
+            {
+                MessageBox.Show(
+                    "There is no such edge in graph",
+                    "",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+            }
+
+            if (edges.TryGetValue(new Tuple<Vertex, Vertex>(chosenEndVertex, chosenStartVertex), out var backEdge))
+            {
+                backEdge.Curved = false;
+                backEdge.UpdateEdge();
+            }
+            edges.Remove(new Tuple<Vertex, Vertex>(chosenStartVertex, chosenEndVertex));
+            graphMetadata.EdgeMetadatas.Remove(edge.Metadata);
+            edge.RemoveFromCanvas(testCanvas);
         }
 
         private void UpdateStartVertexNumber(object sender, PropertyChangedEventArgs e)
@@ -457,8 +481,7 @@ namespace GraphExpectedValue.Windows
                     edgeEndVertex,
                     edgeData
                 );
-                edges.Add(new Tuple<Vertex, Vertex>(edgeStartVertex, edgeEndVertex), edge);
-                edge.AddToCanvas(testCanvas);
+                AddEdge(edge, edgeStartVertex, edgeEndVertex, addToMetadata: false);
             }
 
             if (metadata.StartVertexNumber != -1)

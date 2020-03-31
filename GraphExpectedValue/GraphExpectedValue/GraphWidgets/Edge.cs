@@ -238,7 +238,6 @@ namespace GraphExpectedValue.GraphWidgets
 
         private Edge()
         {
-            Curved = false; 
             EdgeChangedEvent += Update;
             edgeLine = new Arrow
             {

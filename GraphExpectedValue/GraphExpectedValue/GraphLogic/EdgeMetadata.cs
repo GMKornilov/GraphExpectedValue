@@ -15,6 +15,9 @@ namespace GraphExpectedValue.GraphLogic
         }
         public EdgeMetadata(Vertex startVertex, Vertex endVertex, double length)
         {
+            StartVertexNumber = startVertex.Number;
+            EndVertexNumber = endVertex.Number;
+            Length = length;
             startVertex.PropertyChanged += (sender, args) =>
             {
                 if (sender is Vertex vertex)
