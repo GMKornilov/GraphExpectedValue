@@ -8,7 +8,7 @@ using GraphExpectedValue.GraphLogic;
 
 namespace GraphExpectedValue.GraphWidgets
 {
-    internal enum ChangeType
+    public enum ChangeType
     {
         LineChange,
         TextChange
@@ -20,7 +20,7 @@ namespace GraphExpectedValue.GraphWidgets
 
         private EdgeMetadata metadata;
 
-        private event Action<ChangeType> EdgeChangedEvent;
+        public event Action<ChangeType> EdgeChangedEvent;
 
         private string text;
         private double X1, X2, Y1, Y2;
@@ -95,6 +95,8 @@ namespace GraphExpectedValue.GraphWidgets
             }
         }
 
+        public bool Curved { get; set; }
+
         public Edge(Point from, Point to, double val):this()
         {
             Text = val.ToString(CultureInfo.CurrentCulture);
@@ -107,7 +109,14 @@ namespace GraphExpectedValue.GraphWidgets
             if (changeType == ChangeType.TextChange)
             {
                 edgeText.Text = Text;
-                TransformText();
+                if (Curved)
+                {
+                    TransformBezier();
+                }
+                else
+                {
+                    TransformText();
+                }
                 return;
             }
 
@@ -115,13 +124,25 @@ namespace GraphExpectedValue.GraphWidgets
             edgeLine.Y1 = StartPoint.Y;
             edgeLine.X2 = EndPoint.X;
             edgeLine.Y2 = EndPoint.Y;
-              
-            TransformText();
+            edgeLine.IsCurved = Curved;
+
+            if (Curved)
+            {
+                TransformBezier();
+            }
+            else
+            {
+                TransformText();
+            }
         }
 
         private void TransformText()
         {
-            var s = new Vector(){X = EndPoint.X - StartPoint.X, Y = EndPoint.Y - StartPoint.Y};
+            var s = new Vector()
+            {
+                X = EndPoint.X - StartPoint.X,
+                Y = EndPoint.Y - StartPoint.Y
+            };
 
             var textWidth = TextSize.Width;
             var lineLength = s.Length;
@@ -156,6 +177,51 @@ namespace GraphExpectedValue.GraphWidgets
             edgeText.RenderTransform = new RotateTransform(Angle);
         }
 
+        private void TransformBezier()
+        {
+            var s = new Vector()
+            {
+                X = EndPoint.X - StartPoint.X,
+                Y = EndPoint.Y - StartPoint.Y
+            };
+            var lineLength = s.Length;
+            var pt1 = s.X > 0 ? StartPoint : EndPoint;
+            
+            s *= Math.Sign(s.X);
+            s.Normalize();
+            var perpS = new Vector(
+                -s.Y,
+                s.X
+            );
+            perpS.Normalize();
+            
+
+            var bezierPoint = edgeLine.BezierPoint;
+            var midPoint = pt1 + s * lineLength / 2;
+
+            var bezierMidVec = new Vector(bezierPoint.X - midPoint.X, bezierPoint.Y - midPoint.Y);
+            var bezierMidLength = bezierMidVec.Length;
+
+            var textWidth = TextSize.Width;
+            var widthOffset = (lineLength - textWidth) / 2;
+
+            var offsetPoint = pt1;
+            var widthOffsetVector = s * widthOffset;
+
+            var heightOffsetVector = bezierMidVec;
+            heightOffsetVector.Normalize();
+            var heightOffset = offset + TextSize.Height + bezierMidLength / 2.0;
+            heightOffsetVector *= heightOffset;
+
+            var offsetVector = heightOffsetVector + widthOffsetVector;
+
+            var textBlockPoint = offsetPoint + offsetVector;
+            Canvas.SetLeft(edgeText, textBlockPoint.X);
+            Canvas.SetTop(edgeText, textBlockPoint.Y);
+
+            edgeText.RenderTransform = new RotateTransform(Angle);
+        }
+
         public void AddToCanvas(Canvas canvas)
         {
             canvas.Children.Add(edgeLine);
@@ -168,14 +234,18 @@ namespace GraphExpectedValue.GraphWidgets
             canvas.Children.Remove(edgeText);
         }
 
+        public void UpdateEdge() => EdgeChangedEvent?.Invoke(ChangeType.LineChange);
+
         private Edge()
         {
+            Curved = false; 
             EdgeChangedEvent += Update;
             edgeLine = new Arrow
             {
                 Stroke = new SolidColorBrush(Colors.Black),
                 ArrowLength = 10,
-                ArrowAngle = 30
+                ArrowAngle = 30,
+                IsCurved = Curved
             };
             edgeText = new TextBlock();
             edgeText.Height = edgeText.FontSize + 3;

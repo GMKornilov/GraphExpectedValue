@@ -68,8 +68,8 @@ namespace GraphExpectedValue.Windows
                 Key.S,
                 ModifierKeys.Control
             );
-            this.InputBindings.Add(openKeyBinding);
-            this.InputBindings.Add(saveKeyBinding);
+            InputBindings.Add(openKeyBinding);
+            InputBindings.Add(saveKeyBinding);
         }
 
         private void TestCanvasOnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -108,8 +108,16 @@ namespace GraphExpectedValue.Windows
                 );
                 return;
             }
-
             var edge = new Edge(startVertex, endVertex, edgeLength);
+            edge.UpdateEdge();
+            if (edges.TryGetValue(new Tuple<Vertex, Vertex>(endVertex, startVertex), out var backEdge))
+            {
+                backEdge.Curved = true;
+                backEdge.UpdateEdge();
+                edge.Curved = true;
+                edge.UpdateEdge();
+            }
+
             edge.AddToCanvas(testCanvas);
             edges.Add(new Tuple<Vertex, Vertex>(startVertex, endVertex), edge);
             graphMetadata.EdgeMetadatas.Add(edge.Metadata);

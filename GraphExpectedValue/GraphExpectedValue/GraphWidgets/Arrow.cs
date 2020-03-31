@@ -1,11 +1,15 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using GraphExpectedValue.Annotations;
 
 namespace GraphExpectedValue.GraphWidgets
 {
-    public class Arrow : Shape
+    public class Arrow : Shape, INotifyPropertyChanged
     {
         private const int angle = 30;
         public static readonly DependencyProperty X1Property;
@@ -14,6 +18,7 @@ namespace GraphExpectedValue.GraphWidgets
         public static readonly DependencyProperty Y2Property;
         public static readonly DependencyProperty ArrowLengthProperty;
         public static readonly DependencyProperty ArrowAngleProperty;
+        public static readonly DependencyProperty IsCurvedProperty;
 
         public double X1
         {
@@ -47,11 +52,22 @@ namespace GraphExpectedValue.GraphWidgets
 
         public double ArrowAngle
         {
-            get => (double) GetValue(ArrowAngleProperty);
+            get => (double)GetValue(ArrowAngleProperty);
             set => SetValue(ArrowAngleProperty, value);
+
         }
 
-        private Point BezierPoint
+        public bool IsCurved
+        {
+            get => (bool)GetValue(IsCurvedProperty);
+            set
+            {
+                SetValue(IsCurvedProperty, value);
+                OnPropertyChanged();
+            }
+        }
+
+        public Point BezierPoint
         {
             get
             {
@@ -104,6 +120,15 @@ namespace GraphExpectedValue.GraphWidgets
                 typeof(double),
                 typeof(Arrow)
             );
+            IsCurvedProperty = DependencyProperty.Register(
+                nameof(IsCurved),
+                typeof(bool),
+                typeof(Arrow),
+                new FrameworkPropertyMetadata(
+                    defaultValue:false,
+                    FrameworkPropertyMetadataOptions.AffectsRender
+                )
+            );
         }
 
         protected override Geometry DefiningGeometry
@@ -114,8 +139,14 @@ namespace GraphExpectedValue.GraphWidgets
 
                 using (var context = geometry.Open())
                 {
-                    //DrawArrow(context);
-                    DrawArrowWithBezier(context);
+                    if (IsCurved)
+                    {
+                        DrawArrowWithBezier(context);
+                    }
+                    else
+                    {
+                        DrawArrow(context);
+                    }
                 }
 
                 // Freeze the geometry for performance benefits
@@ -177,6 +208,14 @@ namespace GraphExpectedValue.GraphWidgets
             context.LineTo(pt3, true, true);
             context.LineTo(pt2, true, true);
             context.LineTo(pt4, true, true);
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
