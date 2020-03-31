@@ -171,7 +171,12 @@ namespace GraphExpectedValue.GraphWidgets
         private Edge()
         {
             EdgeChangedEvent += Update;
-            edgeLine = new Arrow {Stroke = new SolidColorBrush(Colors.Black), ArrowLength=10};
+            edgeLine = new Arrow
+            {
+                Stroke = new SolidColorBrush(Colors.Black),
+                ArrowLength = 10,
+                ArrowAngle = 30
+            };
             edgeText = new TextBlock();
             edgeText.Height = edgeText.FontSize + 3;
             edgeText.Width = 100;

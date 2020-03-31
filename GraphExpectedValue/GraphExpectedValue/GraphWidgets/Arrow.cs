@@ -7,11 +7,13 @@ namespace GraphExpectedValue.GraphWidgets
 {
     public class Arrow : Shape
     {
+        private const int angle = 30;
         public static readonly DependencyProperty X1Property;
         public static readonly DependencyProperty X2Property;
         public static readonly DependencyProperty Y1Property;
         public static readonly DependencyProperty Y2Property;
         public static readonly DependencyProperty ArrowLengthProperty;
+        public static readonly DependencyProperty ArrowAngleProperty;
 
         public double X1
         {
@@ -43,6 +45,32 @@ namespace GraphExpectedValue.GraphWidgets
             set => SetValue(ArrowLengthProperty, value);
         }
 
+        public double ArrowAngle
+        {
+            get => (double) GetValue(ArrowAngleProperty);
+            set => SetValue(ArrowAngleProperty, value);
+        }
+
+        private Point BezierPoint
+        {
+            get
+            {
+                var lineVecHalved = new Vector(X2 - X1, Y2 - Y1) / 2;
+                var lineVecHalvedLength = lineVecHalved.Length;
+                var perpVec = new Vector(
+                    -(Y2 - Y1),
+                    (X2 - X1)
+                );
+                perpVec.Normalize();
+                var perpVecLen = Math.Tan(angle * Math.PI / 180) * lineVecHalvedLength;
+                perpVec *= perpVecLen;
+
+                var midPointVec = perpVec + lineVecHalved;
+                var ptMid = new Point(X1, Y1) + midPointVec;
+                return ptMid;
+            }
+        }
+
         static Arrow()
         {
             X1Property = DependencyProperty.Register(
@@ -71,6 +99,11 @@ namespace GraphExpectedValue.GraphWidgets
                 typeof(double),
                 typeof(Arrow)
             );
+            ArrowAngleProperty = DependencyProperty.Register(
+                nameof(ArrowAngle),
+                typeof(double),
+                typeof(Arrow)
+            );
         }
 
         protected override Geometry DefiningGeometry
@@ -81,7 +114,8 @@ namespace GraphExpectedValue.GraphWidgets
 
                 using (var context = geometry.Open())
                 {
-                    DrawArrow(context);
+                    //DrawArrow(context);
+                    DrawArrowWithBezier(context);
                 }
 
                 // Freeze the geometry for performance benefits
@@ -94,29 +128,55 @@ namespace GraphExpectedValue.GraphWidgets
 
         private void DrawArrow(StreamGeometryContext context)
         {
-            var angle = Math.Atan2(Y2 - Y1, X2 - X1);
             var pt1 = new Point(X1, Y1);
             var pt2 = new Point(X2, Y2);
 
-            var cos = Math.Cos(angle);
-            var sin = Math.Sin(angle);
+            var endStartVector = new Vector(pt1.X - pt2.X, pt1.Y - pt2.Y);
+            endStartVector.Normalize();
+            endStartVector *= ArrowLength;
 
-            var pt3 = new Point(
-                X2 - (ArrowLength * cos - ArrowLength * sin),
-                Y2 - (ArrowLength * sin + ArrowLength * cos)
-            );
+            var rotateMatrix = new Matrix();
+            rotateMatrix.Rotate(ArrowAngle);
+            var firstArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
+            rotateMatrix.Rotate(-2 * ArrowAngle);
+            var secondArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
 
-            var pt4 = new Point(
-                X2 - (ArrowLength * cos + ArrowLength * sin),
-                Y2 + (ArrowLength * cos - ArrowLength * sin)
-            );
+            var pt3 = pt2 + firstArrowVector;
+            var pt4 = pt2 + secondArrowVector;
 
             context.BeginFigure(pt1, true, false);
             context.LineTo(pt2, true, true);
             context.LineTo(pt3, true, true);
             context.LineTo(pt2, true, true);
             context.LineTo(pt4, true, true);
+        }
 
+        private void DrawArrowWithBezier(StreamGeometryContext context)
+        {
+            var pt1 = new Point(X1, Y1);
+            var pt2 = new Point(X2, Y2);
+
+            var endStartVector = new Vector(X1 - X2, Y1 - Y2);
+            endStartVector.Normalize();
+            endStartVector *= ArrowLength;
+
+            var ptMid = BezierPoint;
+
+            var rotateMatrix = new Matrix();
+            rotateMatrix.Rotate(-angle);
+            rotateMatrix.Rotate(ArrowAngle);
+            var firstArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
+            rotateMatrix.Rotate(-2 * ArrowAngle);
+            var secondArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
+
+            var pt3 = pt2 + firstArrowVector;
+            var pt4 = pt2 + secondArrowVector;
+
+            context.BeginFigure(pt1, false, false);
+            context.QuadraticBezierTo(ptMid, pt2, true, false);
+            context.LineTo(pt3, true, true);
+            context.LineTo(pt2, true, true);
+            context.LineTo(pt4, true, true);
         }
     }
 }
