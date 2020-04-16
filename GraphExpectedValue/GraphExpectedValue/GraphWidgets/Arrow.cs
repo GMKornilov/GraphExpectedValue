@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
@@ -18,6 +19,7 @@ namespace GraphExpectedValue.GraphWidgets
         public static readonly DependencyProperty ArrowLengthProperty;
         public static readonly DependencyProperty ArrowAngleProperty;
         public static readonly DependencyProperty IsCurvedProperty;
+        public static readonly DependencyProperty IsBackedProperty;
 
         public double X1
         {
@@ -62,6 +64,16 @@ namespace GraphExpectedValue.GraphWidgets
             set
             {
                 SetValue(IsCurvedProperty, value);
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsBacked
+        {
+            get => (bool) GetValue(IsBackedProperty);
+            set
+            {
+                SetValue(IsBackedProperty, value);
                 OnPropertyChanged();
             }
         }
@@ -128,6 +140,15 @@ namespace GraphExpectedValue.GraphWidgets
                     FrameworkPropertyMetadataOptions.AffectsRender
                 )
             );
+            IsBackedProperty = DependencyProperty.Register(
+                nameof(IsBacked),
+                typeof(bool),
+                typeof(Arrow),
+                new FrameworkPropertyMetadata(
+                    true,
+                    FrameworkPropertyMetadataOptions.AffectsRender
+                )
+            );
         }
 
         protected override Geometry DefiningGeometry
@@ -146,8 +167,13 @@ namespace GraphExpectedValue.GraphWidgets
                     {
                         DrawArrow(context);
                     }
+                    if (IsBacked)
+                    {
+                        DrawBackArrow(context);
+                    }
                 }
 
+                
                 // Freeze the geometry for performance benefits
                 geometry.Freeze();
 
@@ -178,6 +204,44 @@ namespace GraphExpectedValue.GraphWidgets
             context.LineTo(pt2, true, true);
             context.LineTo(pt3, true, true);
             context.LineTo(pt2, true, true);
+            context.LineTo(pt4, true, true);
+        }
+
+        private void DrawBackArrow(StreamGeometryContext context)
+        {
+            var pt1 = new Point(X1, Y1);
+            var pt2 = new Point(X2, Y2);
+
+            var endStartVector = pt2 - pt1;
+            endStartVector.Normalize();
+            endStartVector *= ArrowLength;
+            var rotateMatrix = new Matrix();
+            if (IsCurved)
+            {
+                rotateMatrix.Rotate(-angle);
+            }
+
+            rotateMatrix.Rotate(ArrowAngle);
+            var firstArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
+            var pt3 = pt1 + firstArrowVector;
+            
+            rotateMatrix.Rotate(-2 * ArrowAngle);
+            var secondArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
+            var pt4 = pt1 + secondArrowVector;
+
+            //context.BeginFigure(pt1, false, false);
+            context.LineTo(pt2, true, true);
+            if (IsCurved)
+            {
+                context.QuadraticBezierTo(BezierPoint, pt1, true, false);
+            }
+            else
+            {
+                context.LineTo(pt1, true, true);
+            }
+
+            context.LineTo(pt3, true, true);
+            context.LineTo(pt1, true, true);
             context.LineTo(pt4, true, true);
         }
 

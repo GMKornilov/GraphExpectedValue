@@ -7,6 +7,7 @@ namespace GraphExpectedValue.GraphLogic
     [Serializable]
     public class GraphMetadata
     {
+        public bool IsOriented { get; set; }
         public int StartVertexNumber { get; set; }
         public int EndVertexNumber { get; set; }
         public List<VertexMetadata> VertexMetadatas { get; private set; }
