@@ -8,7 +8,9 @@
         Title="MainWindow" Height="720" Width="1080">
     <Grid ShowGridLines="False">
         <Grid.RowDefinitions>
-            <RowDefinition Height="50"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="80"/>
+            <RowDefinition/>
             <RowDefinition/>
             <RowDefinition/>
             <RowDefinition/>
@@ -21,7 +23,14 @@
             <ColumnDefinition/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <StackPanel HorizontalAlignment="Center" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" Orientation="Horizontal">
+        <Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" VerticalAlignment="Center">
+            <MenuItem Header="New graph">
+                <MenuItem Header="Oriented graph"/>
+                <MenuItem Header="Unoriented graph"/>
+            </MenuItem>
+            <MenuItem Header="Open graph"/>
+        </Menu>
+        <StackPanel HorizontalAlignment="Center" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Orientation="Horizontal">
             <StackPanel.Resources>
                 <Style TargetType="{x:Type Button}">
                     <Setter Property="Margin" Value="20 0 20 0"/>
@@ -33,7 +42,8 @@
                     <Setter Property="TextWrapping" Value="Wrap"/>
                 </Style>
             </StackPanel.Resources>
-            <Button Name="AddEdgeButton" Content="Add Edge" Click="AddEdgeButton_OnClick" />
+            <Button Name="AddEdgeButton" Content="Add edge" Click="AddEdgeButton_OnClick">
+            </Button>
             <Button Name="RemoveEdgeButton" Content="Remove edge" Click="RemoveEdgeButton_OnClick" />
             <Button Name="RemoveVertexButton" Content="Remove vertex" Click="RemoveVertexButton_OnClick" />
             <Button Name="StartVertexButton" Click="StartVertexButton_OnClick">
@@ -54,13 +64,13 @@
         </StackPanel>
         <Canvas
             Name="testCanvas"
-            Grid.Row="1"
-            Grid.RowSpan="3"
+            Grid.Row="2"
+            Grid.RowSpan="4"
             Grid.Column="0"
             Grid.ColumnSpan="5"
             Background="White">
         </Canvas>
-        <StackPanel HorizontalAlignment="Center" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="5" Orientation="Horizontal">
+        <StackPanel HorizontalAlignment="Center" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="5" Orientation="Horizontal">
             <StackPanel.Resources>
                 <Style TargetType="{x:Type Button}">
                     <Setter Property="Margin" Value="20 0 20 0"/>

@@ -10,7 +10,7 @@ namespace GraphExpectedValue.GraphWidgets
 {
     public class Arrow : Shape, INotifyPropertyChanged
     {
-        private const int angle = 25;
+        private const int angle = 15;
         public static readonly DependencyProperty X1Property;
         public static readonly DependencyProperty X2Property;
         public static readonly DependencyProperty Y1Property;

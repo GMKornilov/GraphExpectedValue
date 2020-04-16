@@ -481,7 +481,7 @@ namespace GraphExpectedValue.Windows
                     edgeEndVertex,
                     edgeData
                 );
-                AddEdge(edge, edgeStartVertex, edgeEndVertex, addToMetadata: false);
+                AddEdge(edge, edgeStartVertex, edgeEndVertex, false);
             }
 
             if (metadata.StartVertexNumber != -1)
