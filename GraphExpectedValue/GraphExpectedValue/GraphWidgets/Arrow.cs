@@ -229,7 +229,6 @@ namespace GraphExpectedValue.GraphWidgets
             var secondArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
             var pt4 = pt1 + secondArrowVector;
 
-            //context.BeginFigure(pt1, false, false);
             context.LineTo(pt2, true, true);
             if (IsCurved)
             {

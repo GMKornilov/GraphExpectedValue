@@ -97,6 +97,8 @@ namespace GraphExpectedValue.GraphWidgets
 
         public bool Curved { get; set; }
 
+        public bool Backed { get; set; }
+
         public Edge(Point from, Point to, double val):this()
         {
             Text = val.ToString(CultureInfo.CurrentCulture);
@@ -125,6 +127,7 @@ namespace GraphExpectedValue.GraphWidgets
             edgeLine.X2 = EndPoint.X;
             edgeLine.Y2 = EndPoint.Y;
             edgeLine.IsCurved = Curved;
+            edgeLine.IsBacked = Backed;
 
             if (Curved)
             {

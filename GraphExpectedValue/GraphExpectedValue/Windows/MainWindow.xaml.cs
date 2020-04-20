@@ -46,6 +46,7 @@ namespace GraphExpectedValue.Windows
         private List<Vertex> vertexes = new List<Vertex>();
         private Dictionary<Tuple<Vertex, Vertex>, Edge> edges = new Dictionary<Tuple<Vertex, Vertex>, Edge>();
         private Vertex startVertex = null, endVertex = null;
+        private bool Working = false;
 
         public MainWindow()
         {
@@ -69,6 +70,10 @@ namespace GraphExpectedValue.Windows
             );
             InputBindings.Add(openKeyBinding);
             InputBindings.Add(saveKeyBinding);
+
+            buttonPanel.Visibility = Visibility.Hidden;
+            savePanel.Visibility = Visibility.Hidden;
+            testCanvas.Visibility = Visibility.Hidden;
         }
 
         private void TestCanvasOnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -104,7 +109,12 @@ namespace GraphExpectedValue.Windows
                 );
                 return;
             }
-            var edge = new Edge(edgeStartVertex, edgeEndVertex, edgeLength);
+
+            var edge = new Edge(edgeStartVertex, edgeEndVertex, edgeLength)
+            {
+                Backed = !graphMetadata.IsOriented
+            };
+            edge.UpdateEdge();
             AddEdge(edge, edgeStartVertex, edgeEndVertex);
         }
 
@@ -211,6 +221,10 @@ namespace GraphExpectedValue.Windows
 
         private void SafeGraphButton_OnClick(object sender, RoutedEventArgs e)
         {
+            if (!Working)
+            {
+                return;
+            }
             var safeFileDialog = new SaveFileDialog()
             {
                 Filter = "XML file (*.xml)|*.xml"
@@ -273,14 +287,18 @@ namespace GraphExpectedValue.Windows
                     metadata = (GraphMetadata)serializer.Deserialize(stream);
                 }
 
-                if (CheckMetadata(metadata))
-                {
-                    LoadGraph(metadata);
-                }
-                else
+                if (!CheckMetadata(metadata))
                 {
                     Debug.WriteLine("WRONG");
+                    throw new XmlException();
                 }
+
+                Working = true;
+                savePanel.Visibility = Visibility.Visible;
+                buttonPanel.Visibility = Visibility.Visible;
+                testCanvas.Visibility = Visibility.Visible;
+
+                LoadGraph(metadata);
             }
             catch (IOException)
             {
@@ -366,12 +384,26 @@ namespace GraphExpectedValue.Windows
 
         private void AddEdge(Edge edge, Vertex edgeStartVertex, Vertex edgeEndVertex, bool addToMetadata = true)
         {
+            // if we have oriented graph and trying to add back edge,
+            // we need to draw it as a back edge
             if (edges.TryGetValue(new Tuple<Vertex, Vertex>(edgeEndVertex, edgeStartVertex), out var backEdge))
             {
-                backEdge.Curved = true;
-                backEdge.UpdateEdge();
-                edge.Curved = true;
-                edge.UpdateEdge();
+                if (graphMetadata.IsOriented)
+                {
+                    backEdge.Curved = true;
+                    backEdge.UpdateEdge();
+                    edge.Curved = true;
+                    edge.UpdateEdge();
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "Such edge already exists",
+                        "",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning
+                    );
+                }
             }
 
             edge.AddToCanvas(testCanvas);
@@ -384,17 +416,24 @@ namespace GraphExpectedValue.Windows
 
         private void RemoveEdge(Vertex chosenStartVertex, Vertex chosenEndVertex)
         {
+            // if we are trying to remove unexisting edge,
+            // show error message
             if (!edges.TryGetValue(new Tuple<Vertex, Vertex>(chosenStartVertex, chosenEndVertex), out var edge))
             {
-                MessageBox.Show(
-                    "There is no such edge in graph",
-                    "",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning
-                );
+                if (graphMetadata.IsOriented || !edges.TryGetValue(new Tuple<Vertex, Vertex>(chosenEndVertex, chosenStartVertex), out _))
+                {
+                    MessageBox.Show(
+                        "There is no such edge in graph",
+                        "",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning
+                    );
+                    return;
+                }
             }
-
-            if (edges.TryGetValue(new Tuple<Vertex, Vertex>(chosenEndVertex, chosenStartVertex), out var backEdge))
+            // if we have oriented graph and trying to delete one of back edges,
+            // set another back edge as normal
+            if (graphMetadata.IsOriented && edges.TryGetValue(new Tuple<Vertex, Vertex>(chosenEndVertex, chosenStartVertex), out var backEdge))
             {
                 backEdge.Curved = false;
                 backEdge.UpdateEdge();
@@ -507,6 +546,37 @@ namespace GraphExpectedValue.Windows
                 var edge = edgePair.Value;
                 edge.RemoveFromCanvas(testCanvas);
             }
+
+            startVertex = null;
+            endVertex = null;
+        }
+
+        private void ItemOriented_OnClick(object sender, RoutedEventArgs e)
+        {
+            CreateGraph(true);
+        }
+
+        private void ItemUnoriented_OnClick(object sender, RoutedEventArgs e)
+        {
+            CreateGraph(false);
+        }
+
+        private void CreateGraph(bool isOriented)
+        {
+            ClearGraph();
+            graphMetadata = new GraphMetadata()
+            {
+                IsOriented = isOriented
+            };
+            vertexes = new List<Vertex>();
+            edges = new Dictionary<Tuple<Vertex, Vertex>, Edge>();
+            startVertex = null;
+            endVertex = null;
+            
+            Working = true;
+            savePanel.Visibility = Visibility.Visible;
+            buttonPanel.Visibility = Visibility.Visible;
+            testCanvas.Visibility = Visibility.Visible;
         }
     }
 }
