@@ -1,0 +1,61 @@
+﻿<Window x:Class="GraphExpectedValue.Windows.EdgePickWindow"
+        x:Name="this"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GraphExpectedValue.Windows"
+        xmlns:n="clr-namespace:GraphExpectedValue"
+        mc:Ignorable="d"
+        Title="EdgePickWindow" Height="500" Width="500">
+    <Grid ShowGridLines="True">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+        <TextBlock 
+            Grid.Row="0"
+            Text="{Binding StringFormat=Select edge parameters. You have totally {0} vertexes, ElementName=this, Path=TotalVertexes}"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+        />
+        
+        <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Number of starting vertex" HorizontalAlignment="Center"/>
+            <n:NumericUpDownPicker
+                Width ="200"
+                HorizontalAlignment="Center"
+                Minimum="1"
+                Maximum="{Binding ElementName=this, Path=TotalVertexes}"
+                Value="{Binding ElementName=this, Path=StartVertexNumber, Mode=OneWayToSource}"
+                DoubleAllowed="False"
+            />
+        </StackPanel>
+        <StackPanel Grid.Row="2" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Number of end vertex" HorizontalAlignment="Center"/>
+            <n:NumericUpDownPicker
+                Width="200"
+                HorizontalAlignment="Center"
+                Minimum="1"
+                Maximum="{Binding ElementName=this, Path=TotalVertexes}"
+                Value="{Binding ElementName=this, Path=EndVertexNumber, Mode=OneWayToSource}"
+                DoubleAllowed="False"
+            />
+        </StackPanel>
+        
+        <StackPanel Grid.Row="3" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Length of edge" HorizontalAlignment="Center"/>
+            <n:NumericUpDownPicker
+                Width="200"
+                HorizontalAlignment="Center"
+                Minimum="0"
+                Value="{Binding ElementName=this, Path=EdgeLength, Mode=OneWayToSource}"
+                DoubleAllowed="True"
+            />
+        </StackPanel>
+        <Button Grid.Row="4" Content="Create edge" Click="CreateEdgeButton_OnClick"/>
+    </Grid>
+</Window>
