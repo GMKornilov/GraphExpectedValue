@@ -520,6 +520,8 @@ namespace GraphExpectedValue.Windows
                     edgeEndVertex,
                     edgeData
                 );
+                edge.Backed = !graphMetadata.IsOriented;
+                edge.UpdateEdge();
                 AddEdge(edge, edgeStartVertex, edgeEndVertex, false);
             }
 
@@ -577,6 +579,17 @@ namespace GraphExpectedValue.Windows
             savePanel.Visibility = Visibility.Visible;
             buttonPanel.Visibility = Visibility.Visible;
             testCanvas.Visibility = Visibility.Visible;
+        }
+
+        private void CalculateButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            var res = graphMetadata.Solve();
+            MessageBox.Show(
+                string.Join(" ", res),
+                "",
+                MessageBoxButton.OK,
+                MessageBoxImage.None
+            );
         }
     }
 }

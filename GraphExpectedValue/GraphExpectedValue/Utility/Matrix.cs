@@ -9,7 +9,7 @@ namespace GraphExpectedValue.Utility
         public int Rows => content.Length;
         public int Cols => content[0].Length;
 
-        private static MultiplyStrategy strategy = new SimpleMultiplyStrategy();
+        private static readonly MultiplyStrategy strategy = new SimpleMultiplyStrategy();
 
         public double this[int row, int col]
         {

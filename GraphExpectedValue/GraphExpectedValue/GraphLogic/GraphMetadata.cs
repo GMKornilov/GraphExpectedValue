@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using GraphExpectedValue.GraphWidgets;
+using GraphExpectedValue.Utility;
+using GraphExpectedValue.Utility.ConcreteStrategies;
 
 namespace GraphExpectedValue.GraphLogic
 {
@@ -12,6 +14,8 @@ namespace GraphExpectedValue.GraphLogic
         public int EndVertexNumber { get; set; }
         public List<VertexMetadata> VertexMetadatas { get; private set; }
         public List<EdgeMetadata> EdgeMetadatas { get; private set; }
+
+        private static SolutionStrategy solutionStrategy = new GaussEliminationSolutionStrategy();
 
         public GraphMetadata()
         {
@@ -28,6 +32,11 @@ namespace GraphExpectedValue.GraphLogic
 
             VertexMetadatas = vertexMetadatas;
             EdgeMetadatas = edgeMetadatas;
+        }
+
+        public double[] Solve()
+        {
+            return solutionStrategy.Solve(this);
         }
     }
 }

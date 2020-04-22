@@ -80,10 +80,12 @@
     <Compile Include="GraphWidgets\Vertex.xaml.cs">
       <DependentUpon>Vertex.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Utility\ConcreteStrategies\GaussEliminationSolutionStrategy.cs" />
     <Compile Include="Utility\ConcreteStrategies\SimpleMultiplyStrategy.cs" />
     <Compile Include="Utility\InverseStrategy.cs" />
     <Compile Include="Utility\Matrix.cs" />
     <Compile Include="Utility\MultiplyStrategy.cs" />
+    <Compile Include="Utility\SolutionStrategy.cs" />
     <Compile Include="Windows\EdgeChooseWindow.xaml.cs">
       <DependentUpon>EdgeChooseWindow.xaml</DependentUpon>
     </Compile>
