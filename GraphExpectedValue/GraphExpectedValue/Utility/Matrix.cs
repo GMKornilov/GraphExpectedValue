@@ -42,6 +42,29 @@ namespace GraphExpectedValue.Utility
             }
             this.content = content;
         }
+
+        public void SwapRows(int row1, int row2)
+        {
+            var temp = content[row1];
+            content[row1] = content[row2];
+            content[row2] = temp;
+        }
+
+        public void MultiplyRow(int row, double coeff)
+        {
+            for (var j = 0; j < Cols; j++)
+            {
+                content[row][j] *= coeff;
+            }
+        }
+
+        public void AddRow(int row1, int row2, double coeff)
+        {
+            for (var j = 0; j < Cols; j++)
+            {
+                content[row2][j] += content[row1][j] * coeff;
+            }
+        }
         public static Matrix operator *(Matrix lhs, Matrix rhs) => strategy.Multiply(lhs, rhs);
 
         public static Matrix operator +(Matrix lhs, Matrix rhs)
