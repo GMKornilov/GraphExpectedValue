@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Text;
 using GraphExpectedValue.Utility.ConcreteStrategies;
 
 namespace GraphExpectedValue.Utility
@@ -157,5 +159,19 @@ namespace GraphExpectedValue.Utility
         public static Matrix operator *(double a, Matrix matrix) => matrix * a;
 
         public static Matrix operator -(Matrix matrix) => -1 * matrix;
+
+        public void ShowMatrix() => Debug.WriteLine(this);
+
+        public override string ToString()
+        {
+            var builder = new StringBuilder();
+            for (var i = 0; i < Rows; i++)
+            {
+                builder.Append(string.Join(" ", content[i]));
+                builder.Append("\n");
+            }
+
+            return builder.ToString();
+        }
     }
 }

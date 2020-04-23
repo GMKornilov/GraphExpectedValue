@@ -48,10 +48,10 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
                 var startProba = 1.0 / startVertexDegree;
                 
                 var startVertexIndex = edge.StartVertexNumber - 1;
-                startVertexIndex -= (startVertexIndex > metadata.EndVertexNumber) ? 1 : 0;
+                startVertexIndex -= (startVertexIndex >= metadata.EndVertexNumber) ? 1 : 0;
 
                 var endVertexIndex = edge.EndVertexNumber - 1;
-                endVertexIndex -= (endVertexIndex > metadata.EndVertexNumber) ? 1 : 0;
+                endVertexIndex -= (endVertexIndex >= metadata.EndVertexNumber) ? 1 : 0;
 
                 if (edge.StartVertexNumber != metadata.EndVertexNumber)
                 {
@@ -123,7 +123,9 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             //        matrix.AddRow(col, elimRow, -matrix[elimRow, col]);
             //    }
             //}
+            matrix.ShowMatrix();
             matrix.GaussElimination();
+            matrix.ShowMatrix();
             for (var checkRow = 0; checkRow < matrix.Rows; checkRow++)
             {
                 if (Math.Abs(matrix[checkRow, checkRow] - 1) > EPS)

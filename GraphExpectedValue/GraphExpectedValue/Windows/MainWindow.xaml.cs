@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using System.Xml;
@@ -584,8 +585,18 @@ namespace GraphExpectedValue.Windows
         private void CalculateButton_OnClick(object sender, RoutedEventArgs e)
         {
             var res = graphMetadata.Solve();
+            var builder = new StringBuilder();
+            for (var i = 0; i < graphMetadata.EndVertexNumber - 1; i++)
+            {
+                builder.Append($"T_{i + 1}:{res[i]}\n");
+            }
+
+            for (var i = graphMetadata.EndVertexNumber; i <= res.Length; i++)
+            {
+                builder.Append($"T_{i + 1}:{res[i - 1]}\n");
+            }
             MessageBox.Show(
-                string.Join(" ", res),
+                builder.ToString(),
                 "",
                 MessageBoxButton.OK,
                 MessageBoxImage.None
