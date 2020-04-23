@@ -90,37 +90,46 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
                 throw new Exception("Form matrix before doing elimination");
             }
 
-            for (var col = 0; col < matrix.Cols - 1; col++)
-            { 
-                if (Math.Abs(matrix[col, col]) < EPS)
-                {
-                    var swapRow = col + 1;
-                    var foundPivot = false;
-                    for (; swapRow < matrix.Rows; swapRow++)
-                    {
-                        if (Math.Abs(matrix[swapRow, col]) > EPS)
-                        {
-                            foundPivot = true;
-                            break;
-                        }
-                    }
+            //for (var col = 0; col < matrix.Cols - 1; col++)
+            //{ 
+            //    if (Math.Abs(matrix[col, col]) < EPS)
+            //    {
+            //        var swapRow = col + 1;
+            //        var foundPivot = false;
+            //        for (; swapRow < matrix.Rows; swapRow++)
+            //        {
+            //            if (Math.Abs(matrix[swapRow, col]) > EPS)
+            //            {
+            //                foundPivot = true;
+            //                break;
+            //            }
+            //        }
 
-                    if (!foundPivot)
-                    {
-                        result = null;
-                        return false;
-                    }
+            //        if (!foundPivot)
+            //        {
+            //            result = null;
+            //            return false;
+            //        }
 
-                    matrix.SwapRows(col, swapRow);
-                }
-                matrix.MultiplyRow(col, 1 / matrix[col, col]);
-                for (var elimRow = 0; elimRow < matrix.Rows; elimRow++)
+            //        matrix.SwapRows(col, swapRow);
+            //    }
+            //    matrix.MultiplyRow(col, 1 / matrix[col, col]);
+            //    for (var elimRow = 0; elimRow < matrix.Rows; elimRow++)
+            //    {
+            //        if (elimRow == col || Math.Abs(matrix[elimRow, col]) < EPS)
+            //        {
+            //            continue;
+            //        }
+            //        matrix.AddRow(col, elimRow, -matrix[elimRow, col]);
+            //    }
+            //}
+            matrix.GaussElimination();
+            for (var checkRow = 0; checkRow < matrix.Rows; checkRow++)
+            {
+                if (Math.Abs(matrix[checkRow, checkRow] - 1) > EPS)
                 {
-                    if (elimRow == col || Math.Abs(matrix[elimRow, col]) < EPS)
-                    {
-                        continue;
-                    }
-                    matrix.AddRow(col, elimRow, -matrix[elimRow, col]);
+                    result = null;
+                    return false;
                 }
             }
             result = new double[matrix.Rows];

@@ -5,6 +5,7 @@ namespace GraphExpectedValue.Utility
 {
     public class Matrix
     {
+        private const double EPS = 1e-6;
         private double[][] content;
         public int Rows => content.Length;
         public int Cols => content[0].Length;
@@ -63,6 +64,42 @@ namespace GraphExpectedValue.Utility
             for (var j = 0; j < Cols; j++)
             {
                 content[row2][j] += content[row1][j] * coeff;
+            }
+        }
+
+        public void GaussElimination()
+        {
+            for (var col = 0; col < Rows && col < Cols; col++)
+            {
+                if (Math.Abs(content[col][col]) < EPS)
+                {
+                    var swapRow = col + 1;
+                    var foundPivot = false;
+                    for (; swapRow < Rows; swapRow++)
+                    {
+                        if (Math.Abs(content[swapRow][col]) > EPS)
+                        {
+                            foundPivot = true;
+                            break;
+                        }
+                    }
+
+                    if (!foundPivot)
+                    {
+                        continue;
+                    }
+
+                    SwapRows(col, swapRow);
+                }
+                MultiplyRow(col, 1.0 / content[col][col]);
+                for (var elimRow = 0; elimRow < Rows; elimRow++)
+                {
+                    if (elimRow == col || Math.Abs(content[elimRow][col]) < EPS)
+                    {
+                        continue;
+                    }
+                    AddRow(col, elimRow, -content[elimRow][col]);
+                }
             }
         }
         public static Matrix operator *(Matrix lhs, Matrix rhs) => strategy.Multiply(lhs, rhs);
