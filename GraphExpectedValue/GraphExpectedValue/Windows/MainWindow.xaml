@@ -56,7 +56,7 @@
                     Choose ending vertex
                 </TextBlock>
             </Button>
-            <Button Name="CalculateButton">
+            <Button Name="CalculateButton" Click="CalculateButton_OnClick">
                 <TextBlock>
                     Calculate expected passage time
                 </TextBlock>
