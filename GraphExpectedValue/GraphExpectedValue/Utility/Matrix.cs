@@ -8,11 +8,12 @@ namespace GraphExpectedValue.Utility
     public class Matrix
     {
         private const double EPS = 1e-6;
-        private double[][] content;
+        private readonly double[][] content;
         public int Rows => content.Length;
         public int Cols => content[0].Length;
 
-        private static readonly MultiplyStrategy strategy = new SimpleMultiplyStrategy();
+        private static readonly MultiplyStrategy multiplyStrategy = new SimpleMultiplyStrategy();
+        private static readonly InverseStrategy inverseStrategy = new GaussEliminationInverseStrategy();
 
         public double this[int row, int col]
         {
@@ -104,7 +105,52 @@ namespace GraphExpectedValue.Utility
                 }
             }
         }
-        public static Matrix operator *(Matrix lhs, Matrix rhs) => strategy.Multiply(lhs, rhs);
+
+        private static Matrix Pow(Matrix matrix, int power)
+        {
+            if (matrix.Rows != matrix.Cols)
+            {
+                throw new ArgumentException("Matrix should be square");
+            }
+
+            if (power == 0)
+            {
+                return IdentityMatrix(matrix.Rows);
+            }
+
+            if (power == 1)
+            {
+                // TODO : do a memberwise copy
+                return matrix;
+            }
+
+            if (power == -1)
+            {
+                return inverseStrategy.Inverse(matrix);
+            }
+
+            Matrix res;
+            if (power % 2 == 0)
+            {
+                res = Pow(matrix, power / 2);
+                return res * res;
+            }
+
+            res = Pow(matrix, power - 1);
+            return matrix * res;
+        }
+
+        public static Matrix IdentityMatrix(int rows)
+        {
+            var result = new Matrix(rows);
+            for (var i = 0; i < rows; i++)
+            {
+                result[i, i] = 1;
+            }
+
+            return result;
+        }
+        public static Matrix operator *(Matrix lhs, Matrix rhs) => multiplyStrategy.Multiply(lhs, rhs);
 
         public static Matrix operator +(Matrix lhs, Matrix rhs)
         {
@@ -159,6 +205,7 @@ namespace GraphExpectedValue.Utility
         public static Matrix operator *(double a, Matrix matrix) => matrix * a;
 
         public static Matrix operator -(Matrix matrix) => -1 * matrix;
+        public static Matrix operator ^(Matrix matrix, int pow) => Pow(matrix, pow);
 
         public void ShowMatrix() => Debug.WriteLine(this);
 
