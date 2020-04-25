@@ -47,6 +47,8 @@ namespace GraphExpectedValue.Utility
             this.content = content;
         }
 
+        public Matrix Copy() => new Matrix(content);
+
         public void SwapRows(int row1, int row2)
         {
             var temp = content[row1];
@@ -120,8 +122,7 @@ namespace GraphExpectedValue.Utility
 
             if (power == 1)
             {
-                // TODO : do a memberwise copy
-                return matrix;
+                return matrix.Copy();
             }
 
             if (power == -1)
