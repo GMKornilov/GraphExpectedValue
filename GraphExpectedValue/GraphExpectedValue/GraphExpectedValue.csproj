@@ -80,6 +80,7 @@
     <Compile Include="GraphWidgets\Vertex.xaml.cs">
       <DependentUpon>Vertex.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Utility\ConcreteStrategies\BlockInverseStrategy.cs" />
     <Compile Include="Utility\ConcreteStrategies\GaussEliminationInverseStrategy.cs" />
     <Compile Include="Utility\ConcreteStrategies\GaussEliminationSolutionStrategy.cs" />
     <Compile Include="Utility\ConcreteStrategies\SimpleMultiplyStrategy.cs" />

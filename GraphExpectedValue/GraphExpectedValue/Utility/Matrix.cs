@@ -12,15 +12,32 @@ namespace GraphExpectedValue.Utility
         public int Rows => content.Length;
         public int Cols => content[0].Length;
 
-        private static readonly MultiplyStrategy multiplyStrategy = new SimpleMultiplyStrategy();
-        private static readonly InverseStrategy inverseStrategy = new GaussEliminationInverseStrategy();
+        //private static readonly MultiplyStrategy multiplyStrategy = new SimpleMultiplyStrategy();
+        public static MultiplyStrategy multiplyStrategy
+        {
+            get;
+            set;
+        }
+
+        public static InverseStrategy inverseStrategy
+        {
+            get;
+            set;
+        }
+    
 
         public double this[int row, int col]
         {
             get => content[row][col];
             set => content[row][col] = value;
         }
-        public Matrix(int rows, int cols)
+
+        public Matrix()
+        {
+            multiplyStrategy = new SimpleMultiplyStrategy();
+            inverseStrategy = new GaussEliminationInverseStrategy();
+        }
+        public Matrix(int rows, int cols) : this()
         {
             content = new double[rows][];
             for (var i = 0; i < rows; i++)
@@ -34,7 +51,7 @@ namespace GraphExpectedValue.Utility
 
         }
 
-        public Matrix(double[][] content)
+        public Matrix(double[][] content) : this()
         {
             var cols = content[0].Length;
             for (var i = 1; i < content.Length; i++)
@@ -48,6 +65,20 @@ namespace GraphExpectedValue.Utility
         }
 
         public Matrix Copy() => new Matrix(content);
+
+        public Matrix Transpose()
+        {
+            var result = new Matrix(Cols, Rows);
+            for (var i = 0; i < result.Rows; i++)
+            {
+                for (var j = 0; j < result.Cols; j++)
+                {
+                    result[i, j] = this[j, i];
+                }
+            }
+
+            return result;
+        }
 
         public void SwapRows(int row1, int row2)
         {

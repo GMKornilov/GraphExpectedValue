@@ -8,7 +8,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
     public class StrassenMultiplyStrategy : MultiplyStrategy
     {
 
-        private int NextPowerOfTwo(int v)
+        public static int NextPowerOfTwo(int v)
         {
             --v;
             v |= v >> 1;
@@ -20,7 +20,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             return v;
         }
 
-        private double StrassenGet(Matrix matrix, int i, int j)
+        public  static double StrassenGet(Matrix matrix, int i, int j)
         {
             if (i < 0 || i >= matrix.Rows || j < 0 || j >= matrix.Cols)
             {
@@ -152,7 +152,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             return new Matrix(res);
         }
 
-        private Matrix GetSubMatrix(Matrix matrix, Tuple<int, int> leftBorder, Tuple<int, int> rightBorder)
+        public static Matrix GetSubMatrix(Matrix matrix, Tuple<int, int> leftBorder, Tuple<int, int> rightBorder)
         {
             var (n1, m1) = leftBorder;
             var (n2, m2) = rightBorder;
@@ -169,7 +169,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             return result;
         }
 
-        private Matrix CombineSubMatrices(Matrix c11, Matrix c12, Matrix c21, Matrix c22)
+        public static Matrix CombineSubMatrices(Matrix c11, Matrix c12, Matrix c21, Matrix c22)
         {
             if (c11.Rows != c12.Rows || c21.Rows != c22.Rows || c11.Cols != c21.Cols || c12.Cols != c22.Cols)
             {
