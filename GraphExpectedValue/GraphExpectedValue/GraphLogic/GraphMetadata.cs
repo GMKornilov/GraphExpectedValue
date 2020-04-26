@@ -16,6 +16,7 @@ namespace GraphExpectedValue.GraphLogic
         public List<EdgeMetadata> EdgeMetadatas { get; private set; }
 
         private static SolutionStrategy solutionStrategy = new GaussEliminationSolutionStrategy();
+        //private static SolutionStrategy solutionStrategy = new InverseMatrixSolutionStrategy();
 
         public GraphMetadata()
         {
