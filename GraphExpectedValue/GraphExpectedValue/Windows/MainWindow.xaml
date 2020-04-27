@@ -30,6 +30,7 @@
                 <MenuItem Header="Unoriented graph" Click="ItemUnoriented_OnClick"/>
             </MenuItem>
             <MenuItem Header="Open graph" Click="OpenGraphButton_OnClick"/>
+            <MenuItem Header="Save graph" Click="SafeGraphButton_OnClick"/>
         </Menu>
         <StackPanel HorizontalAlignment="Center" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Orientation="Horizontal" Name="buttonPanel">
             <StackPanel.Resources>
