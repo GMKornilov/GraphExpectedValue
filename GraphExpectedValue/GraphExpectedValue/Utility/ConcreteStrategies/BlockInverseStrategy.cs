@@ -94,5 +94,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             };
             return new Matrix(content);
         }
+
+        public override string ToString() => "Block inverse";
     }
 }

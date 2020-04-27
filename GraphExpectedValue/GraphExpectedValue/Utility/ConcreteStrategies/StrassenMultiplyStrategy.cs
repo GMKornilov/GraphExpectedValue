@@ -198,5 +198,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
 
             return result;
         }
+
+        public override string ToString() => "Strassen multiply";
     }
 }

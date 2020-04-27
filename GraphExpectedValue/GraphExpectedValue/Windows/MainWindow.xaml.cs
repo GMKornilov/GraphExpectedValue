@@ -6,11 +6,15 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Xml;
 using System.Xml.Serialization;
 using GraphExpectedValue.GraphLogic;
 using GraphExpectedValue.GraphWidgets;
+using GraphExpectedValue.Utility;
+using GraphExpectedValue.Utility.ConcreteStrategies;
 using Microsoft.Win32;
 
 namespace GraphExpectedValue.Windows
@@ -76,10 +80,53 @@ namespace GraphExpectedValue.Windows
             savePanel.Visibility = Visibility.Hidden;
             testCanvas.Visibility = Visibility.Hidden;
         }
+        private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            cmbSolution.ItemsSource = new SolutionStrategy[]
+            {
+                new GaussEliminationSolutionStrategy(),
+                new InverseMatrixSolutionStrategy()
+            };
+            cmbSolution.SelectedIndex = 0;
+            DropUpComboBox(cmbSolution);
+
+            cmbInverse.ItemsSource = new InverseStrategy[]
+            {
+                new GaussEliminationInverseStrategy(),
+                new BlockInverseStrategy()
+            };
+            cmbInverse.SelectedIndex = 0;
+            DropUpComboBox(cmbInverse);
+
+            cmbMult.ItemsSource = new MultiplyStrategy[]
+            {
+                new SimpleMultiplyStrategy(),
+                new StrassenMultiplyStrategy()
+            };
+            cmbMult.SelectedIndex = 0;
+            DropUpComboBox(cmbMult);
+        }
+
+        private void DropUpComboBox(ComboBox comboBox)
+        {
+            var ct = comboBox.Template;
+            var popup = ct.FindName("PART_Popup", comboBox) as Popup;
+
+            if (popup != null)
+            {
+                popup.Placement = PlacementMode.Top;
+            }
+        }
 
         private void TestCanvasOnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             var point = e.GetPosition(testCanvas);
+            if (
+                point.X - Vertex.Size / 2.0 < 0 ||
+                point.X + Vertex.Size / 2.0 > testCanvas.ActualWidth ||
+                point.Y - Vertex.Size / 2.0 < 0 ||
+                point.Y + Vertex.Size / 2.0 > testCanvas.ActualHeight
+            ) return;
             if (!vertexes.TrueForAll(v => v.CheckIntersection(point))) return;
             var vertex = new Vertex(point.X, point.Y, vertexes.Count + 1);
             vertexes.Add(vertex);
@@ -535,6 +582,9 @@ namespace GraphExpectedValue.Windows
             {
                 SetEndVertex(vertexes[metadata.EndVertexNumber - 1]);
             }
+            GraphMetadata.solutionStrategy = cmbSolution.SelectedItem as SolutionStrategy;
+            Matrix.inverseStrategy = cmbInverse.SelectedItem as InverseStrategy;
+            Matrix.multiplyStrategy = cmbMult.SelectedItem as MultiplyStrategy;
         }
 
         private void ClearGraph()
@@ -575,7 +625,7 @@ namespace GraphExpectedValue.Windows
             edges = new Dictionary<Tuple<Vertex, Vertex>, Edge>();
             startVertex = null;
             endVertex = null;
-            
+
             Working = true;
             savePanel.Visibility = Visibility.Visible;
             buttonPanel.Visibility = Visibility.Visible;
@@ -584,7 +634,9 @@ namespace GraphExpectedValue.Windows
 
         private void CalculateButton_OnClick(object sender, RoutedEventArgs e)
         {
+            var watcher = Stopwatch.StartNew();
             var res = graphMetadata.Solve();
+            watcher.Stop();
             var builder = new StringBuilder();
             for (var i = 0; i < graphMetadata.EndVertexNumber - 1; i++)
             {
@@ -595,12 +647,32 @@ namespace GraphExpectedValue.Windows
             {
                 builder.Append($"T_{i + 1}:{res[i - 1]}\n");
             }
+            builder.Append($"Done in {watcher.Elapsed.ToString()}");
             MessageBox.Show(
                 builder.ToString(),
                 "",
                 MessageBoxButton.OK,
                 MessageBoxImage.None
             );
+        }
+
+        private void CmbSolution_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var strategy = e.AddedItems[0] as SolutionStrategy;
+            Debug.WriteLine(strategy.ToString());
+            GraphMetadata.solutionStrategy = strategy;
+        }
+
+        private void CmbInverse_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var strategy = e.AddedItems[0] as InverseStrategy;
+            Matrix.inverseStrategy = strategy;
+        }
+
+        private void CmbMult_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var strategy = e.AddedItems[0] as MultiplyStrategy;
+            Matrix.multiplyStrategy = strategy;
         }
     }
 }

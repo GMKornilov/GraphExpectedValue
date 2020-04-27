@@ -36,5 +36,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
 
             return result;
         }
+
+        public override string ToString() => "Gauss elimination";
     }
 }

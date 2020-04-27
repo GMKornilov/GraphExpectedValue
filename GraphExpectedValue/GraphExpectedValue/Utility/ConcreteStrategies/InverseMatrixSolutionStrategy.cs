@@ -85,5 +85,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
                 A[i, i] += 1;
             }
         }
+
+        public override string ToString() => "Inverse matrix";
     }
 }

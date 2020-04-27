@@ -31,7 +31,9 @@ namespace GraphExpectedValue.GraphWidgets
         public static DependencyProperty NumberProperty;
         public static DependencyProperty VertexTypeProperty;
         public static DependencyProperty ColorProperty;
-
+        /// <summary>
+        /// Diameter of vertex
+        /// </summary>
         public static int Size
         {
             get => size;

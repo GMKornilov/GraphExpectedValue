@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GraphExpectedValue"
         mc:Ignorable="d"
+        Loaded="MainWindow_OnLoaded"
         Title="MainWindow" Height="720" Width="1080">
     <Grid ShowGridLines="False">
         <Grid.RowDefinitions>
@@ -14,7 +15,7 @@
             <RowDefinition/>
             <RowDefinition/>
             <RowDefinition/>
-            <RowDefinition Height="50"/>
+            <RowDefinition Height="25"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
@@ -70,7 +71,14 @@
             Grid.ColumnSpan="5"
             Background="White">
         </Canvas>
-        <StackPanel HorizontalAlignment="Center" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="5" Orientation="Horizontal" Name="savePanel">
+        <StackPanel 
+            HorizontalAlignment="Center"
+            Grid.Row="6"
+            Grid.Column="0"
+            Grid.ColumnSpan="5"
+            Orientation="Horizontal"
+            Name="savePanel"
+        >
             <StackPanel.Resources>
                 <Style TargetType="{x:Type Button}">
                     <Setter Property="Margin" Value="20 0 20 0"/>
@@ -82,8 +90,23 @@
                     <Setter Property="TextWrapping" Value="Wrap"/>
                 </Style>
             </StackPanel.Resources>
-            <Button Name="SafeGraphButton" Content="Save graph" Click="SafeGraphButton_OnClick"/>
-            <Button Name="OpenGraphButton" Content="Open graph" Click="OpenGraphButton_OnClick"></Button>
+
+            <Label Content="Matrix multiplication strategy" VerticalAlignment="Top"/>
+            <ComboBox Name="cmbMult" SelectionChanged="CmbMult_OnSelectionChanged">
+
+            </ComboBox>
+
+            <Label Content="Matrix inverse strategy:" VerticalAlignment="Top"/>
+            <ComboBox Name="cmbInverse" SelectionChanged="CmbInverse_OnSelectionChanged">
+
+            </ComboBox>
+
+            <Label Content="Solution strategy:" VerticalAlignment="Top"/>
+            <ComboBox Name="cmbSolution" SelectionChanged="CmbSolution_OnSelectionChanged">
+
+            </ComboBox>
+            <!--<Button Name="SafeGraphButton" Content="Save graph" Click="SafeGraphButton_OnClick"/>
+            <Button Name="OpenGraphButton" Content="Open graph" Click="OpenGraphButton_OnClick"></Button>-->
         </StackPanel>
     </Grid>
 </Window>
