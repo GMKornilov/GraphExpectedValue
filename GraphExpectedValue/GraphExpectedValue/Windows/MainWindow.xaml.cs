@@ -339,7 +339,7 @@ namespace GraphExpectedValue.Windows
 
                 if (!CheckMetadata(metadata))
                 {
-                    Debug.WriteLine("WRONG");
+                    //Debug.WriteLine("WRONG");
                     throw new XmlException();
                 }
 
@@ -687,7 +687,7 @@ namespace GraphExpectedValue.Windows
         private void CmbSolution_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var strategy = e.AddedItems[0] as SolutionStrategy;
-            Debug.WriteLine(strategy.ToString());
+            //Debug.WriteLine(strategy.ToString());
             GraphMetadata.solutionStrategy = strategy;
         }
 

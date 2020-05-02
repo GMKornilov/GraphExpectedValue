@@ -27,7 +27,7 @@
         </Grid.ColumnDefinitions>
         <Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" VerticalAlignment="Center">
             <MenuItem Header="New graph">
-                <MenuItem Header="Oriented graph" Click="ItemOriented_OnClick"/>
+                <MenuItem Header="Digrpaph" Click="ItemOriented_OnClick"/>
                 <MenuItem Header="Unoriented graph" Click="ItemUnoriented_OnClick"/>
             </MenuItem>
             <MenuItem Header="Open graph" Click="OpenGraphButton_OnClick"/>
@@ -61,7 +61,7 @@
             </Button>
             <Button Name="CalculateButton" Click="CalculateButton_OnClick">
                 <TextBlock>
-                    Calculate expected passage time
+                    Calculate expected passage first times
                 </TextBlock>
             </Button>
         </StackPanel>

@@ -124,9 +124,9 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             //        matrix.AddRow(col, elimRow, -matrix[elimRow, col]);
             //    }
             //}
-            matrix.ShowMatrix();
+            //matrix.ShowMatrix();
             matrix.GaussElimination();
-            matrix.ShowMatrix();
+            //matrix.ShowMatrix();
             for (var checkRow = 0; checkRow < matrix.Rows; checkRow++)
             {
                 if (Math.Abs(matrix[checkRow, checkRow] - 1) > EPS)
