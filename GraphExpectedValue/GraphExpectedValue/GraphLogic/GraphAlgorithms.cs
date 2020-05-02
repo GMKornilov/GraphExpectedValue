@@ -1,8 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace GraphExpectedValue.GraphLogic
 {
+    [Flags]
+    public enum CheckStatus
+    {
+        Ok = 0,
+        EndVertexNotSelected = (1 << 0),
+        WrongConnectionComponents = (1 << 1)
+    }
     public class GraphAlgorithms
     {
         private List<List<int>> adjacencyList;
@@ -13,27 +21,34 @@ namespace GraphExpectedValue.GraphLogic
 
         public GraphAlgorithms(GraphMetadata metadata) => FormData(metadata);
 
-        public bool Check()
+        public CheckStatus Check()
         {
-            if (startVertex == -1) return false;
+            var res = CheckStatus.Ok;
+            if (startVertex == -1)
+            {
+                res |= CheckStatus.EndVertexNotSelected;
+            }
             var strongComponents = StrongComponents();
-            return strongComponents.Count == 1;
+            if (strongComponents.Count != 1)
+            {
+                res |= CheckStatus.WrongConnectionComponents;
+            }
+
+            return res;
         }
 
         private void FormData(GraphMetadata metadata)
         {
-            adjacencyList = new List<List<int>>(
-                Enumerable.Repeat(
-                    new List<int>(),
-                    metadata.VertexMetadatas.Count
-                )
-            );
-            reversedAdjacencyList = new List<List<int>>(
-                Enumerable.Repeat(
-                    new List<int>(),
-                    metadata.VertexMetadatas.Count
-                )
-            );
+            adjacencyList = new List<List<int>>();
+            for (var i = 0; i < metadata.VertexMetadatas.Count; i++)
+            {
+                adjacencyList.Add(new List<int>());
+            }
+            reversedAdjacencyList = new List<List<int>>();
+            for (var i = 0; i < metadata.VertexMetadatas.Count; i++)
+            {
+                reversedAdjacencyList.Add(new List<int>());
+            }
             used = new List<bool>(
                 Enumerable.Repeat(false, metadata.VertexMetadatas.Count)
             );

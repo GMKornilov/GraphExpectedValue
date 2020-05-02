@@ -79,6 +79,7 @@ namespace GraphExpectedValue.Windows
             buttonPanel.Visibility = Visibility.Hidden;
             savePanel.Visibility = Visibility.Hidden;
             testCanvas.Visibility = Visibility.Hidden;
+            canvasBorder.Visibility = Visibility.Hidden;
         }
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
@@ -105,6 +106,7 @@ namespace GraphExpectedValue.Windows
             };
             cmbMult.SelectedIndex = 0;
             DropUpComboBox(cmbMult);
+
         }
 
         private void DropUpComboBox(ComboBox comboBox)
@@ -215,12 +217,12 @@ namespace GraphExpectedValue.Windows
                 RemoveEdge(fromVertex, toVertex);
             }
 
-            if (chosenVertex == startVertex)
-            {
-                startVertex = null;
-                graphMetadata.StartVertexNumber = -1;
-            }
-            else if (chosenVertex == endVertex)
+            //if (chosenVertex == startVertex)
+            //{
+            //    startVertex = null;
+            //    graphMetadata.StartVertexNumber = -1;
+            //}
+            if (chosenVertex == endVertex)
             {
                 endVertex = null;
                 graphMetadata.EndVertexNumber = -1;
@@ -235,20 +237,20 @@ namespace GraphExpectedValue.Windows
             }
         }
 
-        private void StartVertexButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            if (vertexes.Count == 0) return;
-            var vertexPickWindow = new VertexChooseWindow()
-            {
-                Prompt = "Choose start vertex",
-                TotalVertexes = vertexes.Count,
-                ConfirmButtonText = "Choose start vertex"
-            };
-            if (vertexPickWindow.ShowDialog() != true) return;
-            var chosenVertexNumber = vertexPickWindow.ChosenVertex - 1;
-            var chosenVertex = vertexes[chosenVertexNumber];
-            SetStartVertex(chosenVertex);
-        }
+        //private void StartVertexButton_OnClick(object sender, RoutedEventArgs e)
+        //{
+        //    if (vertexes.Count == 0) return;
+        //    var vertexPickWindow = new VertexChooseWindow()
+        //    {
+        //        Prompt = "Choose start vertex",
+        //        TotalVertexes = vertexes.Count,
+        //        ConfirmButtonText = "Choose start vertex"
+        //    };
+        //    if (vertexPickWindow.ShowDialog() != true) return;
+        //    var chosenVertexNumber = vertexPickWindow.ChosenVertex - 1;
+        //    var chosenVertex = vertexes[chosenVertexNumber];
+        //    //SetStartVertex(chosenVertex);
+        //}
 
         private void EndVertexButton_OnClick(object sender, RoutedEventArgs e)
         {
@@ -345,6 +347,7 @@ namespace GraphExpectedValue.Windows
                 savePanel.Visibility = Visibility.Visible;
                 buttonPanel.Visibility = Visibility.Visible;
                 testCanvas.Visibility = Visibility.Visible;
+                canvasBorder.Visibility = Visibility.Visible;
 
                 LoadGraph(metadata);
             }
@@ -386,27 +389,27 @@ namespace GraphExpectedValue.Windows
             }
         }
 
-        private void SetStartVertex(Vertex vertex)
-        {
-            if (startVertex != null && !startVertex.Equals(vertex))
-            {
-                startVertex.PropertyChanged -= UpdateStartVertexNumber;
-                startVertex.VertexType = VertexType.PathVertex;
-                startVertex = null;
-            }
+        //private void SetStartVertex(Vertex vertex)
+        //{
+        //    if (startVertex != null && !startVertex.Equals(vertex))
+        //    {
+        //        startVertex.PropertyChanged -= UpdateStartVertexNumber;
+        //        startVertex.VertexType = VertexType.PathVertex;
+        //        startVertex = null;
+        //    }
 
-            if (vertex == endVertex)
-            {
-                endVertex.PropertyChanged -= UpdateEndVertexNumber;
-                endVertex.VertexType = VertexType.PathVertex;
-                endVertex = null;
-                graphMetadata.EndVertexNumber = -1;
-            }
+        //    if (vertex == endVertex)
+        //    {
+        //        endVertex.PropertyChanged -= UpdateEndVertexNumber;
+        //        endVertex.VertexType = VertexType.PathVertex;
+        //        endVertex = null;
+        //        graphMetadata.EndVertexNumber = -1;
+        //    }
 
-            vertex.PropertyChanged += UpdateStartVertexNumber;
-            vertex.VertexType = VertexType.StartVertex;
-            startVertex = vertex;
-        }
+        //    vertex.PropertyChanged += UpdateStartVertexNumber;
+        //    vertex.VertexType = VertexType.StartVertex;
+        //    startVertex = vertex;
+        //}
 
         private void SetEndVertex(Vertex vertex)
         {
@@ -417,13 +420,13 @@ namespace GraphExpectedValue.Windows
                 endVertex = null;
             }
 
-            if (vertex == startVertex)
-            {
-                startVertex.PropertyChanged -= UpdateStartVertexNumber;
-                startVertex.VertexType = VertexType.PathVertex;
-                startVertex = null;
-                graphMetadata.StartVertexNumber = -1;
-            }
+            //if (vertex == startVertex)
+            //{
+            //    startVertex.PropertyChanged -= UpdateStartVertexNumber;
+            //    startVertex.VertexType = VertexType.PathVertex;
+            //    startVertex = null;
+            //    graphMetadata.StartVertexNumber = -1;
+            //}
 
             vertex.PropertyChanged += UpdateEndVertexNumber;
             vertex.VertexType = VertexType.EndVertex;
@@ -491,13 +494,13 @@ namespace GraphExpectedValue.Windows
             edge.RemoveFromCanvas(testCanvas);
         }
 
-        private void UpdateStartVertexNumber(object sender, PropertyChangedEventArgs e)
-        {
-            if (sender is Vertex vertex)
-            {
-                graphMetadata.StartVertexNumber = vertex.Number;
-            }
-        }
+        //private void UpdateStartVertexNumber(object sender, PropertyChangedEventArgs e)
+        //{
+        //    if (sender is Vertex vertex)
+        //    {
+        //        graphMetadata.StartVertexNumber = vertex.Number;
+        //    }
+        //}
 
         private void UpdateEndVertexNumber(object sender, PropertyChangedEventArgs e)
         {
@@ -530,11 +533,11 @@ namespace GraphExpectedValue.Windows
                 );
             }
 
-            if (metadata.StartVertexNumber != -1 && (metadata.StartVertexNumber < 1 ||
-                                                     metadata.StartVertexNumber > metadata.VertexMetadatas.Count))
-            {
-                return false;
-            }
+            //if (metadata.StartVertexNumber != -1 && (metadata.StartVertexNumber < 1 ||
+            //                                         metadata.StartVertexNumber > metadata.VertexMetadatas.Count))
+            //{
+            //    return false;
+            //}
 
             if (metadata.EndVertexNumber != -1 &&
                 (metadata.EndVertexNumber < 1 || metadata.EndVertexNumber > metadata.VertexMetadatas.Count))
@@ -573,10 +576,10 @@ namespace GraphExpectedValue.Windows
                 AddEdge(edge, edgeStartVertex, edgeEndVertex, false);
             }
 
-            if (metadata.StartVertexNumber != -1)
-            {
-                SetStartVertex(vertexes[metadata.StartVertexNumber - 1]);
-            }
+            //if (metadata.StartVertexNumber != -1)
+            //{
+            //    SetStartVertex(vertexes[metadata.StartVertexNumber - 1]);
+            //}
 
             if (metadata.EndVertexNumber != -1)
             {
@@ -600,7 +603,7 @@ namespace GraphExpectedValue.Windows
                 edge.RemoveFromCanvas(testCanvas);
             }
 
-            startVertex = null;
+            //startVertex = null;
             endVertex = null;
         }
 
@@ -623,17 +626,42 @@ namespace GraphExpectedValue.Windows
             };
             vertexes = new List<Vertex>();
             edges = new Dictionary<Tuple<Vertex, Vertex>, Edge>();
-            startVertex = null;
+            //startVertex = null;
             endVertex = null;
 
             Working = true;
             savePanel.Visibility = Visibility.Visible;
             buttonPanel.Visibility = Visibility.Visible;
             testCanvas.Visibility = Visibility.Visible;
+            canvasBorder.Visibility = Visibility.Visible;
         }
 
         private void CalculateButton_OnClick(object sender, RoutedEventArgs e)
         {
+            var algo = new GraphAlgorithms(graphMetadata);
+            var status = algo.Check();
+            if (status != CheckStatus.Ok)
+            {
+                var errMessage = "Following erros were found:\n";
+                if (status.HasFlag(CheckStatus.EndVertexNotSelected))
+                {
+                    errMessage += "End vertex wasn't selected\n";
+                }
+
+                if (status.HasFlag(CheckStatus.WrongConnectionComponents))
+                {
+                    errMessage += "All vertexes should be in one strong component";
+                }
+
+                MessageBox.Show(
+                    errMessage,
+                    "Incorrect grpah",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
+                return;
+            }
+
             var watcher = Stopwatch.StartNew();
             var res = graphMetadata.Solve();
             watcher.Stop();

@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:GraphExpectedValue"
         mc:Ignorable="d"
         Loaded="MainWindow_OnLoaded"
-        Title="MainWindow" Height="720" Width="1080">
+        ResizeMode="NoResize"
+        Title="MainWindow" Height="675" Width="1200">
     <Grid ShowGridLines="False">
         <Grid.RowDefinitions>
             <RowDefinition Height="25"/>
@@ -48,11 +49,11 @@
             </Button>
             <Button Name="RemoveEdgeButton" Content="Remove edge" Click="RemoveEdgeButton_OnClick" />
             <Button Name="RemoveVertexButton" Content="Remove vertex" Click="RemoveVertexButton_OnClick" />
-            <Button Name="StartVertexButton" Click="StartVertexButton_OnClick">
+            <!--<Button Name="StartVertexButton" Click="StartVertexButton_OnClick">
                 <TextBlock>
                     Choose starting vertex
                 </TextBlock>
-            </Button>
+            </Button>-->
             <Button Name="EndVertexButton" Click="EndVertexButton_OnClick">
                 <TextBlock>
                     Choose ending vertex
@@ -64,14 +65,19 @@
                 </TextBlock>
             </Button>
         </StackPanel>
-        <Canvas
-            Name="testCanvas"
+        <Border 
             Grid.Row="2"
             Grid.RowSpan="4"
             Grid.Column="0"
             Grid.ColumnSpan="5"
-            Background="White">
-        </Canvas>
+            BorderBrush="Black"
+            BorderThickness="1"
+            Name="canvasBorder">
+            <Canvas
+                Name="testCanvas"
+                Background="White">
+            </Canvas>
+        </Border>
         <StackPanel 
             HorizontalAlignment="Center"
             Grid.Row="6"
