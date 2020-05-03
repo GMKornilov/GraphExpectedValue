@@ -665,23 +665,24 @@ namespace GraphExpectedValue.Windows
             var watcher = Stopwatch.StartNew();
             var res = graphMetadata.Solve();
             watcher.Stop();
-            var builder = new StringBuilder();
+            var calcResults = new List<Tuple<int, double>>();
             for (var i = 0; i < graphMetadata.EndVertexNumber - 1; i++)
             {
-                builder.Append($"T_{i + 1}:{res[i]}\n");
+                calcResults.Add(new Tuple<int, double>(i + 1, res[i]));
             }
 
             for (var i = graphMetadata.EndVertexNumber; i <= res.Length; i++)
             {
-                builder.Append($"T_{i + 1}:{res[i - 1]}\n");
+                calcResults.Add(new Tuple<int, double>(i + 1, res[i - 1]));
             }
-            builder.Append($"Done in {watcher.Elapsed.ToString()}");
-            MessageBox.Show(
-                builder.ToString(),
-                "",
-                MessageBoxButton.OK,
-                MessageBoxImage.None
-            );
+
+            //for (var i = 0; i < 6; i++)
+            //{
+            //    calcResults.AddRange(calcResults);
+            //}
+
+            var resWindow = new ResultsWindow(calcResults, watcher.Elapsed.ToString());
+            resWindow.ShowDialog();
         }
 
         private void CmbSolution_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
