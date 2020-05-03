@@ -12,17 +12,17 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
             <RowDefinition/>
+            <RowDefinition Height="50"></RowDefinition>
             <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
         <Label Content="Calculation results" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock
-                Name="resultTextBlock"
-                TextWrapping="Wrap"
-                TextAlignment="Center"
-                Height="140" Width="490"/>
-            <TextBlock HorizontalAlignment="Center" Text="{Binding StringFormat = Done in {0}, ElementName=this, Path=ElapsedTime}"/>
-        </StackPanel>
-        <Button Grid.Row="2" Content="OK" Click="ButtonBase_OnClick"/>
+        <ScrollViewer Grid.Row="1"  VerticalAlignment="Center">
+                <TextBlock
+                    Name="resultTextBlock"
+                    TextWrapping="Wrap"
+                    TextAlignment="Center"/>
+            </ScrollViewer>
+        <TextBlock Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding StringFormat = Done in {0} ms, ElementName=this, Path=ElapsedTime}"/>
+        <Button Grid.Row="3" Content="OK" Click="ButtonBase_OnClick"/>
     </Grid>
 </Window>

@@ -61,7 +61,7 @@ namespace GraphExpectedValue.Windows
             var run = new Run(result.Item1.ToString());
             run.Typography.Variants = FontVariants.Subscript;
             //Debug.WriteLine(run.FontSize);
-            run.FontSize = 18;
+            run.FontSize = 15;
             resultTextBlock.Inlines.Add(run);
             resultTextBlock.Inlines.Add($" = {result.Item2}");
             if (addLineBreak)

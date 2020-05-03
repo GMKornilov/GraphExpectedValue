@@ -681,7 +681,7 @@ namespace GraphExpectedValue.Windows
             //    calcResults.AddRange(calcResults);
             //}
 
-            var resWindow = new ResultsWindow(calcResults, watcher.Elapsed.ToString());
+            var resWindow = new ResultsWindow(calcResults, watcher.Elapsed.TotalMilliseconds.ToString());
             resWindow.ShowDialog();
         }
 
