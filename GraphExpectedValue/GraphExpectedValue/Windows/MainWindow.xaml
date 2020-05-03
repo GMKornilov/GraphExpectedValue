@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GraphExpectedValue"
         mc:Ignorable="d"
-        Title="MainWindow" Height="720" Width="1080">
+        Loaded="MainWindow_OnLoaded"
+        ResizeMode="NoResize"
+        Title="MainWindow" Height="675" Width="1200">
     <Grid ShowGridLines="False">
         <Grid.RowDefinitions>
             <RowDefinition Height="25"/>
@@ -14,7 +16,7 @@
             <RowDefinition/>
             <RowDefinition/>
             <RowDefinition/>
-            <RowDefinition Height="50"/>
+            <RowDefinition Height="25"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
@@ -25,10 +27,11 @@
         </Grid.ColumnDefinitions>
         <Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" VerticalAlignment="Center">
             <MenuItem Header="New graph">
-                <MenuItem Header="Oriented graph" Click="ItemOriented_OnClick"/>
+                <MenuItem Header="Digrpaph" Click="ItemOriented_OnClick"/>
                 <MenuItem Header="Unoriented graph" Click="ItemUnoriented_OnClick"/>
             </MenuItem>
             <MenuItem Header="Open graph" Click="OpenGraphButton_OnClick"/>
+            <MenuItem Header="Save graph" Click="SafeGraphButton_OnClick"/>
         </Menu>
         <StackPanel HorizontalAlignment="Center" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Orientation="Horizontal" Name="buttonPanel">
             <StackPanel.Resources>
@@ -46,11 +49,11 @@
             </Button>
             <Button Name="RemoveEdgeButton" Content="Remove edge" Click="RemoveEdgeButton_OnClick" />
             <Button Name="RemoveVertexButton" Content="Remove vertex" Click="RemoveVertexButton_OnClick" />
-            <Button Name="StartVertexButton" Click="StartVertexButton_OnClick">
+            <!--<Button Name="StartVertexButton" Click="StartVertexButton_OnClick">
                 <TextBlock>
                     Choose starting vertex
                 </TextBlock>
-            </Button>
+            </Button>-->
             <Button Name="EndVertexButton" Click="EndVertexButton_OnClick">
                 <TextBlock>
                     Choose ending vertex
@@ -58,19 +61,31 @@
             </Button>
             <Button Name="CalculateButton" Click="CalculateButton_OnClick">
                 <TextBlock>
-                    Calculate expected passage time
+                    Calculate expected passage first times
                 </TextBlock>
             </Button>
         </StackPanel>
-        <Canvas
-            Name="testCanvas"
+        <Border 
             Grid.Row="2"
             Grid.RowSpan="4"
             Grid.Column="0"
             Grid.ColumnSpan="5"
-            Background="White">
-        </Canvas>
-        <StackPanel HorizontalAlignment="Center" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="5" Orientation="Horizontal" Name="savePanel">
+            BorderBrush="Black"
+            BorderThickness="1"
+            Name="canvasBorder">
+            <Canvas
+                Name="testCanvas"
+                Background="White">
+            </Canvas>
+        </Border>
+        <StackPanel 
+            HorizontalAlignment="Center"
+            Grid.Row="6"
+            Grid.Column="0"
+            Grid.ColumnSpan="5"
+            Orientation="Horizontal"
+            Name="savePanel"
+        >
             <StackPanel.Resources>
                 <Style TargetType="{x:Type Button}">
                     <Setter Property="Margin" Value="20 0 20 0"/>
@@ -82,8 +97,23 @@
                     <Setter Property="TextWrapping" Value="Wrap"/>
                 </Style>
             </StackPanel.Resources>
-            <Button Name="SafeGraphButton" Content="Save graph" Click="SafeGraphButton_OnClick"/>
-            <Button Name="OpenGraphButton" Content="Open graph" Click="OpenGraphButton_OnClick"></Button>
+
+            <Label Content="Matrix multiplication strategy" VerticalAlignment="Top"/>
+            <ComboBox Name="cmbMult" SelectionChanged="CmbMult_OnSelectionChanged">
+
+            </ComboBox>
+
+            <Label Content="Matrix inverse strategy:" VerticalAlignment="Top"/>
+            <ComboBox Name="cmbInverse" SelectionChanged="CmbInverse_OnSelectionChanged">
+
+            </ComboBox>
+
+            <Label Content="Solution strategy:" VerticalAlignment="Top"/>
+            <ComboBox Name="cmbSolution" SelectionChanged="CmbSolution_OnSelectionChanged">
+
+            </ComboBox>
+            <!--<Button Name="SafeGraphButton" Content="Save graph" Click="SafeGraphButton_OnClick"/>
+            <Button Name="OpenGraphButton" Content="Open graph" Click="OpenGraphButton_OnClick"></Button>-->
         </StackPanel>
     </Grid>
 </Window>

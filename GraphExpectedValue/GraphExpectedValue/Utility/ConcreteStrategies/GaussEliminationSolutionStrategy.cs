@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using System.Windows;
 using GraphExpectedValue.GraphLogic;
 
@@ -14,23 +15,10 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
         public double[] Solve(GraphMetadata metadata)
         {
             FormMatrices(metadata);
-            MessageBox.Show(
-                matrix.ToString(),
-                "Matrix before elimination:",
-                MessageBoxButton.OK,
-                MessageBoxImage.None
-            );
             if (!GaussElimination(out var result))
             {
                 throw new ArgumentException("bad graph");
             }
-
-            MessageBox.Show(
-                matrix.ToString(),
-                "Matrix after elimination",
-                MessageBoxButton.OK,
-                MessageBoxImage.None
-            );
             return result;
         }
 
@@ -136,9 +124,9 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             //        matrix.AddRow(col, elimRow, -matrix[elimRow, col]);
             //    }
             //}
-            matrix.ShowMatrix();
+            //matrix.ShowMatrix();
             matrix.GaussElimination();
-            matrix.ShowMatrix();
+            //matrix.ShowMatrix();
             for (var checkRow = 0; checkRow < matrix.Rows; checkRow++)
             {
                 if (Math.Abs(matrix[checkRow, checkRow] - 1) > EPS)
@@ -156,5 +144,6 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             return true;
         }
 
+        public override string ToString() => "Gauss Elimination";
     }
 }

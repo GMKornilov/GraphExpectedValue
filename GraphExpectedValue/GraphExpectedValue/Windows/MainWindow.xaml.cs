@@ -6,11 +6,15 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Xml;
 using System.Xml.Serialization;
 using GraphExpectedValue.GraphLogic;
 using GraphExpectedValue.GraphWidgets;
+using GraphExpectedValue.Utility;
+using GraphExpectedValue.Utility.ConcreteStrategies;
 using Microsoft.Win32;
 
 namespace GraphExpectedValue.Windows
@@ -75,11 +79,56 @@ namespace GraphExpectedValue.Windows
             buttonPanel.Visibility = Visibility.Hidden;
             savePanel.Visibility = Visibility.Hidden;
             testCanvas.Visibility = Visibility.Hidden;
+            canvasBorder.Visibility = Visibility.Hidden;
+        }
+        private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            cmbSolution.ItemsSource = new SolutionStrategy[]
+            {
+                new GaussEliminationSolutionStrategy(),
+                new InverseMatrixSolutionStrategy()
+            };
+            cmbSolution.SelectedIndex = 0;
+            DropUpComboBox(cmbSolution);
+
+            cmbInverse.ItemsSource = new InverseStrategy[]
+            {
+                new GaussEliminationInverseStrategy(),
+                new BlockInverseStrategy()
+            };
+            cmbInverse.SelectedIndex = 0;
+            DropUpComboBox(cmbInverse);
+
+            cmbMult.ItemsSource = new MultiplyStrategy[]
+            {
+                new SimpleMultiplyStrategy(),
+                new StrassenMultiplyStrategy()
+            };
+            cmbMult.SelectedIndex = 0;
+            DropUpComboBox(cmbMult);
+
+        }
+
+        private void DropUpComboBox(ComboBox comboBox)
+        {
+            var ct = comboBox.Template;
+            var popup = ct.FindName("PART_Popup", comboBox) as Popup;
+
+            if (popup != null)
+            {
+                popup.Placement = PlacementMode.Top;
+            }
         }
 
         private void TestCanvasOnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             var point = e.GetPosition(testCanvas);
+            if (
+                point.X - Vertex.Size / 2.0 < 0 ||
+                point.X + Vertex.Size / 2.0 > testCanvas.ActualWidth ||
+                point.Y - Vertex.Size / 2.0 < 0 ||
+                point.Y + Vertex.Size / 2.0 > testCanvas.ActualHeight
+            ) return;
             if (!vertexes.TrueForAll(v => v.CheckIntersection(point))) return;
             var vertex = new Vertex(point.X, point.Y, vertexes.Count + 1);
             vertexes.Add(vertex);
@@ -168,12 +217,12 @@ namespace GraphExpectedValue.Windows
                 RemoveEdge(fromVertex, toVertex);
             }
 
-            if (chosenVertex == startVertex)
-            {
-                startVertex = null;
-                graphMetadata.StartVertexNumber = -1;
-            }
-            else if (chosenVertex == endVertex)
+            //if (chosenVertex == startVertex)
+            //{
+            //    startVertex = null;
+            //    graphMetadata.StartVertexNumber = -1;
+            //}
+            if (chosenVertex == endVertex)
             {
                 endVertex = null;
                 graphMetadata.EndVertexNumber = -1;
@@ -188,20 +237,20 @@ namespace GraphExpectedValue.Windows
             }
         }
 
-        private void StartVertexButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            if (vertexes.Count == 0) return;
-            var vertexPickWindow = new VertexChooseWindow()
-            {
-                Prompt = "Choose start vertex",
-                TotalVertexes = vertexes.Count,
-                ConfirmButtonText = "Choose start vertex"
-            };
-            if (vertexPickWindow.ShowDialog() != true) return;
-            var chosenVertexNumber = vertexPickWindow.ChosenVertex - 1;
-            var chosenVertex = vertexes[chosenVertexNumber];
-            SetStartVertex(chosenVertex);
-        }
+        //private void StartVertexButton_OnClick(object sender, RoutedEventArgs e)
+        //{
+        //    if (vertexes.Count == 0) return;
+        //    var vertexPickWindow = new VertexChooseWindow()
+        //    {
+        //        Prompt = "Choose start vertex",
+        //        TotalVertexes = vertexes.Count,
+        //        ConfirmButtonText = "Choose start vertex"
+        //    };
+        //    if (vertexPickWindow.ShowDialog() != true) return;
+        //    var chosenVertexNumber = vertexPickWindow.ChosenVertex - 1;
+        //    var chosenVertex = vertexes[chosenVertexNumber];
+        //    //SetStartVertex(chosenVertex);
+        //}
 
         private void EndVertexButton_OnClick(object sender, RoutedEventArgs e)
         {
@@ -290,7 +339,7 @@ namespace GraphExpectedValue.Windows
 
                 if (!CheckMetadata(metadata))
                 {
-                    Debug.WriteLine("WRONG");
+                    //Debug.WriteLine("WRONG");
                     throw new XmlException();
                 }
 
@@ -298,6 +347,7 @@ namespace GraphExpectedValue.Windows
                 savePanel.Visibility = Visibility.Visible;
                 buttonPanel.Visibility = Visibility.Visible;
                 testCanvas.Visibility = Visibility.Visible;
+                canvasBorder.Visibility = Visibility.Visible;
 
                 LoadGraph(metadata);
             }
@@ -339,27 +389,27 @@ namespace GraphExpectedValue.Windows
             }
         }
 
-        private void SetStartVertex(Vertex vertex)
-        {
-            if (startVertex != null && !startVertex.Equals(vertex))
-            {
-                startVertex.PropertyChanged -= UpdateStartVertexNumber;
-                startVertex.VertexType = VertexType.PathVertex;
-                startVertex = null;
-            }
+        //private void SetStartVertex(Vertex vertex)
+        //{
+        //    if (startVertex != null && !startVertex.Equals(vertex))
+        //    {
+        //        startVertex.PropertyChanged -= UpdateStartVertexNumber;
+        //        startVertex.VertexType = VertexType.PathVertex;
+        //        startVertex = null;
+        //    }
 
-            if (vertex == endVertex)
-            {
-                endVertex.PropertyChanged -= UpdateEndVertexNumber;
-                endVertex.VertexType = VertexType.PathVertex;
-                endVertex = null;
-                graphMetadata.EndVertexNumber = -1;
-            }
+        //    if (vertex == endVertex)
+        //    {
+        //        endVertex.PropertyChanged -= UpdateEndVertexNumber;
+        //        endVertex.VertexType = VertexType.PathVertex;
+        //        endVertex = null;
+        //        graphMetadata.EndVertexNumber = -1;
+        //    }
 
-            vertex.PropertyChanged += UpdateStartVertexNumber;
-            vertex.VertexType = VertexType.StartVertex;
-            startVertex = vertex;
-        }
+        //    vertex.PropertyChanged += UpdateStartVertexNumber;
+        //    vertex.VertexType = VertexType.StartVertex;
+        //    startVertex = vertex;
+        //}
 
         private void SetEndVertex(Vertex vertex)
         {
@@ -370,13 +420,13 @@ namespace GraphExpectedValue.Windows
                 endVertex = null;
             }
 
-            if (vertex == startVertex)
-            {
-                startVertex.PropertyChanged -= UpdateStartVertexNumber;
-                startVertex.VertexType = VertexType.PathVertex;
-                startVertex = null;
-                graphMetadata.StartVertexNumber = -1;
-            }
+            //if (vertex == startVertex)
+            //{
+            //    startVertex.PropertyChanged -= UpdateStartVertexNumber;
+            //    startVertex.VertexType = VertexType.PathVertex;
+            //    startVertex = null;
+            //    graphMetadata.StartVertexNumber = -1;
+            //}
 
             vertex.PropertyChanged += UpdateEndVertexNumber;
             vertex.VertexType = VertexType.EndVertex;
@@ -444,13 +494,13 @@ namespace GraphExpectedValue.Windows
             edge.RemoveFromCanvas(testCanvas);
         }
 
-        private void UpdateStartVertexNumber(object sender, PropertyChangedEventArgs e)
-        {
-            if (sender is Vertex vertex)
-            {
-                graphMetadata.StartVertexNumber = vertex.Number;
-            }
-        }
+        //private void UpdateStartVertexNumber(object sender, PropertyChangedEventArgs e)
+        //{
+        //    if (sender is Vertex vertex)
+        //    {
+        //        graphMetadata.StartVertexNumber = vertex.Number;
+        //    }
+        //}
 
         private void UpdateEndVertexNumber(object sender, PropertyChangedEventArgs e)
         {
@@ -483,11 +533,11 @@ namespace GraphExpectedValue.Windows
                 );
             }
 
-            if (metadata.StartVertexNumber != -1 && (metadata.StartVertexNumber < 1 ||
-                                                     metadata.StartVertexNumber > metadata.VertexMetadatas.Count))
-            {
-                return false;
-            }
+            //if (metadata.StartVertexNumber != -1 && (metadata.StartVertexNumber < 1 ||
+            //                                         metadata.StartVertexNumber > metadata.VertexMetadatas.Count))
+            //{
+            //    return false;
+            //}
 
             if (metadata.EndVertexNumber != -1 &&
                 (metadata.EndVertexNumber < 1 || metadata.EndVertexNumber > metadata.VertexMetadatas.Count))
@@ -526,15 +576,18 @@ namespace GraphExpectedValue.Windows
                 AddEdge(edge, edgeStartVertex, edgeEndVertex, false);
             }
 
-            if (metadata.StartVertexNumber != -1)
-            {
-                SetStartVertex(vertexes[metadata.StartVertexNumber - 1]);
-            }
+            //if (metadata.StartVertexNumber != -1)
+            //{
+            //    SetStartVertex(vertexes[metadata.StartVertexNumber - 1]);
+            //}
 
             if (metadata.EndVertexNumber != -1)
             {
                 SetEndVertex(vertexes[metadata.EndVertexNumber - 1]);
             }
+            GraphMetadata.solutionStrategy = cmbSolution.SelectedItem as SolutionStrategy;
+            Matrix.inverseStrategy = cmbInverse.SelectedItem as InverseStrategy;
+            Matrix.multiplyStrategy = cmbMult.SelectedItem as MultiplyStrategy;
         }
 
         private void ClearGraph()
@@ -550,7 +603,7 @@ namespace GraphExpectedValue.Windows
                 edge.RemoveFromCanvas(testCanvas);
             }
 
-            startVertex = null;
+            //startVertex = null;
             endVertex = null;
         }
 
@@ -573,34 +626,82 @@ namespace GraphExpectedValue.Windows
             };
             vertexes = new List<Vertex>();
             edges = new Dictionary<Tuple<Vertex, Vertex>, Edge>();
-            startVertex = null;
+            //startVertex = null;
             endVertex = null;
-            
+
             Working = true;
             savePanel.Visibility = Visibility.Visible;
             buttonPanel.Visibility = Visibility.Visible;
             testCanvas.Visibility = Visibility.Visible;
+            canvasBorder.Visibility = Visibility.Visible;
         }
 
         private void CalculateButton_OnClick(object sender, RoutedEventArgs e)
         {
+            var algo = new GraphAlgorithms(graphMetadata);
+            var status = algo.Check();
+            if (status != CheckStatus.Ok)
+            {
+                var errMessage = "Following erros were found:\n";
+                if (status.HasFlag(CheckStatus.EndVertexNotSelected))
+                {
+                    errMessage += "End vertex wasn't selected\n";
+                }
+
+                if (status.HasFlag(CheckStatus.WrongConnectionComponents))
+                {
+                    errMessage += "All vertexes should be in one strong component";
+                }
+
+                MessageBox.Show(
+                    errMessage,
+                    "Incorrect grpah",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
+                return;
+            }
+
+            var watcher = Stopwatch.StartNew();
             var res = graphMetadata.Solve();
-            var builder = new StringBuilder();
+            watcher.Stop();
+            var calcResults = new List<Tuple<int, double>>();
             for (var i = 0; i < graphMetadata.EndVertexNumber - 1; i++)
             {
-                builder.Append($"T_{i + 1}:{res[i]}\n");
+                calcResults.Add(new Tuple<int, double>(i + 1, res[i]));
             }
 
             for (var i = graphMetadata.EndVertexNumber; i <= res.Length; i++)
             {
-                builder.Append($"T_{i + 1}:{res[i - 1]}\n");
+                calcResults.Add(new Tuple<int, double>(i + 1, res[i - 1]));
             }
-            MessageBox.Show(
-                builder.ToString(),
-                "",
-                MessageBoxButton.OK,
-                MessageBoxImage.None
-            );
+
+            //for (var i = 0; i < 6; i++)
+            //{
+            //    calcResults.AddRange(calcResults);
+            //}
+
+            var resWindow = new ResultsWindow(calcResults, watcher.Elapsed.TotalMilliseconds.ToString());
+            resWindow.ShowDialog();
+        }
+
+        private void CmbSolution_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var strategy = e.AddedItems[0] as SolutionStrategy;
+            //Debug.WriteLine(strategy.ToString());
+            GraphMetadata.solutionStrategy = strategy;
+        }
+
+        private void CmbInverse_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var strategy = e.AddedItems[0] as InverseStrategy;
+            Matrix.inverseStrategy = strategy;
+        }
+
+        private void CmbMult_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var strategy = e.AddedItems[0] as MultiplyStrategy;
+            Matrix.multiplyStrategy = strategy;
         }
     }
 }

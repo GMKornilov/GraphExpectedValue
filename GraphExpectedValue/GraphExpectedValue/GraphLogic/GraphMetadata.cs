@@ -10,24 +10,25 @@ namespace GraphExpectedValue.GraphLogic
     public class GraphMetadata
     {
         public bool IsOriented { get; set; }
-        public int StartVertexNumber { get; set; }
+        //public int StartVertexNumber { get; set; }
         public int EndVertexNumber { get; set; }
         public List<VertexMetadata> VertexMetadatas { get; private set; }
         public List<EdgeMetadata> EdgeMetadatas { get; private set; }
 
-        private static SolutionStrategy solutionStrategy = new GaussEliminationSolutionStrategy();
+        public static SolutionStrategy solutionStrategy = new GaussEliminationSolutionStrategy();
+        //public static SolutionStrategy solutionStrategy = new InverseMatrixSolutionStrategy();
 
         public GraphMetadata()
         {
-            StartVertexNumber = -1;
+            //StartVertexNumber = -1;
             EndVertexNumber = -1;
             VertexMetadatas = new List<VertexMetadata>();
             EdgeMetadatas = new List<EdgeMetadata>();
         }
 
-        public GraphMetadata(List<VertexMetadata> vertexMetadatas, List<EdgeMetadata> edgeMetadatas, int startVertexNumber = -1, int endVertexNumber = -1)
+        public GraphMetadata(List<VertexMetadata> vertexMetadatas, List<EdgeMetadata> edgeMetadatas, int endVertexNumber = -1)
         {
-            StartVertexNumber = startVertexNumber;
+            //StartVertexNumber = startVertexNumber;
             EndVertexNumber = endVertexNumber;
 
             VertexMetadatas = vertexMetadatas;

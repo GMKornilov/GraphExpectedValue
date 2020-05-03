@@ -65,6 +65,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="GraphLogic\EdgeMetadata.cs" />
+    <Compile Include="GraphLogic\GraphAlgorithms.cs" />
     <Compile Include="GraphLogic\GraphMetadata.cs" />
     <Compile Include="GraphLogic\VertexMetadata.cs" />
     <Compile Include="GraphWidgets\Arrow.cs" />
@@ -80,9 +81,12 @@
     <Compile Include="GraphWidgets\Vertex.xaml.cs">
       <DependentUpon>Vertex.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Utility\ConcreteStrategies\BlockInverseStrategy.cs" />
     <Compile Include="Utility\ConcreteStrategies\GaussEliminationInverseStrategy.cs" />
     <Compile Include="Utility\ConcreteStrategies\GaussEliminationSolutionStrategy.cs" />
+    <Compile Include="Utility\ConcreteStrategies\InverseMatrixSolutionStrategy.cs" />
     <Compile Include="Utility\ConcreteStrategies\SimpleMultiplyStrategy.cs" />
+    <Compile Include="Utility\ConcreteStrategies\StrassenMultiplyStrategy.cs" />
     <Compile Include="Utility\InverseStrategy.cs" />
     <Compile Include="Utility\Matrix.cs" />
     <Compile Include="Utility\MultiplyStrategy.cs" />
@@ -92,6 +96,9 @@
     </Compile>
     <Compile Include="Windows\EdgePickWindow.xaml.cs">
       <DependentUpon>EdgePickWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\ResultsWindow.xaml.cs">
+      <DependentUpon>ResultsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\VertexChooseWindow.xaml.cs">
       <DependentUpon>VertexChooseWindow.xaml</DependentUpon>
@@ -125,6 +132,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Windows\EdgePickWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\ResultsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
