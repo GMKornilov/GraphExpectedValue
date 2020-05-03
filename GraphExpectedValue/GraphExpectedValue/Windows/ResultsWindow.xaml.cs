@@ -24,7 +24,7 @@ namespace GraphExpectedValue.Windows
     public partial class ResultsWindow : Window, INotifyPropertyChanged
     {
         private string _elapsedTime;
-
+        private List<Tuple<int, double>> _calcResults;
 
         public string ElapsedTime
         {
@@ -35,6 +35,17 @@ namespace GraphExpectedValue.Windows
                 OnPropertyChanged();
             }
         }
+
+        public List<Tuple<int, double>> CalcResults
+        {
+            get => _calcResults;
+            set
+            {
+                _calcResults = value;
+                OnPropertyChanged();
+            }
+        }
+
         public ResultsWindow()
         {
             InitializeComponent();
@@ -42,32 +53,8 @@ namespace GraphExpectedValue.Windows
 
         public ResultsWindow(List<Tuple<int, double>> calcResults, string elapsedTime) : this()
         {
-            ProcessResults(calcResults);
+            CalcResults = calcResults;
             ElapsedTime = elapsedTime;
-        }
-
-        private void ProcessResults(List<Tuple<int, double>> results)
-        {
-            for(var i = 0; i < results.Count - 1; i++)
-            {
-                ProcessResult(results[i]);
-            }
-            ProcessResult(results[results.Count - 1], false);
-        }
-
-        private void ProcessResult(Tuple<int, double> result, bool addLineBreak = true)
-        {
-            resultTextBlock.Inlines.Add("T");
-            var run = new Run(result.Item1.ToString());
-            run.Typography.Variants = FontVariants.Subscript;
-            //Debug.WriteLine(run.FontSize);
-            run.FontSize = 15;
-            resultTextBlock.Inlines.Add(run);
-            resultTextBlock.Inlines.Add($" = {result.Item2}");
-            if (addLineBreak)
-            {
-                resultTextBlock.Inlines.Add(new LineBreak());
-            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

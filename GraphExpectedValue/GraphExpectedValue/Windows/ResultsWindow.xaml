@@ -8,6 +8,18 @@
         mc:Ignorable="d"
         ResizeMode="NoResize"
         Title="ResultsWindow" Height="500" Width="500">
+    <Window.Resources>
+        <Style x:Key="CenterGridHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="RightGridCellStyle" TargetType="DataGridCell">
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+        </Style>
+        <Style x:Key="LeftGridCellStyle" TargetType="DataGridCell">
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+
+        </Style>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
@@ -16,12 +28,28 @@
             <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
         <Label Content="Calculation results" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        <ScrollViewer Grid.Row="1"  VerticalAlignment="Center">
-                <TextBlock
-                    Name="resultTextBlock"
-                    TextWrapping="Wrap"
-                    TextAlignment="Center"/>
-            </ScrollViewer>
+        <DataGrid
+            ColumnWidth="*"
+            Grid.Row="1"
+            Name="resultsGrid"
+            AutoGenerateColumns="False"
+            RowBackground="LightGray"
+            AlternatingRowBackground="White"
+            ItemsSource="{Binding ElementName=this, Path=CalcResults}">
+            <DataGrid.Columns>
+                <DataGridTextColumn
+                    Header="Vertex number"
+                    Binding="{Binding Path=Item1}"
+                    Width="*"
+                    HeaderStyle="{StaticResource CenterGridHeaderStyle}"/>
+                <DataGridTextColumn 
+                    Header="Expected first passage time"
+                    Binding="{Binding Path=Item2}"
+                    Width="*"
+                    HeaderStyle="{StaticResource CenterGridHeaderStyle}"
+                    CellStyle="{StaticResource RightGridCellStyle}"/>
+            </DataGrid.Columns>
+        </DataGrid>
         <TextBlock Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding StringFormat = Done in {0} ms, ElementName=this, Path=ElapsedTime}"/>
         <Button Grid.Row="3" Content="OK" Click="ButtonBase_OnClick"/>
     </Grid>
