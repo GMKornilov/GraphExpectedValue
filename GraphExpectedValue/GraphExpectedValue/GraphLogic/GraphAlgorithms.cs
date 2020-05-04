@@ -65,7 +65,14 @@ namespace GraphExpectedValue.GraphLogic
                 }
             }
 
-            startVertex = metadata.EndVertexNumber - 1;
+            if (metadata.EndVertexNumber == -1)
+            {
+                startVertex = -1;
+            }
+            else
+            {
+                startVertex = metadata.EndVertexNumber - 1;
+            }
             isOriented = metadata.IsOriented;
         }
 
