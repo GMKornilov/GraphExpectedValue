@@ -9,6 +9,14 @@ using GraphExpectedValue.Annotations;
 
 namespace GraphExpectedValue.GraphWidgets
 {
+    [Flags]
+    public enum DrawType
+    {
+        NormalDrawing = 0,
+        BezierDrawing = (1 << 0),
+        BackedDrawing = (1 << 1)
+    }
+
     public class Arrow : Shape, INotifyPropertyChanged
     {
         private const int angle = 15;
@@ -159,18 +167,17 @@ namespace GraphExpectedValue.GraphWidgets
 
                 using (var context = geometry.Open())
                 {
+                    var drawType = DrawType.NormalDrawing;
                     if (IsCurved)
                     {
-                        DrawArrowWithBezier(context);
+                        drawType |= DrawType.BezierDrawing;
                     }
-                    else
-                    {
-                        DrawArrow(context);
-                    }
+
                     if (IsBacked)
                     {
-                        DrawBackArrow(context);
+                        drawType |= DrawType.BackedDrawing;
                     }
+                    Draw(context, drawType);
                 }
 
                 
@@ -182,16 +189,20 @@ namespace GraphExpectedValue.GraphWidgets
             }
         }
 
-        private void DrawArrow(StreamGeometryContext context)
+        private void Draw(StreamGeometryContext context, DrawType drawType)
         {
             var pt1 = new Point(X1, Y1);
             var pt2 = new Point(X2, Y2);
 
-            var endStartVector = new Vector(pt1.X - pt2.X, pt1.Y - pt2.Y);
+            var endStartVector = pt1 - pt2;
             endStartVector.Normalize();
             endStartVector *= ArrowLength;
 
             var rotateMatrix = new Matrix();
+            if (drawType.HasFlag(DrawType.BezierDrawing))
+            {
+                rotateMatrix.Rotate(-angle);
+            }
             rotateMatrix.Rotate(ArrowAngle);
             var firstArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
             rotateMatrix.Rotate(-2 * ArrowAngle);
@@ -201,74 +212,47 @@ namespace GraphExpectedValue.GraphWidgets
             var pt4 = pt2 + secondArrowVector;
 
             context.BeginFigure(pt1, true, false);
-            context.LineTo(pt2, true, true);
+            if (drawType.HasFlag(DrawType.BezierDrawing))
+            {
+                context.QuadraticBezierTo(BezierPoint, pt2, true, true);
+            }
+            else
+            {
+                context.LineTo(pt2, true, true);
+            }
             context.LineTo(pt3, true, true);
             context.LineTo(pt2, true, true);
             context.LineTo(pt4, true, true);
-        }
+            if (!drawType.HasFlag(DrawType.BackedDrawing))
+            {
+                return;
+            }
 
-        private void DrawBackArrow(StreamGeometryContext context)
-        {
-            var pt1 = new Point(X1, Y1);
-            var pt2 = new Point(X2, Y2);
-
-            var endStartVector = pt2 - pt1;
-            endStartVector.Normalize();
-            endStartVector *= ArrowLength;
-            var rotateMatrix = new Matrix();
-            if (IsCurved)
+            endStartVector *= -1;
+            rotateMatrix = new Matrix();
+            if (drawType.HasFlag(DrawType.BezierDrawing))
             {
                 rotateMatrix.Rotate(-angle);
             }
-
             rotateMatrix.Rotate(ArrowAngle);
-            var firstArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
-            var pt3 = pt1 + firstArrowVector;
-            
-            rotateMatrix.Rotate(-2 * ArrowAngle);
-            var secondArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
-            var pt4 = pt1 + secondArrowVector;
+            firstArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
+            pt3 = pt1 + firstArrowVector;
+
+            rotateMatrix.Rotate(- 2 * ArrowAngle);
+            secondArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
+            pt4 = pt1 + secondArrowVector;
 
             context.LineTo(pt2, true, true);
-            if (IsCurved)
+            if (drawType.HasFlag(DrawType.BezierDrawing))
             {
-                context.QuadraticBezierTo(BezierPoint, pt1, true, false);
+                context.QuadraticBezierTo(BezierPoint, pt1, true, true);
             }
             else
             {
                 context.LineTo(pt1, true, true);
             }
-
             context.LineTo(pt3, true, true);
             context.LineTo(pt1, true, true);
-            context.LineTo(pt4, true, true);
-        }
-
-        private void DrawArrowWithBezier(StreamGeometryContext context)
-        {
-            var pt1 = new Point(X1, Y1);
-            var pt2 = new Point(X2, Y2);
-
-            var endStartVector = new Vector(X1 - X2, Y1 - Y2);
-            endStartVector.Normalize();
-            endStartVector *= ArrowLength;
-
-            var ptMid = BezierPoint;
-
-            var rotateMatrix = new Matrix();
-            rotateMatrix.Rotate(-angle);
-            rotateMatrix.Rotate(ArrowAngle);
-            var firstArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
-            rotateMatrix.Rotate(-2 * ArrowAngle);
-            var secondArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
-
-            var pt3 = pt2 + firstArrowVector;
-            var pt4 = pt2 + secondArrowVector;
-
-            context.BeginFigure(pt1, false, false);
-            context.QuadraticBezierTo(ptMid, pt2, true, false);
-            context.LineTo(pt3, true, true);
-            context.LineTo(pt2, true, true);
             context.LineTo(pt4, true, true);
         }
 
