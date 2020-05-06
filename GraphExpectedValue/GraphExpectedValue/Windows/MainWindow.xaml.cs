@@ -455,6 +455,7 @@ namespace GraphExpectedValue.Windows
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning
                     );
+                    return;
                 }
             }
 

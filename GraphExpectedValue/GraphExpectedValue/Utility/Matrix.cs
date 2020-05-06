@@ -226,8 +226,13 @@ namespace GraphExpectedValue.Utility
 
             return result;
         }
+        /// <summary>
+        /// Оператор множения двух матриц
+        /// </summary>
         public static Matrix operator *(Matrix lhs, Matrix rhs) => multiplyStrategy.Multiply(lhs, rhs);
-
+        /// <summary>
+        /// Оператор сложения двух матриц
+        /// </summary>
         public static Matrix operator +(Matrix lhs, Matrix rhs)
         {
             if (lhs.Rows != rhs.Rows || lhs.Cols != rhs.Cols)
@@ -245,7 +250,9 @@ namespace GraphExpectedValue.Utility
 
             return result;
         }
-
+        /// <summary>
+        /// Оператор вычитания двух матриц
+        /// </summary>
         public static Matrix operator -(Matrix lhs, Matrix rhs)
         {
             if (lhs.Rows != rhs.Rows || lhs.Cols != rhs.Cols)
@@ -263,7 +270,9 @@ namespace GraphExpectedValue.Utility
 
             return result;
         }
-
+        /// <summary>
+        /// Оператор умножения матрицы на число
+        /// </summary>
         public static Matrix operator *(Matrix matrix, double a)
         {
             var result = new Matrix(matrix.Rows, matrix.Cols);
@@ -277,10 +286,19 @@ namespace GraphExpectedValue.Utility
 
             return result;
         }
-
+        /// <summary>
+        /// Оператор умножения числа на матрицу
+        /// </summary>
         public static Matrix operator *(double a, Matrix matrix) => matrix * a;
-
+        /// <summary>
+        /// Унарный оператор противоположной по знаку матрицы
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
         public static Matrix operator -(Matrix matrix) => -1 * matrix;
+        /// <summary>
+        /// Оператор возведения матрицы в целую степень
+        /// </summary>
         public static Matrix operator ^(Matrix matrix, int pow) => Pow(matrix, pow);
         
         public override string ToString()

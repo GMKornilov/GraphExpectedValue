@@ -29,6 +29,7 @@
         </Grid.RowDefinitions>
         <Label Content="Calculation results" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         <DataGrid
+            IsReadOnly="True"
             ColumnWidth="*"
             Grid.Row="1"
             Name="resultsGrid"
