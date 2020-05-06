@@ -19,7 +19,7 @@ namespace GraphExpectedValue.GraphWidgets
 
     public class Arrow : Shape, INotifyPropertyChanged
     {
-        private const int angle = 15;
+        private const int BezierAngle = 15;
         public static readonly DependencyProperty X1Property;
         public static readonly DependencyProperty X2Property;
         public static readonly DependencyProperty Y1Property;
@@ -97,7 +97,7 @@ namespace GraphExpectedValue.GraphWidgets
                     (X2 - X1)
                 );
                 perpVec.Normalize();
-                var perpVecLen = Math.Tan(angle * Math.PI / 180) * lineVecHalvedLength;
+                var perpVecLen = Math.Tan(BezierAngle * Math.PI / 180) * lineVecHalvedLength;
                 perpVec *= perpVecLen;
 
                 var midPointVec = perpVec + lineVecHalved;
@@ -201,7 +201,7 @@ namespace GraphExpectedValue.GraphWidgets
             var rotateMatrix = new Matrix();
             if (drawType.HasFlag(DrawType.BezierDrawing))
             {
-                rotateMatrix.Rotate(-angle);
+                rotateMatrix.Rotate(-BezierAngle);
             }
             rotateMatrix.Rotate(ArrowAngle);
             var firstArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
@@ -232,7 +232,7 @@ namespace GraphExpectedValue.GraphWidgets
             rotateMatrix = new Matrix();
             if (drawType.HasFlag(DrawType.BezierDrawing))
             {
-                rotateMatrix.Rotate(-angle);
+                rotateMatrix.Rotate(-BezierAngle);
             }
             rotateMatrix.Rotate(ArrowAngle);
             firstArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
