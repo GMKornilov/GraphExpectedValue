@@ -15,18 +15,14 @@ namespace GraphExpectedValue.GraphWidgets
         PathVertex
     }
     /// <summary>
-    /// Interaction logic for Vertex.xaml
+    /// Графическое представление вершины графа
     /// </summary>
     public partial class Vertex : UserControl, INotifyPropertyChanged
     {
-        private static int size = 30;
-        private VertexMetadata metadata;
-
+        /// <summary>
+        /// Координаты центра вершины
+        /// </summary>
         private double x, y;
-
-        private static readonly SolidColorBrush BlackColorBrush = new SolidColorBrush(Colors.Black);
-        private static readonly SolidColorBrush RedColorBrush = new SolidColorBrush(Colors.Red);
-        private static readonly SolidColorBrush BlueColorBrush = new SolidColorBrush(Colors.Blue);
 
         public static DependencyProperty NumberProperty;
         public static DependencyProperty VertexTypeProperty;
@@ -34,16 +30,18 @@ namespace GraphExpectedValue.GraphWidgets
         /// <summary>
         /// Diameter of vertex
         /// </summary>
-        public static int Size
-        {
-            get => size;
-            set => size = value;
-        }
-
-        public VertexMetadata Metadata => metadata;
-
+        public static int Size { get; set; } = 30;
+        /// <summary>
+        /// Представление вершины для сериализации
+        /// </summary>
+        public VertexMetadata Metadata { get; }
+        /// <summary>
+        /// Центр вершины
+        /// </summary>
         public Point Center => new Point(x, y);
-
+        /// <summary>
+        /// Номер вершины
+        /// </summary>
         public int Number
         {
             get => (int)GetValue(NumberProperty);
@@ -53,7 +51,9 @@ namespace GraphExpectedValue.GraphWidgets
                 OnPropertyChanged();
             }
         }
-
+        /// <summary>
+        /// Цвет, которым отрисовывается вершина
+        /// </summary>
         public Brush CircleColor
         {
             get => (Brush)GetValue(ColorProperty);
@@ -63,7 +63,9 @@ namespace GraphExpectedValue.GraphWidgets
                 OnPropertyChanged();
             }
         }
-
+        /// <summary>
+        /// Проверяет, пересекаются ли наша вершина с данной
+        /// </summary>
         public bool CheckIntersection(Point vertexCenter)
         {
             var distance = Math.Sqrt(
@@ -72,7 +74,9 @@ namespace GraphExpectedValue.GraphWidgets
             );
             return distance > Size;
         }
-
+        /// <summary>
+        /// Тип вершины
+        /// </summary>
         public VertexType VertexType
         {
             get => (VertexType)GetValue(VertexTypeProperty);
@@ -81,13 +85,13 @@ namespace GraphExpectedValue.GraphWidgets
                 switch (value)
                 {
                     case VertexType.EndVertex:
-                        CircleColor = BlueColorBrush;
+                        CircleColor = Brushes.Blue;
                         break;
                     case VertexType.PathVertex:
-                        CircleColor = BlackColorBrush;
+                        CircleColor = Brushes.Black;
                         break;
                     case VertexType.StartVertex:
-                        CircleColor = RedColorBrush;
+                        CircleColor = Brushes.Red;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(value), value, "Incorrect vertex type");
@@ -98,7 +102,9 @@ namespace GraphExpectedValue.GraphWidgets
                 OnPropertyChanged();
             }
         }
-
+        /// <summary>
+        /// Статический конструктор, инициализирующий все DependencyProperty
+        /// </summary>
         static Vertex()
         {
             NumberProperty = DependencyProperty.Register(
@@ -119,14 +125,14 @@ namespace GraphExpectedValue.GraphWidgets
                 typeof(SolidColorBrush),
                 typeof(Vertex),
                 new FrameworkPropertyMetadata(
-                    BlackColorBrush
+                    Brushes.Black
                 )
             );
         }
         public Vertex()
         {
             InitializeComponent();
-            metadata = new VertexMetadata(this);
+            Metadata = new VertexMetadata(this);
         }
         public Vertex(int number) : this()
         {
@@ -137,22 +143,26 @@ namespace GraphExpectedValue.GraphWidgets
         {
             this.x = x;
             this.y = y;
-            metadata.Position = Center;
-            Canvas.SetLeft(this, x - size / 2);
-            Canvas.SetTop(this, y - size / 2);
+            Metadata.Position = Center;
+            Canvas.SetLeft(this, x - Size / 2);
+            Canvas.SetTop(this, y - Size / 2);
         }
 
         public Vertex(VertexMetadata metadata):this(metadata.Position.X, metadata.Position.Y, metadata.Number)
         {
-            this.metadata = metadata;
+            this.Metadata = metadata;
         }
-        #region INotifyPropertyChanged implementation
+        /// <summary>
+        /// Событие, вызываемое при изменении свойств вершины
+        /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
-
+        /// <summary>
+        /// Стандартная реализация интерфейса INotifyPropertyChanged
+        /// </summary>
+        /// <param name="propertyName"></param>
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-        #endregion
     }
 }
