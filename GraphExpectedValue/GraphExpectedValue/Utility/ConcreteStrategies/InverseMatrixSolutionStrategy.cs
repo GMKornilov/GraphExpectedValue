@@ -3,9 +3,20 @@ using GraphExpectedValue.GraphLogic;
 
 namespace GraphExpectedValue.Utility.ConcreteStrategies
 {
+    /// <summary>
+    /// "Стратегия" нахождения искомых математических ожиданий при помощи обратной матрицы
+    /// </summary>
     public class InverseMatrixSolutionStrategy : SolutionStrategy
     {
+        /// <summary>
+        /// Матрицы, представляющие СЛАУ графа
+        /// </summary>
         private Matrix A, b;
+        /// <summary>
+        /// Решение СЛАУ при помощи обратной матрицы
+        /// </summary>
+        /// <param name="metadata">Данные графа</param>
+        /// <returns>Искомые математические ожидания</returns>
         public double[] Solve(GraphMetadata metadata)
         {
             FormMatrices(metadata);
@@ -19,7 +30,10 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
 
             return res;
         }
-
+        /// <summary>
+        /// Формирование матриц СЛАУ
+        /// </summary>
+        /// <param name="metadata">Данные графа</param>
         public void FormMatrices(GraphMetadata metadata)
         {
             A = new Matrix(

@@ -3,8 +3,14 @@ using System.Windows.Documents;
 
 namespace GraphExpectedValue.Utility.ConcreteStrategies
 {
+    /// <summary>
+    /// "Стратегия" по нахождению обратной матрицы при помощи разибения на блока
+    /// </summary>
     public class BlockInverseStrategy : InverseStrategy
     {
+        /// <summary>
+        /// Нахожденре обратной матрицы
+        /// </summary>
         public Matrix Inverse(Matrix matrix)
         {
             if (matrix.Rows != matrix.Cols)
@@ -20,6 +26,9 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
                 new Tuple<int, int>(matrix.Rows, matrix.Rows)
             );
         }
+        /// <summary>
+        /// Нахождение обратной матрицы при условии, что все галвные миноры матрицы обратимы
+        /// </summary>
         private Matrix BlockInverse(Matrix matrix)
         {
             if (matrix.Rows != matrix.Cols)
@@ -73,7 +82,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
         }
 
         /// <summary>
-        /// Inverse 2x2 matrix
+        /// Нахождение обратной матрицы для мматрицы размером 2 на 2
         /// </summary>
         private Matrix InverseSquare(Matrix matrix)
         {
