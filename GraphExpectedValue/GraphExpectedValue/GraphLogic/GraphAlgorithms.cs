@@ -123,17 +123,19 @@ namespace GraphExpectedValue.GraphLogic
             {
                 if (!used[i])
                 {
-                    DFS(i, reversedAdjacencyList, order);
+                    DFS(i, adjacencyList, order);
                 }
             }
+            order.Reverse();
+            
             var res = new List<List<int>>();
             used = new List<bool>(Enumerable.Repeat(false, adjacencyList.Count));
-            for (var i = 0; i < order.Count; i++)
+            foreach (var vertex in order)
             {
-                if (!used[i])
+                if (!used[vertex])
                 {
                     var comp = new List<int>();
-                    DFS(i, adjacencyList, comp);
+                    DFS(vertex, reversedAdjacencyList, comp);
                     res.Add(comp);
                 }
             }

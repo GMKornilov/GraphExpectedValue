@@ -268,7 +268,7 @@ namespace GraphExpectedValue.GraphWidgets
             firstArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
             pt3 = pt1 + firstArrowVector;
 
-            rotateMatrix.Rotate(- 2 * ArrowAngle);
+            rotateMatrix.Rotate( -2 * ArrowAngle);
             secondArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
             pt4 = pt1 + secondArrowVector;
 
