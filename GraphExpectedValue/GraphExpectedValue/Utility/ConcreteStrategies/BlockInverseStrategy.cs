@@ -23,7 +23,8 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             return StrassenMultiplyStrategy.GetSubMatrix(
                 res,
                 new Tuple<int, int>(0, 0),
-                new Tuple<int, int>(matrix.Rows, matrix.Rows)
+                new Tuple<int, int>(matrix.Rows, matrix.Rows),
+                BlockGet
             );
         }
         /// <summary>
@@ -44,22 +45,26 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             var A = StrassenMultiplyStrategy.GetSubMatrix(
                 matrix,
                 new Tuple<int, int>(0, 0),
-                new Tuple<int, int>(N / 2, N / 2)
+                new Tuple<int, int>(N / 2, N / 2),
+                BlockGet
             );
             var B = StrassenMultiplyStrategy.GetSubMatrix(
                 matrix,
                 new Tuple<int, int>(0, N / 2),
-                new Tuple<int, int>(N / 2, N)
+                new Tuple<int, int>(N / 2, N),
+                BlockGet
             );
             var C = StrassenMultiplyStrategy.GetSubMatrix(
                 matrix,
                 new Tuple<int, int>(N / 2, 0),
-                new Tuple<int, int>(N, N / 2)
+                new Tuple<int, int>(N, N / 2),
+                BlockGet
             );
             var D = StrassenMultiplyStrategy.GetSubMatrix(
                 matrix,
                 new Tuple<int, int>(N / 2, N / 2),
-                new Tuple<int, int>(N, N)
+                new Tuple<int, int>(N, N),
+                BlockGet
             );
 
             // A^-1
@@ -102,6 +107,16 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
                 new[] {-c / det, a / det},
             };
             return new Matrix(content);
+        }
+
+        private static double BlockGet(Matrix matrix, int i, int j)
+        {
+            if (i < 0 || i >= matrix.Rows || j < 0 || j >= matrix.Cols)
+            {
+                return i == j ? 1 : 0;
+            }
+
+            return matrix[i, j];
         }
 
         public override string ToString() => "Block inverse";

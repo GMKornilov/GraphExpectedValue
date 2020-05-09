@@ -53,7 +53,8 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             return GetSubMatrix(
                 res,
                 new Tuple<int, int>(0, 0),
-                new Tuple<int, int>(lhs.Rows, rhs.Cols)
+                new Tuple<int, int>(lhs.Rows, rhs.Cols),
+                StrassenGet
             );
         }
         /// <summary>
@@ -76,43 +77,51 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             var a11 = GetSubMatrix(
                 lhs,
                 new Tuple<int, int>(0, 0),
-                new Tuple<int, int>(maxPow / 2, maxPow / 2)
+                new Tuple<int, int>(maxPow / 2, maxPow / 2),
+                StrassenGet
             );
             var a12 = GetSubMatrix(
                 lhs,
                 new Tuple<int, int>(0, maxPow / 2),
-                new Tuple<int, int>(maxPow / 2, maxPow)
+                new Tuple<int, int>(maxPow / 2, maxPow),
+                StrassenGet
             );
             var a21 = GetSubMatrix(
                 lhs,
                 new Tuple<int, int>(maxPow / 2, 0),
-                new Tuple<int, int>(maxPow, maxPow / 2)
+                new Tuple<int, int>(maxPow, maxPow / 2),
+                StrassenGet
             );
             var a22 = GetSubMatrix(
                 lhs,
                 new Tuple<int, int>(maxPow / 2, maxPow / 2),
-                new Tuple<int, int>(maxPow, maxPow)
+                new Tuple<int, int>(maxPow, maxPow),
+                StrassenGet
             );
 
             var b11 = GetSubMatrix(
                 rhs,
                 new Tuple<int, int>(0, 0),
-                new Tuple<int, int>(maxPow / 2, maxPow / 2)
+                new Tuple<int, int>(maxPow / 2, maxPow / 2),
+                StrassenGet
             );
             var b12 = GetSubMatrix(
                 rhs,
                 new Tuple<int, int>(0, maxPow / 2),
-                new Tuple<int, int>(maxPow / 2, maxPow)
+                new Tuple<int, int>(maxPow / 2, maxPow),
+                StrassenGet
             );
             var b21 = GetSubMatrix(
                 rhs,
                 new Tuple<int, int>(maxPow / 2, 0),
-                new Tuple<int, int>(maxPow, maxPow / 2)
+                new Tuple<int, int>(maxPow, maxPow / 2),
+                StrassenGet
             );
             var b22 = GetSubMatrix(
                 rhs,
                 new Tuple<int, int>(maxPow / 2, maxPow / 2),
-                new Tuple<int, int>(maxPow, maxPow)
+                new Tuple<int, int>(maxPow, maxPow),
+                StrassenGet
             );
             #endregion
 
@@ -170,7 +179,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
         /// <summary>
         /// Получение минора данной матрицы
         /// </summary>
-        public static Matrix GetSubMatrix(Matrix matrix, Tuple<int, int> leftBorder, Tuple<int, int> rightBorder)
+        public static Matrix GetSubMatrix(Matrix matrix, Tuple<int, int> leftBorder, Tuple<int, int> rightBorder, Func<Matrix, int, int, double> getter) 
         {
             var (n1, m1) = leftBorder;
             var (n2, m2) = rightBorder;
@@ -180,7 +189,8 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             {
                 for (var j = 0; j < m2 - m1; j++)
                 {
-                    result[i, j] = StrassenGet(matrix, i + n1, j + m1);
+                    result[i, j] = getter(matrix, i + n1, j + n2);
+                    //result[i, j] = StrassenGet(matrix, i + n1, j + m1);
                 }
             }
 
