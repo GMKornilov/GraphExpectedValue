@@ -17,6 +17,8 @@ using GraphExpectedValue.GraphWidgets;
 using GraphExpectedValue.Utility;
 using GraphExpectedValue.Utility.ConcreteStrategies;
 using Microsoft.Win32;
+using MathNet.Numerics;
+using MathNet.Symbolics;
 
 namespace GraphExpectedValue.Windows
 {
@@ -44,7 +46,7 @@ namespace GraphExpectedValue.Windows
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         public readonly ActionCommand saveActionCommand;
         public readonly ActionCommand openActionCommand;
