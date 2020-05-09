@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:GraphExpectedValue.Windows"
         xmlns:n="clr-namespace:GraphExpectedValue"
         mc:Ignorable="d"
-        Title="EdgePickWindow" Height="500" Width="500">
+        Title="Create new edge" Height="500" Width="500">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
