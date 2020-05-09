@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -454,6 +455,7 @@ namespace GraphExpectedValue.Windows
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning
                     );
+                    return;
                 }
             }
 
@@ -636,7 +638,7 @@ namespace GraphExpectedValue.Windows
             canvasBorder.Visibility = Visibility.Visible;
         }
 
-        private void CalculateButton_OnClick(object sender, RoutedEventArgs e)
+        private async void CalculateButton_OnClick(object sender, RoutedEventArgs e)
         {
             var algo = new GraphAlgorithms(graphMetadata);
             var status = algo.Check();
@@ -663,7 +665,12 @@ namespace GraphExpectedValue.Windows
             }
 
             var watcher = Stopwatch.StartNew();
-            var res = graphMetadata.Solve();
+            //var res = graphMetadata.Solve();
+            var res = await Task<double[]>.Factory.StartNew(() =>
+            {
+                //Task.Delay(1000).Wait();
+                return graphMetadata.Solve();
+            });
             watcher.Stop();
             var calcResults = new List<Tuple<int, double>>();
             for (var i = 0; i < graphMetadata.EndVertexNumber - 1; i++)

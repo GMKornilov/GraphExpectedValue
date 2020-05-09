@@ -5,9 +5,14 @@ using System.Windows;
 
 namespace GraphExpectedValue.Utility.ConcreteStrategies
 {
+    /// <summary>
+    /// "Стратегия" умножения матриц при помощи алгоритма Штрассена
+    /// </summary>
     public class StrassenMultiplyStrategy : MultiplyStrategy
     {
-
+        /// <summary>
+        /// Под анному числу v находит ближайшее "сверху" число, являющееся степенью двойки
+        /// </summary>
         public static int NextPowerOfTwo(int v)
         {
             --v;
@@ -19,8 +24,14 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             ++v;
             return v;
         }
-
-        public  static double StrassenGet(Matrix matrix, int i, int j)
+        /// <summary>
+        /// Псевдорасширение исходной матрицы до размера степени двойки
+        /// </summary>
+        /// <param name="matrix">Данная матрица</param>
+        /// <param name="i">Индекс строки</param>
+        /// <param name="j">Индекс столбца</param>
+        /// <returns>Элемент матрицы matrix[i, j], если индексы i j находятся внутри размеров матрицы и 0 в ином случае</returns>
+        public static double StrassenGet(Matrix matrix, int i, int j)
         {
             if (i < 0 || i >= matrix.Rows || j < 0 || j >= matrix.Cols)
             {
@@ -29,6 +40,9 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
 
             return matrix[i, j];
         }
+        /// <summary>
+        /// Умножение двух матриц алгоритмом Штрассена
+        /// </summary>
         public Matrix Multiply(Matrix lhs, Matrix rhs)
         {
             if (lhs.Cols != rhs.Rows)
@@ -39,17 +53,20 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             return GetSubMatrix(
                 res,
                 new Tuple<int, int>(0, 0),
-                new Tuple<int, int>(lhs.Rows, rhs.Cols)
+                new Tuple<int, int>(lhs.Rows, rhs.Cols),
+                StrassenGet
             );
         }
-
+        /// <summary>
+        /// Умножение 2 квадратных матриц алгоритмом Штрассена
+        /// </summary>
         private Matrix MatrixStrassenMultiply(Matrix lhs, Matrix rhs)
         {
             if (lhs.Rows == 2 && lhs.Cols == 2 && rhs.Rows == 2 && rhs.Cols == 2)
             {
                 return SimpleMultiply(lhs, rhs);
             }
-            var maxPow = new int[]
+            var maxPow = new[]
             {
                 NextPowerOfTwo(lhs.Rows),
                 NextPowerOfTwo(lhs.Cols),
@@ -60,43 +77,51 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             var a11 = GetSubMatrix(
                 lhs,
                 new Tuple<int, int>(0, 0),
-                new Tuple<int, int>(maxPow / 2, maxPow / 2)
+                new Tuple<int, int>(maxPow / 2, maxPow / 2),
+                StrassenGet
             );
             var a12 = GetSubMatrix(
                 lhs,
                 new Tuple<int, int>(0, maxPow / 2),
-                new Tuple<int, int>(maxPow / 2, maxPow)
+                new Tuple<int, int>(maxPow / 2, maxPow),
+                StrassenGet
             );
             var a21 = GetSubMatrix(
                 lhs,
                 new Tuple<int, int>(maxPow / 2, 0),
-                new Tuple<int, int>(maxPow, maxPow / 2)
+                new Tuple<int, int>(maxPow, maxPow / 2),
+                StrassenGet
             );
             var a22 = GetSubMatrix(
                 lhs,
                 new Tuple<int, int>(maxPow / 2, maxPow / 2),
-                new Tuple<int, int>(maxPow, maxPow)
+                new Tuple<int, int>(maxPow, maxPow),
+                StrassenGet
             );
 
             var b11 = GetSubMatrix(
                 rhs,
                 new Tuple<int, int>(0, 0),
-                new Tuple<int, int>(maxPow / 2, maxPow / 2)
+                new Tuple<int, int>(maxPow / 2, maxPow / 2),
+                StrassenGet
             );
             var b12 = GetSubMatrix(
                 rhs,
                 new Tuple<int, int>(0, maxPow / 2),
-                new Tuple<int, int>(maxPow / 2, maxPow)
+                new Tuple<int, int>(maxPow / 2, maxPow),
+                StrassenGet
             );
             var b21 = GetSubMatrix(
                 rhs,
                 new Tuple<int, int>(maxPow / 2, 0),
-                new Tuple<int, int>(maxPow, maxPow / 2)
+                new Tuple<int, int>(maxPow, maxPow / 2),
+                StrassenGet
             );
             var b22 = GetSubMatrix(
                 rhs,
                 new Tuple<int, int>(maxPow / 2, maxPow / 2),
-                new Tuple<int, int>(maxPow, maxPow)
+                new Tuple<int, int>(maxPow, maxPow),
+                StrassenGet
             );
             #endregion
 
@@ -117,7 +142,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             return CombineSubMatrices(c11, c12, c21, c22);
         }
         /// <summary>
-        /// Multiplies 2 2x2 matrices using 7 multiplications
+        /// Умножение 2 матриц размером 2 на 2
         /// </summary>
         private Matrix SimpleMultiply(Matrix lhs, Matrix rhs)
         {
@@ -151,8 +176,10 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             };
             return new Matrix(res);
         }
-
-        public static Matrix GetSubMatrix(Matrix matrix, Tuple<int, int> leftBorder, Tuple<int, int> rightBorder)
+        /// <summary>
+        /// Получение минора данной матрицы
+        /// </summary>
+        public static Matrix GetSubMatrix(Matrix matrix, Tuple<int, int> leftBorder, Tuple<int, int> rightBorder, Func<Matrix, int, int, double> getter) 
         {
             var (n1, m1) = leftBorder;
             var (n2, m2) = rightBorder;
@@ -162,13 +189,16 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             {
                 for (var j = 0; j < m2 - m1; j++)
                 {
-                    result[i, j] = StrassenGet(matrix, i + n1, j + m1);
+                    result[i, j] = getter(matrix, i + n1, j + n2);
+                    //result[i, j] = StrassenGet(matrix, i + n1, j + m1);
                 }
             }
 
             return result;
         }
-
+        /// <summary>
+        /// Комбинирует 4 блока в одну матрицу
+        /// </summary>
         public static Matrix CombineSubMatrices(Matrix c11, Matrix c12, Matrix c21, Matrix c22)
         {
             if (c11.Rows != c12.Rows || c21.Rows != c22.Rows || c11.Cols != c21.Cols || c12.Cols != c22.Cols)

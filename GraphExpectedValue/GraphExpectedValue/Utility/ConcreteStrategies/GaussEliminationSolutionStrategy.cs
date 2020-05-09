@@ -7,11 +7,28 @@ using GraphExpectedValue.GraphLogic;
 
 namespace GraphExpectedValue.Utility.ConcreteStrategies
 {
+    /// <summary>
+    /// "Стратегия" нахождения искомых математических ожиданий методом Гаусса
+    /// </summary>
     public class GaussEliminationSolutionStrategy : SolutionStrategy
     {
+        /// <summary>
+        /// Константа для сравнения вещественных чисел
+        /// </summary>
         private const double EPS = 1e-6;
+        /// <summary>
+        /// Матрица, представляющая СЛАУ графа
+        /// </summary>
         private Matrix matrix;
+        /// <summary>
+        /// Была ли сформирована матрица графа
+        /// </summary>
         private bool formed;
+        /// <summary>
+        /// Решение СЛАУ при помощи метода Гаусса
+        /// </summary>
+        /// <param name="metadata">Данные графа</param>
+        /// <returns>Искомые математические ожидания</returns>
         public double[] Solve(GraphMetadata metadata)
         {
             FormMatrices(metadata);
@@ -21,7 +38,10 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             }
             return result;
         }
-
+        /// <summary>
+        /// Формирование матрицы СЛАУ
+        /// </summary>
+        /// <param name="metadata">Данные графа</param>
         public void FormMatrices(GraphMetadata metadata)
         {
             matrix = new Matrix(metadata.VertexMetadatas.Count - 1, metadata.VertexMetadatas.Count);
@@ -83,50 +103,16 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
 
             formed = true;
         }
-
+        /// <summary>
+        /// Решение СЛАУ при помощи метода Гаусса
+        /// </summary>
         public bool GaussElimination(out double[] result)
         {
             if (!formed)
             {
                 throw new Exception("Form matrix before doing elimination");
             }
-
-            //for (var col = 0; col < matrix.Cols - 1; col++)
-            //{ 
-            //    if (Math.Abs(matrix[col, col]) < EPS)
-            //    {
-            //        var swapRow = col + 1;
-            //        var foundPivot = false;
-            //        for (; swapRow < matrix.Rows; swapRow++)
-            //        {
-            //            if (Math.Abs(matrix[swapRow, col]) > EPS)
-            //            {
-            //                foundPivot = true;
-            //                break;
-            //            }
-            //        }
-
-            //        if (!foundPivot)
-            //        {
-            //            result = null;
-            //            return false;
-            //        }
-
-            //        matrix.SwapRows(col, swapRow);
-            //    }
-            //    matrix.MultiplyRow(col, 1 / matrix[col, col]);
-            //    for (var elimRow = 0; elimRow < matrix.Rows; elimRow++)
-            //    {
-            //        if (elimRow == col || Math.Abs(matrix[elimRow, col]) < EPS)
-            //        {
-            //            continue;
-            //        }
-            //        matrix.AddRow(col, elimRow, -matrix[elimRow, col]);
-            //    }
-            //}
-            //matrix.ShowMatrix();
             matrix.GaussElimination();
-            //matrix.ShowMatrix();
             for (var checkRow = 0; checkRow < matrix.Rows; checkRow++)
             {
                 if (Math.Abs(matrix[checkRow, checkRow] - 1) > EPS)

@@ -70,14 +70,10 @@
     <Compile Include="GraphLogic\VertexMetadata.cs" />
     <Compile Include="GraphWidgets\Arrow.cs" />
     <Compile Include="GraphWidgets\Edge.cs" />
-    <Compile Include="GraphWidgets\EdgeChangeEventArgs.cs" />
     <Compile Include="NumericUpDownPicker.xaml.cs">
       <DependentUpon>NumericUpDownPicker.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\Annotations.cs" />
-    <Compile Include="TestWindow.xaml.cs">
-      <DependentUpon>TestWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="GraphWidgets\Vertex.xaml.cs">
       <DependentUpon>Vertex.xaml</DependentUpon>
     </Compile>
@@ -120,10 +116,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="NumericUpDownPicker.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="TestWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

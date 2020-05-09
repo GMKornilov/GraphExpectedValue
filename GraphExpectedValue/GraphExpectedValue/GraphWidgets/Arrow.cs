@@ -9,9 +9,22 @@ using GraphExpectedValue.Annotations;
 
 namespace GraphExpectedValue.GraphWidgets
 {
+    [Flags]
+    public enum DrawType
+    {
+        NormalDrawing = 0,
+        BezierDrawing = (1 << 0),
+        BackedDrawing = (1 << 1)
+    }
+    /// <summary>
+    /// Графическое представление "стрелки"
+    /// </summary>
     public class Arrow : Shape, INotifyPropertyChanged
     {
-        private const int angle = 15;
+        /// <summary>
+        /// Угол, под которым выходит кривая Безье
+        /// </summary>
+        private const int BezierAngle = 15;
         public static readonly DependencyProperty X1Property;
         public static readonly DependencyProperty X2Property;
         public static readonly DependencyProperty Y1Property;
@@ -20,44 +33,58 @@ namespace GraphExpectedValue.GraphWidgets
         public static readonly DependencyProperty ArrowAngleProperty;
         public static readonly DependencyProperty IsCurvedProperty;
         public static readonly DependencyProperty IsBackedProperty;
-
+        /// <summary>
+        /// X-координата начала стрелки
+        /// </summary>
         public double X1
         {
             get => (double)GetValue(X1Property);
             set => SetValue(X1Property, value);
         }
-
+        /// <summary>
+        /// X-координата конца стрелки
+        /// </summary>
         public double X2
         {
             get => (double)GetValue(X2Property);
             set => SetValue(X2Property, value);
         }
-
+        /// <summary>
+        /// Y-координата начала стрелки
+        /// </summary>
         public double Y1
         {
             get => (double)GetValue(Y1Property);
             set => SetValue(Y1Property, value);
         }
-
+        /// <summary>
+        /// Y-координата конца стрелки
+        /// </summary>
         public double Y2
         {
             get => (double)GetValue(Y2Property);
             set => SetValue(Y2Property, value);
         }
-
+        /// <summary>
+        /// Длина "концов" стрелки
+        /// </summary>
         public double ArrowLength
         {
             get => (double)GetValue(ArrowLengthProperty);
             set => SetValue(ArrowLengthProperty, value);
         }
-
+        /// <summary>
+        /// Угол, под которым выходят "концы" стрелки
+        /// </summary>
         public double ArrowAngle
         {
             get => (double)GetValue(ArrowAngleProperty);
             set => SetValue(ArrowAngleProperty, value);
 
         }
-
+        /// <summary>
+        /// Необходимо ли рисовать стрелку при помощи кривых Безье или с помощи кривых
+        /// </summary>
         public bool IsCurved
         {
             get => (bool)GetValue(IsCurvedProperty);
@@ -67,7 +94,9 @@ namespace GraphExpectedValue.GraphWidgets
                 OnPropertyChanged();
             }
         }
-
+        /// <summary>
+        /// Необходимо ли рисовать "концы" стрелки в начале стрелки
+        /// </summary>
         public bool IsBacked
         {
             get => (bool) GetValue(IsBackedProperty);
@@ -77,7 +106,9 @@ namespace GraphExpectedValue.GraphWidgets
                 OnPropertyChanged();
             }
         }
-
+        /// <summary>
+        /// Опорная точка для кривой Безье
+        /// </summary>
         public Point BezierPoint
         {
             get
@@ -89,7 +120,7 @@ namespace GraphExpectedValue.GraphWidgets
                     (X2 - X1)
                 );
                 perpVec.Normalize();
-                var perpVecLen = Math.Tan(angle * Math.PI / 180) * lineVecHalvedLength;
+                var perpVecLen = Math.Tan(BezierAngle * Math.PI / 180) * lineVecHalvedLength;
                 perpVec *= perpVecLen;
 
                 var midPointVec = perpVec + lineVecHalved;
@@ -97,7 +128,9 @@ namespace GraphExpectedValue.GraphWidgets
                 return ptMid;
             }
         }
-
+        /// <summary>
+        /// Статический конструктор для инициализации всех DependencyProperty
+        /// </summary>
         static Arrow()
         {
             X1Property = DependencyProperty.Register(
@@ -130,7 +163,7 @@ namespace GraphExpectedValue.GraphWidgets
                 nameof(ArrowAngle),
                 typeof(double),
                 typeof(Arrow)
-            );
+            );  
             IsCurvedProperty = DependencyProperty.Register(
                 nameof(IsCurved),
                 typeof(bool),
@@ -150,7 +183,9 @@ namespace GraphExpectedValue.GraphWidgets
                 )
             );
         }
-
+        /// <summary>
+        /// "Геометрия" стрелки
+        /// </summary>
         protected override Geometry DefiningGeometry
         {
             get
@@ -159,18 +194,17 @@ namespace GraphExpectedValue.GraphWidgets
 
                 using (var context = geometry.Open())
                 {
+                    var drawType = DrawType.NormalDrawing;
                     if (IsCurved)
                     {
-                        DrawArrowWithBezier(context);
+                        drawType |= DrawType.BezierDrawing;
                     }
-                    else
-                    {
-                        DrawArrow(context);
-                    }
+
                     if (IsBacked)
                     {
-                        DrawBackArrow(context);
+                        drawType |= DrawType.BackedDrawing;
                     }
+                    Draw(context, drawType);
                 }
 
                 
@@ -181,17 +215,24 @@ namespace GraphExpectedValue.GraphWidgets
 
             }
         }
-
-        private void DrawArrow(StreamGeometryContext context)
+        /// <summary>
+        /// Отрисовывает стрелку
+        /// </summary>
+        /// <param name="drawType">Перечисление, указывающее, как нужно отрисовывать стрелку</param>
+        private void Draw(StreamGeometryContext context, DrawType drawType)
         {
             var pt1 = new Point(X1, Y1);
             var pt2 = new Point(X2, Y2);
 
-            var endStartVector = new Vector(pt1.X - pt2.X, pt1.Y - pt2.Y);
+            var endStartVector = pt1 - pt2;
             endStartVector.Normalize();
             endStartVector *= ArrowLength;
 
             var rotateMatrix = new Matrix();
+            if (drawType.HasFlag(DrawType.BezierDrawing))
+            {
+                rotateMatrix.Rotate(-BezierAngle);
+            }
             rotateMatrix.Rotate(ArrowAngle);
             var firstArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
             rotateMatrix.Rotate(-2 * ArrowAngle);
@@ -201,79 +242,57 @@ namespace GraphExpectedValue.GraphWidgets
             var pt4 = pt2 + secondArrowVector;
 
             context.BeginFigure(pt1, true, false);
-            context.LineTo(pt2, true, true);
+            if (drawType.HasFlag(DrawType.BezierDrawing))
+            {
+                context.QuadraticBezierTo(BezierPoint, pt2, true, true);
+            }
+            else
+            {
+                context.LineTo(pt2, true, true);
+            }
             context.LineTo(pt3, true, true);
             context.LineTo(pt2, true, true);
             context.LineTo(pt4, true, true);
-        }
-
-        private void DrawBackArrow(StreamGeometryContext context)
-        {
-            var pt1 = new Point(X1, Y1);
-            var pt2 = new Point(X2, Y2);
-
-            var endStartVector = pt2 - pt1;
-            endStartVector.Normalize();
-            endStartVector *= ArrowLength;
-            var rotateMatrix = new Matrix();
-            if (IsCurved)
+            if (!drawType.HasFlag(DrawType.BackedDrawing))
             {
-                rotateMatrix.Rotate(-angle);
+                return;
             }
 
+            endStartVector *= -1;
+            rotateMatrix = new Matrix();
+            if (drawType.HasFlag(DrawType.BezierDrawing))
+            {
+                rotateMatrix.Rotate(-BezierAngle);
+            }
             rotateMatrix.Rotate(ArrowAngle);
-            var firstArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
-            var pt3 = pt1 + firstArrowVector;
-            
-            rotateMatrix.Rotate(-2 * ArrowAngle);
-            var secondArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
-            var pt4 = pt1 + secondArrowVector;
+            firstArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
+            pt3 = pt1 + firstArrowVector;
+
+            rotateMatrix.Rotate( -2 * ArrowAngle);
+            secondArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
+            pt4 = pt1 + secondArrowVector;
 
             context.LineTo(pt2, true, true);
-            if (IsCurved)
+            if (drawType.HasFlag(DrawType.BezierDrawing))
             {
-                context.QuadraticBezierTo(BezierPoint, pt1, true, false);
+                context.QuadraticBezierTo(BezierPoint, pt1, true, true);
             }
             else
             {
                 context.LineTo(pt1, true, true);
             }
-
             context.LineTo(pt3, true, true);
             context.LineTo(pt1, true, true);
             context.LineTo(pt4, true, true);
         }
-
-        private void DrawArrowWithBezier(StreamGeometryContext context)
-        {
-            var pt1 = new Point(X1, Y1);
-            var pt2 = new Point(X2, Y2);
-
-            var endStartVector = new Vector(X1 - X2, Y1 - Y2);
-            endStartVector.Normalize();
-            endStartVector *= ArrowLength;
-
-            var ptMid = BezierPoint;
-
-            var rotateMatrix = new Matrix();
-            rotateMatrix.Rotate(-angle);
-            rotateMatrix.Rotate(ArrowAngle);
-            var firstArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
-            rotateMatrix.Rotate(-2 * ArrowAngle);
-            var secondArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
-
-            var pt3 = pt2 + firstArrowVector;
-            var pt4 = pt2 + secondArrowVector;
-
-            context.BeginFigure(pt1, false, false);
-            context.QuadraticBezierTo(ptMid, pt2, true, false);
-            context.LineTo(pt3, true, true);
-            context.LineTo(pt2, true, true);
-            context.LineTo(pt4, true, true);
-        }
-
+        /// <summary>
+        /// Событие, вызываемое при изменении свойства
+        /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
-
+        /// <summary>
+        /// Стандартная реализация INotifyPropertyChanged
+        /// </summary>
+        /// <param name="propertyName"></param>
         [NotifyPropertyChangedInvocator]
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {

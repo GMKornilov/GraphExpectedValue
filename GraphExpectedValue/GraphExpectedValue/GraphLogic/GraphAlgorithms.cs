@@ -11,16 +11,32 @@ namespace GraphExpectedValue.GraphLogic
         EndVertexNotSelected = (1 << 0),
         WrongConnectionComponents = (1 << 1)
     }
+    /// <summary>
+    /// Класс, проверяющий корректность заданного графа
+    /// </summary>
     public class GraphAlgorithms
     {
+        /// <summary>
+        /// Список смежности данного графа
+        /// </summary>
         private List<List<int>> adjacencyList;
+        /// <summary>
+        /// Список смежности транспорированного графа
+        /// </summary>
         private List<List<int>> reversedAdjacencyList;
+        /// <summary>
+        /// Список, проверяющий, какие вершины были посещены во время обхода в глубину
+        /// </summary>
         private List<bool> used;
+        /// <summary>
+        /// Поглощающая вершина в данном графе
+        /// </summary>
         private int startVertex;
-        private bool isOriented;
 
         public GraphAlgorithms(GraphMetadata metadata) => FormData(metadata);
-
+        /// <summary>
+        /// Проверяет граф, данный в конструкторе, на корректность
+        /// </summary>
         public CheckStatus Check()
         {
             var res = CheckStatus.Ok;
@@ -36,7 +52,10 @@ namespace GraphExpectedValue.GraphLogic
 
             return res;
         }
-
+        /// <summary>
+        /// Формирует списки смежности заданного графа
+        /// </summary>
+        /// <param name="metadata">Данные о графе</param>
         private void FormData(GraphMetadata metadata)
         {
             adjacencyList = new List<List<int>>();
@@ -65,10 +84,21 @@ namespace GraphExpectedValue.GraphLogic
                 }
             }
 
-            startVertex = metadata.EndVertexNumber - 1;
-            isOriented = metadata.IsOriented;
+            if (metadata.EndVertexNumber == -1)
+            {
+                startVertex = -1;
+            }
+            else
+            {
+                startVertex = metadata.EndVertexNumber - 1;
+            }
         }
-
+        /// <summary>
+        /// Обход графа в глубину по заданному списку смежности, заодно запоминая обратный порядок обхода.
+        /// </summary>
+        /// <param name="vertexNumber">Номер текущей рассматриваемой вершины</param>
+        /// <param name="adjList">Список смежности графа</param>
+        /// <param name="content">Обратный порядок обхода</param>
         private void DFS(
             int vertexNumber,
             List<List<int>> adjList,
@@ -82,7 +112,10 @@ namespace GraphExpectedValue.GraphLogic
             }
             content.Add(vertexNumber);
         }
-
+        /// <summary>
+        /// Находит компоненты сильной связанности данного графа
+        /// </summary>
+        /// <returns>Список списков - все компоненты сильной связанности</returns>
         private List<List<int>> StrongComponents()
         {
             var order = new List<int>();
@@ -90,17 +123,19 @@ namespace GraphExpectedValue.GraphLogic
             {
                 if (!used[i])
                 {
-                    DFS(i, reversedAdjacencyList, order);
+                    DFS(i, adjacencyList, order);
                 }
             }
+            order.Reverse();
+            
             var res = new List<List<int>>();
             used = new List<bool>(Enumerable.Repeat(false, adjacencyList.Count));
-            for (var i = 0; i < order.Count; i++)
+            foreach (var vertex in order)
             {
-                if (!used[i])
+                if (!used[vertex])
                 {
                     var comp = new List<int>();
-                    DFS(i, adjacencyList, comp);
+                    DFS(vertex, reversedAdjacencyList, comp);
                     res.Add(comp);
                 }
             }

@@ -3,8 +3,14 @@ using System.Windows.Documents;
 
 namespace GraphExpectedValue.Utility.ConcreteStrategies
 {
+    /// <summary>
+    /// "Стратегия" по нахождению обратной матрицы при помощи разибения на блока
+    /// </summary>
     public class BlockInverseStrategy : InverseStrategy
     {
+        /// <summary>
+        /// Нахожденре обратной матрицы
+        /// </summary>
         public Matrix Inverse(Matrix matrix)
         {
             if (matrix.Rows != matrix.Cols)
@@ -17,9 +23,13 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             return StrassenMultiplyStrategy.GetSubMatrix(
                 res,
                 new Tuple<int, int>(0, 0),
-                new Tuple<int, int>(matrix.Rows, matrix.Rows)
+                new Tuple<int, int>(matrix.Rows, matrix.Rows),
+                BlockGet
             );
         }
+        /// <summary>
+        /// Нахождение обратной матрицы при условии, что все галвные миноры матрицы обратимы
+        /// </summary>
         private Matrix BlockInverse(Matrix matrix)
         {
             if (matrix.Rows != matrix.Cols)
@@ -35,22 +45,26 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             var A = StrassenMultiplyStrategy.GetSubMatrix(
                 matrix,
                 new Tuple<int, int>(0, 0),
-                new Tuple<int, int>(N / 2, N / 2)
+                new Tuple<int, int>(N / 2, N / 2),
+                BlockGet
             );
             var B = StrassenMultiplyStrategy.GetSubMatrix(
                 matrix,
                 new Tuple<int, int>(0, N / 2),
-                new Tuple<int, int>(N / 2, N)
+                new Tuple<int, int>(N / 2, N),
+                BlockGet
             );
             var C = StrassenMultiplyStrategy.GetSubMatrix(
                 matrix,
                 new Tuple<int, int>(N / 2, 0),
-                new Tuple<int, int>(N, N / 2)
+                new Tuple<int, int>(N, N / 2),
+                BlockGet
             );
             var D = StrassenMultiplyStrategy.GetSubMatrix(
                 matrix,
                 new Tuple<int, int>(N / 2, N / 2),
-                new Tuple<int, int>(N, N)
+                new Tuple<int, int>(N, N),
+                BlockGet
             );
 
             // A^-1
@@ -73,7 +87,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
         }
 
         /// <summary>
-        /// Inverse 2x2 matrix
+        /// Нахождение обратной матрицы для мматрицы размером 2 на 2
         /// </summary>
         private Matrix InverseSquare(Matrix matrix)
         {
@@ -93,6 +107,16 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
                 new[] {-c / det, a / det},
             };
             return new Matrix(content);
+        }
+
+        private static double BlockGet(Matrix matrix, int i, int j)
+        {
+            if (i < 0 || i >= matrix.Rows || j < 0 || j >= matrix.Cols)
+            {
+                return i == j ? 1 : 0;
+            }
+
+            return matrix[i, j];
         }
 
         public override string ToString() => "Block inverse";

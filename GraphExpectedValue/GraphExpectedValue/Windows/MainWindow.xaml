@@ -61,7 +61,7 @@
             </Button>
             <Button Name="CalculateButton" Click="CalculateButton_OnClick">
                 <TextBlock>
-                    Calculate expected passage first times
+                    Calculate expected first passage times
                 </TextBlock>
             </Button>
         </StackPanel>
