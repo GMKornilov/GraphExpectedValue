@@ -8,7 +8,7 @@
         xmlns:n="clr-namespace:GraphExpectedValue"
         mc:Ignorable="d"
         Title="EdgePickWindow" Height="500" Width="500">
-    <Grid ShowGridLines="True">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
             <RowDefinition/>
