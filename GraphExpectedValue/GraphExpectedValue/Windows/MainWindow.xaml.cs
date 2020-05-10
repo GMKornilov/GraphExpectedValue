@@ -143,7 +143,7 @@ namespace GraphExpectedValue.Windows
         private void AddEdgeButton_OnClick(object sender, RoutedEventArgs e)
         {
             if (vertexes.Count < 2) return;
-            var edgePickWindow = new EdgePickWindow { TotalVertexes = vertexes.Count };
+            var edgePickWindow = new EdgePickWindow() { TotalVertexes = vertexes.Count };
             if (edgePickWindow.ShowDialog() != true) return;
 
             var startVertexNumber = edgePickWindow.StartVertexNumber - 1;
@@ -151,7 +151,6 @@ namespace GraphExpectedValue.Windows
 
             var edgeStartVertex = vertexes[startVertexNumber];
             var edgeEndVertex = vertexes[endVertexNumber];
-            var edgeLength = edgePickWindow.EdgeLength;
             var edgeLengthExpr = edgePickWindow.EdgeLengthExpr;
 
             if (edges.TryGetValue(new Tuple<Vertex, Vertex>(edgeStartVertex, edgeEndVertex), out _))
@@ -171,6 +170,43 @@ namespace GraphExpectedValue.Windows
             };
             edge.UpdateEdge();
             AddEdge(edge, edgeStartVertex, edgeEndVertex);
+        }
+
+        private void EditEdgeButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            if(edges.Count == 0)return;
+            var edgePickWindow = new EdgePickWindow
+            {
+                TotalVertexes = vertexes.Count,
+                Title = "Edit edge",
+                EndButton = { Content = "Edit edge" }
+            };
+            if (edgePickWindow.ShowDialog() != true)return;
+
+            var startVertexNumber = edgePickWindow.StartVertexNumber - 1;
+            var endVertexNumber = edgePickWindow.EndVertexNumber - 1;
+
+            var edgeStartVertex = vertexes[startVertexNumber];
+            var edgeEndVertex = vertexes[endVertexNumber];
+            var edgeLengthExpr = edgePickWindow.EdgeLengthExpr;
+
+            if (!edges.TryGetValue(new Tuple<Vertex, Vertex>(edgeStartVertex, edgeEndVertex), out var edge))
+            {
+                if (!graphMetadata.IsOriented &&
+                    !edges.TryGetValue(new Tuple<Vertex, Vertex>(edgeEndVertex, edgeStartVertex), out edge))
+                {
+                    MessageBox.Show(
+                        "There is no such edge in graph",
+                        "",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning
+                    );
+                    return;
+                }
+            }
+
+            edge.Expression = edgeLengthExpr;
+            edge.UpdateEdge();
         }
 
         private void RemoveEdgeButton_OnClick(object sender, RoutedEventArgs e)
@@ -470,7 +506,6 @@ namespace GraphExpectedValue.Windows
                 graphMetadata.EdgeMetadatas.Add(edge.Metadata);
             }
         }
-
         private void RemoveEdge(Vertex chosenStartVertex, Vertex chosenEndVertex)
         {
             // if we are trying to remove unexisting edge,
@@ -652,13 +687,6 @@ namespace GraphExpectedValue.Windows
 
         private async void CalculateButton_OnClick(object sender, RoutedEventArgs e)
         {
-            //var a = SymbolicExpression.Parse("sin(pi / 2)");
-            //var b = SymbolicExpression.Parse("2");
-            //a *= b;
-            //MessageBox.Show(
-            //    a.ToString() + " " + a.Evaluate(new Dictionary<string, FloatingPoint>()).RealValue
-            //);
-            //return;
             var algo = new GraphAlgorithms(graphMetadata);
             var status = algo.Check();
             if (status != CheckStatus.Ok)

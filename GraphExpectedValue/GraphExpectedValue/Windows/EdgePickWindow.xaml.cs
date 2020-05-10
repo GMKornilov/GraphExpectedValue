@@ -49,7 +49,7 @@ namespace GraphExpectedValue.Windows
             double len;
             try
             {
-                Expression = SymbolicExpression.Parse(EdgeLengthExpr);
+                Expression = Infix.ParseOrThrow(EdgeLengthExpr);
                 len = Expression.Evaluate(null).RealValue;
             }
             catch
