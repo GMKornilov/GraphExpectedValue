@@ -25,7 +25,7 @@ namespace GraphExpectedValue.Windows
     public partial class ResultsWindow : Window, INotifyPropertyChanged
     {
         private string _elapsedTime;
-        private List<Tuple<int, SymbolicExpression>> _calcResults;
+        private List<Tuple<int, SymbolicExpression, double>> _calcResults;
 
         public string ElapsedTime
         {
@@ -37,7 +37,7 @@ namespace GraphExpectedValue.Windows
             }
         }
 
-        public List<Tuple<int, SymbolicExpression>> CalcResults
+        public List<Tuple<int, SymbolicExpression, double>> CalcResults
         {
             get => _calcResults;
             set
@@ -52,7 +52,7 @@ namespace GraphExpectedValue.Windows
             InitializeComponent();
         }
 
-        public ResultsWindow(List<Tuple<int, SymbolicExpression>> calcResults, string elapsedTime) : this()
+        public ResultsWindow(List<Tuple<int, SymbolicExpression, double>> calcResults, string elapsedTime) : this()
         {
             CalcResults = calcResults;
             ElapsedTime = elapsedTime;

@@ -690,16 +690,20 @@ namespace GraphExpectedValue.Windows
                 //Task.Delay(1000).Wait();
                 return graphMetadata.Solve();
             });
+            for (var i = 0; i < res.Length; i++)
+            {
+                res[i] = Algebraic.Expand(res[i].Expression);
+            }
             watcher.Stop();
-            var calcResults = new List<Tuple<int, SymbolicExpression>>();
+            var calcResults = new List<Tuple<int, SymbolicExpression, double>>();
             for (var i = 0; i < graphMetadata.EndVertexNumber - 1; i++)
             {
-                calcResults.Add(new Tuple<int, SymbolicExpression>(i + 1, res[i]));
+                calcResults.Add(new Tuple<int, SymbolicExpression, double>(i + 1, res[i], res[i].Evaluate(null).RealValue));
             }
 
             for (var i = graphMetadata.EndVertexNumber; i <= res.Length; i++)
             {
-                calcResults.Add(new Tuple<int, SymbolicExpression>(i + 1, res[i - 1]));
+                calcResults.Add(new Tuple<int, SymbolicExpression, double>(i + 1, res[i - 1], res[i - 1].Evaluate(null).RealValue));
             }
 
             //for (var i = 0; i < 6; i++)

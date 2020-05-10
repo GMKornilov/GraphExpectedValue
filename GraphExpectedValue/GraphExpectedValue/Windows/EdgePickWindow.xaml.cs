@@ -46,9 +46,11 @@ namespace GraphExpectedValue.Windows
             //    MessageBox.Show("Edge should have positive length", "", MessageBoxButton.OK, MessageBoxImage.Warning);
             //    return;
             //}
+            double len;
             try
             {
                 Expression = SymbolicExpression.Parse(EdgeLengthExpr);
+                len = Expression.Evaluate(null).RealValue;
             }
             catch
             {
@@ -56,7 +58,7 @@ namespace GraphExpectedValue.Windows
                 return;
             }
 
-            if (Expression.Evaluate(null).RealValue <= 0)
+            if (len <= 0)
             {
                 MessageBox.Show("Edge should have positive length", "", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
