@@ -1,7 +1,9 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using GraphExpectedValue.Annotations;
+using MathNet.Symbolics;
 
 namespace GraphExpectedValue.Windows
 {
@@ -25,7 +27,8 @@ namespace GraphExpectedValue.Windows
         public int StartVertexNumber { get; set; }
         public int EndVertexNumber { get; set; }
         public double EdgeLength { get; set; }
-
+        public string EdgeLengthExpr { get; set; }
+        public SymbolicExpression Expression { get; set; }
         public EdgePickWindow()
         {
             InitializeComponent();
@@ -38,12 +41,28 @@ namespace GraphExpectedValue.Windows
                 MessageBox.Show("Can\'t create loop edges", "", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            if (EdgeLength <= 0)
+            //if (EdgeLength <= 0)
+            //{
+            //    MessageBox.Show("Edge should have positive length", "", MessageBoxButton.OK, MessageBoxImage.Warning);
+            //    return;
+            //}
+            double len;
+            try
+            {
+                Expression = Infix.ParseOrThrow(EdgeLengthExpr);
+                len = Expression.Evaluate(null).RealValue;
+            }
+            catch
+            {
+                MessageBox.Show("input correct expression");
+                return;
+            }
+
+            if (len <= 0)
             {
                 MessageBox.Show("Edge should have positive length", "", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-
             DialogResult = true;
         }
 

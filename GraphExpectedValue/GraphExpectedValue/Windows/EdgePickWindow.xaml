@@ -7,7 +7,8 @@
         xmlns:local="clr-namespace:GraphExpectedValue.Windows"
         xmlns:n="clr-namespace:GraphExpectedValue"
         mc:Ignorable="d"
-        Title="EdgePickWindow" Height="500" Width="500">
+        ResizeMode="NoResize"
+        Title="Create new edge" Height="500" Width="500">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
@@ -47,15 +48,47 @@
         </StackPanel>
         
         <StackPanel Grid.Row="3" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel.ToolTip>
+                <TextBlock>
+                    Suppoerted operations:
+                    <LineBreak/>
+                    sin(x), cos(x), tan(x), cot(x) - standart trigonometry functions;
+                    <LineBreak/>
+                    asin(x), acos(x), atan(x), acot(x) - inverse trigonometry functions;
+                    <LineBreak/>
+                    sinh(x), cosh(x), tanh(x), coth(x) - hyperbolic trigonometry functions;
+                    <LineBreak/>
+                    asinh(x), acosh(x), atanh(x), acoth(x) - inverse hyperbolic trigonometry functions;
+                    <LineBreak/>
+                    sqrt(x) - square root;
+                    <LineBreak/>
+                    ln(x) - natural logarithm;
+                    <LineBreak/>
+                    log(a) - decimal logarithm;
+                    <LineBreak/>
+                    log(a, b) = log_b(a);
+                    <LineBreak/>
+                    e;
+                    <LineBreak/>
+                    pi;
+                    <LineBreak/>
+                    a^b = a in power of b
+                </TextBlock>
+            </StackPanel.ToolTip>
             <TextBlock Text="Length of edge" HorizontalAlignment="Center"/>
-            <n:NumericUpDownPicker
+            <!--<n:NumericUpDownPicker
                 Width="200"
                 HorizontalAlignment="Center"
                 Minimum="0"
                 Value="{Binding ElementName=this, Path=EdgeLength, Mode=OneWayToSource}"
                 DoubleAllowed="True"
+            />-->
+            <TextBox
+                Width="200"
+                HorizontalAlignment="Center"
+                Text="{Binding ElementName=this, Path=EdgeLengthExpr, Mode=OneWayToSource}"
             />
         </StackPanel>
-        <Button Grid.Row="4" Content="Create edge" Click="CreateEdgeButton_OnClick"/>
+        <Button Name="EndButton" Grid.Row="4" Content="Create edge" Click="CreateEdgeButton_OnClick"/>
     </Grid>
 </Window>

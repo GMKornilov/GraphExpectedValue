@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using GraphExpectedValue.GraphLogic;
+using MathNet.Symbolics;
 
 namespace GraphExpectedValue.GraphWidgets
 {
@@ -46,6 +48,8 @@ namespace GraphExpectedValue.GraphWidgets
         /// Виджет, являющийся графическим представлением текста, написанным на ребре
         /// </summary>
         public readonly TextBlock edgeText;
+
+        private SymbolicExpression expr;
         /// <summary>
         /// ПРедставление ребра для сериализации
         /// </summary>
@@ -61,6 +65,16 @@ namespace GraphExpectedValue.GraphWidgets
                 text = value;
                 edgeText.Text = text;
                 EdgeChangedEvent?.Invoke(ChangeType.TextChange);
+            }
+        }
+        public SymbolicExpression Expression
+        {
+            get => expr;
+            set
+            {
+                expr = value;
+                Text = expr.ToString();
+                Metadata.Length = expr.ToString();
             }
         }
         /// <summary>
@@ -133,7 +147,6 @@ namespace GraphExpectedValue.GraphWidgets
         /// Является ли ребро "неориентированным"
         /// </summary>
         public bool Backed { get; set; }
-
         public Edge(Point from, Point to, double val):this()
         {
             Text = val.ToString(CultureInfo.CurrentCulture);
@@ -301,9 +314,9 @@ namespace GraphExpectedValue.GraphWidgets
             edgeText.Width = 100;
         }
 
-        public Edge(Vertex from, Vertex to, double val) : this()
+        public Edge(Vertex from, Vertex to, SymbolicExpression val) : this()
         {
-            Metadata = new EdgeMetadata(from, to, val);
+            Metadata = new EdgeMetadata(from, to, val.ToString());
 
             var firstCenter = from.Center;
             var secondCenter = to.Center;
@@ -316,12 +329,13 @@ namespace GraphExpectedValue.GraphWidgets
             firstCenter += lineBetweenCenters;
             secondCenter -= lineBetweenCenters;
 
-            Text = val.ToString(CultureInfo.CurrentCulture);
+            Text = val.ToString();
             StartPoint = firstCenter;
             EndPoint = secondCenter;
+            Expression = val;
         }
 
-        public Edge(Vertex from, Vertex to, EdgeMetadata metadata) : this(from, to, metadata.Length)
+        public Edge(Vertex from, Vertex to, EdgeMetadata metadata) : this(from, to, SymbolicExpression.Parse(metadata.Length))
         {
             this.Metadata = metadata;
         }

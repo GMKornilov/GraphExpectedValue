@@ -16,13 +16,13 @@ namespace GraphExpectedValue.GraphLogic
         /// <summary>
         /// Длина ребра
         /// </summary>
-        public double Length;
+        public string Length;
 
         public EdgeMetadata()
         {
 
         }
-        public EdgeMetadata(Vertex startVertex, Vertex endVertex, double length)
+        public EdgeMetadata(Vertex startVertex, Vertex endVertex, string length)
         {
             StartVertexNumber = startVertex.Number;
             EndVertexNumber = endVertex.Number;

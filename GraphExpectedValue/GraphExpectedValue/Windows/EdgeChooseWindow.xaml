@@ -7,7 +7,8 @@
         xmlns:n="clr-namespace:GraphExpectedValue"
         xmlns:local="clr-namespace:GraphExpectedValue.Windows"
         mc:Ignorable="d"
-        Title="EdgeChooseWindow" Height="500" Width="500">
+        ResizeMode="NoResize"
+        Title="Choose edge to remove" Height="500" Width="500">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
