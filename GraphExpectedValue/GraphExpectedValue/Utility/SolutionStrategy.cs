@@ -1,10 +1,11 @@
 ﻿using GraphExpectedValue.GraphLogic;
+using MathNet.Symbolics;
 
 namespace GraphExpectedValue.Utility
 {
     public interface SolutionStrategy
     {
-        double[] Solve(GraphMetadata metadata);
+        SymbolicExpression[] Solve(GraphMetadata metadata);
         void FormMatrices(GraphMetadata metadata);
     }
 }

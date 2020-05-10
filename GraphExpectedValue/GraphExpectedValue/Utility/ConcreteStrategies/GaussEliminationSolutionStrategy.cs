@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Windows;
 using GraphExpectedValue.GraphLogic;
+using MathNet.Symbolics;
 
 namespace GraphExpectedValue.Utility.ConcreteStrategies
 {
@@ -29,7 +30,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
         /// </summary>
         /// <param name="metadata">Данные графа</param>
         /// <returns>Искомые математические ожидания</returns>
-        public double[] Solve(GraphMetadata metadata)
+        public SymbolicExpression[] Solve(GraphMetadata metadata)
         {
             FormMatrices(metadata);
             if (!GaussElimination(out var result))
@@ -63,6 +64,8 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
 
             foreach (var edge in metadata.EdgeMetadatas)
             {
+                var lengthExpr = SymbolicExpression.Parse(edge.Length);
+
                 var startVertexDegree = vertexDegrees[edge.StartVertexNumber - 1];
                 var endVertexDegree = vertexDegrees[edge.EndVertexNumber - 1];
 
@@ -81,7 +84,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
                         matrix[startVertexIndex, endVertexIndex] = -startProba;
                     }
 
-                    matrix[startVertexIndex, metadata.VertexMetadatas.Count - 1] += startProba * edge.Length;
+                    matrix[startVertexIndex, metadata.VertexMetadatas.Count - 1] += startProba * lengthExpr;
                 }
 
                 if (!metadata.IsOriented && edge.EndVertexNumber != metadata.EndVertexNumber)
@@ -92,7 +95,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
                         matrix[endVertexIndex, startVertexIndex] = -endProba;
                     }
 
-                    matrix[endVertexIndex, metadata.VertexMetadatas.Count - 1] = endProba * edge.Length;
+                    matrix[endVertexIndex, metadata.VertexMetadatas.Count - 1] = endProba * lengthExpr;
                 }
             }
 
@@ -106,7 +109,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
         /// <summary>
         /// Решение СЛАУ при помощи метода Гаусса
         /// </summary>
-        public bool GaussElimination(out double[] result)
+        public bool GaussElimination(out SymbolicExpression[] result)
         {
             if (!formed)
             {
@@ -115,13 +118,13 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             matrix.GaussElimination();
             for (var checkRow = 0; checkRow < matrix.Rows; checkRow++)
             {
-                if (Math.Abs(matrix[checkRow, checkRow] - 1) > EPS)
+                if (Math.Abs(matrix[checkRow, checkRow].Evaluate(null).RealValue - 1) > EPS)
                 {
                     result = null;
                     return false;
                 }
             }
-            result = new double[matrix.Rows];
+            result = new SymbolicExpression[matrix.Rows];
             for (var i = 0; i < result.Length; i++)
             {
                 result[i] = matrix[i, matrix.Cols - 1];

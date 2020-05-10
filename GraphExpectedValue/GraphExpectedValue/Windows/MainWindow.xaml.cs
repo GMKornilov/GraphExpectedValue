@@ -19,6 +19,7 @@ using GraphExpectedValue.Utility.ConcreteStrategies;
 using Microsoft.Win32;
 using MathNet.Numerics;
 using MathNet.Symbolics;
+using Expression = MathNet.Symbolics.Expression;
 
 namespace GraphExpectedValue.Windows
 {
@@ -142,7 +143,7 @@ namespace GraphExpectedValue.Windows
         private void AddEdgeButton_OnClick(object sender, RoutedEventArgs e)
         {
             if (vertexes.Count < 2) return;
-            var edgePickWindow = new EdgePickWindow { TotalVertexes = vertexes.Count };
+            var edgePickWindow = new EdgePickWindow() { TotalVertexes = vertexes.Count };
             if (edgePickWindow.ShowDialog() != true) return;
 
             var startVertexNumber = edgePickWindow.StartVertexNumber - 1;
@@ -150,7 +151,7 @@ namespace GraphExpectedValue.Windows
 
             var edgeStartVertex = vertexes[startVertexNumber];
             var edgeEndVertex = vertexes[endVertexNumber];
-            var edgeLength = edgePickWindow.EdgeLength;
+            var edgeLengthExpr = edgePickWindow.EdgeLengthExpr;
 
             if (edges.TryGetValue(new Tuple<Vertex, Vertex>(edgeStartVertex, edgeEndVertex), out _))
             {
@@ -163,12 +164,49 @@ namespace GraphExpectedValue.Windows
                 return;
             }
 
-            var edge = new Edge(edgeStartVertex, edgeEndVertex, edgeLength)
+            var edge = new Edge(edgeStartVertex, edgeEndVertex, edgeLengthExpr)
             {
                 Backed = !graphMetadata.IsOriented
             };
             edge.UpdateEdge();
             AddEdge(edge, edgeStartVertex, edgeEndVertex);
+        }
+
+        private void EditEdgeButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            if(edges.Count == 0)return;
+            var edgePickWindow = new EdgePickWindow
+            {
+                TotalVertexes = vertexes.Count,
+                Title = "Edit edge",
+                EndButton = { Content = "Edit edge" }
+            };
+            if (edgePickWindow.ShowDialog() != true)return;
+
+            var startVertexNumber = edgePickWindow.StartVertexNumber - 1;
+            var endVertexNumber = edgePickWindow.EndVertexNumber - 1;
+
+            var edgeStartVertex = vertexes[startVertexNumber];
+            var edgeEndVertex = vertexes[endVertexNumber];
+            var edgeLengthExpr = edgePickWindow.EdgeLengthExpr;
+
+            if (!edges.TryGetValue(new Tuple<Vertex, Vertex>(edgeStartVertex, edgeEndVertex), out var edge))
+            {
+                if (!graphMetadata.IsOriented &&
+                    !edges.TryGetValue(new Tuple<Vertex, Vertex>(edgeEndVertex, edgeStartVertex), out edge))
+                {
+                    MessageBox.Show(
+                        "There is no such edge in graph",
+                        "",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning
+                    );
+                    return;
+                }
+            }
+
+            edge.Expression = edgeLengthExpr;
+            edge.UpdateEdge();
         }
 
         private void RemoveEdgeButton_OnClick(object sender, RoutedEventArgs e)
@@ -468,7 +506,6 @@ namespace GraphExpectedValue.Windows
                 graphMetadata.EdgeMetadatas.Add(edge.Metadata);
             }
         }
-
         private void RemoveEdge(Vertex chosenStartVertex, Vertex chosenEndVertex)
         {
             // if we are trying to remove unexisting edge,
@@ -535,6 +572,14 @@ namespace GraphExpectedValue.Windows
                     new Tuple<int, int>(edgeData.StartVertexNumber, edgeData.EndVertexNumber),
                     edgeData
                 );
+                try
+                {
+                    var len = SymbolicExpression.Parse(edgeData.Length);
+                }
+                catch
+                {
+                    return false;
+                }
             }
 
             //if (metadata.StartVertexNumber != -1 && (metadata.StartVertexNumber < 1 ||
@@ -668,21 +713,25 @@ namespace GraphExpectedValue.Windows
 
             var watcher = Stopwatch.StartNew();
             //var res = graphMetadata.Solve();
-            var res = await Task<double[]>.Factory.StartNew(() =>
+            var res = await Task<SymbolicExpression[]>.Factory.StartNew(() =>
             {
                 //Task.Delay(1000).Wait();
                 return graphMetadata.Solve();
             });
+            for (var i = 0; i < res.Length; i++)
+            {
+                res[i] = Algebraic.Expand(res[i].Expression);
+            }
             watcher.Stop();
-            var calcResults = new List<Tuple<int, double>>();
+            var calcResults = new List<Tuple<int, SymbolicExpression, double>>();
             for (var i = 0; i < graphMetadata.EndVertexNumber - 1; i++)
             {
-                calcResults.Add(new Tuple<int, double>(i + 1, res[i]));
+                calcResults.Add(new Tuple<int, SymbolicExpression, double>(i + 1, res[i], res[i].Evaluate(null).RealValue));
             }
 
             for (var i = graphMetadata.EndVertexNumber; i <= res.Length; i++)
             {
-                calcResults.Add(new Tuple<int, double>(i + 1, res[i - 1]));
+                calcResults.Add(new Tuple<int, SymbolicExpression, double>(i + 1, res[i - 1], res[i - 1].Evaluate(null).RealValue));
             }
 
             //for (var i = 0; i < 6; i++)

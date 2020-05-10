@@ -33,21 +33,21 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             matrixCopy.GaussElimination();
             for (var i = 0; i < matrixCopy.Rows; i++)
             {
-                if (Math.Abs(matrixCopy[i, i] - 1) > EPS)
+                if (Math.Abs(matrixCopy[i, i].Evaluate(null).RealValue - 1) > EPS)
                 {
                     throw new ArgumentException("Given matrix is uninvertible");
                 }
 
                 for (var j = 0; j < i; j++)
                 {
-                    if (Math.Abs(matrixCopy[i, j]) > EPS)
+                    if (Math.Abs(matrixCopy[i, j].Evaluate(null).RealValue) > EPS)
                     {
                         throw new ArgumentException("Given matrix is uninvertible");
                     }
                 }
                 for (var j = i + 1; j < matrixCopy.Rows; j++)
                 {
-                    if (Math.Abs(matrixCopy[i, j]) > EPS)
+                    if (Math.Abs(matrixCopy[i, j].Evaluate(null).RealValue) > EPS)
                     {
                         throw new ArgumentException("Given matrix is uninvertible");
                     }

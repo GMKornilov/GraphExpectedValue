@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using MathNet.Symbolics;
 
 namespace GraphExpectedValue.Utility.ConcreteStrategies
 {
@@ -11,7 +12,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
     public class StrassenMultiplyStrategy : MultiplyStrategy
     {
         /// <summary>
-        /// Под анному числу v находит ближайшее "сверху" число, являющееся степенью двойки
+        /// Под данному числу v находит ближайшее "сверху" число, являющееся степенью двойки
         /// </summary>
         public static int NextPowerOfTwo(int v)
         {
@@ -31,7 +32,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
         /// <param name="i">Индекс строки</param>
         /// <param name="j">Индекс столбца</param>
         /// <returns>Элемент матрицы matrix[i, j], если индексы i j находятся внутри размеров матрицы и 0 в ином случае</returns>
-        public static double StrassenGet(Matrix matrix, int i, int j)
+        public static SymbolicExpression StrassenGet(Matrix matrix, int i, int j)
         {
             if (i < 0 || i >= matrix.Rows || j < 0 || j >= matrix.Cols)
             {
@@ -151,7 +152,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
                 throw new ArgumentException("Matrices should be 2x2 size");
             }
 
-            double[] m =
+            SymbolicExpression[] m =
             {
                 (lhs[0, 0] + lhs[1, 1]) * (rhs[0, 0] + rhs[1, 1]),
                 (lhs[1, 0] + lhs[1, 1]) * rhs[0, 0],
@@ -179,7 +180,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
         /// <summary>
         /// Получение минора данной матрицы
         /// </summary>
-        public static Matrix GetSubMatrix(Matrix matrix, Tuple<int, int> leftBorder, Tuple<int, int> rightBorder, Func<Matrix, int, int, double> getter) 
+        public static Matrix GetSubMatrix(Matrix matrix, Tuple<int, int> leftBorder, Tuple<int, int> rightBorder, Func<Matrix, int, int, SymbolicExpression> getter) 
         {
             var (n1, m1) = leftBorder;
             var (n2, m2) = rightBorder;

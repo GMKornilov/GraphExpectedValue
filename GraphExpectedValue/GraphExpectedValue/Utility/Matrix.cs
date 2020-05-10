@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Text;
 using GraphExpectedValue.Utility.ConcreteStrategies;
+using MathNet.Symbolics;
 
 namespace GraphExpectedValue.Utility
 {
@@ -17,7 +18,7 @@ namespace GraphExpectedValue.Utility
         /// <summary>
         /// Элементы матрицы
         /// </summary>
-        private readonly double[][] content;
+        private readonly SymbolicExpression[][] content;
         /// <summary>
         /// Количество строк матрицы
         /// </summary>
@@ -43,7 +44,7 @@ namespace GraphExpectedValue.Utility
             set;
         }
 
-        public double this[int row, int col]
+        public SymbolicExpression this[int row, int col]
         {
             get => content[row][col];
             set => content[row][col] = value;
@@ -56,10 +57,14 @@ namespace GraphExpectedValue.Utility
         }
         public Matrix(int rows, int cols) : this()
         {
-            content = new double[rows][];
+            content = new SymbolicExpression[rows][];
             for (var i = 0; i < rows; i++)
             {
-                content[i] = new double[cols];
+                content[i] = new SymbolicExpression[cols];
+                for (var j = 0; j < cols; j++)
+                {
+                    content[i][j] = SymbolicExpression.Zero;
+                }
             }
         }
 
@@ -68,7 +73,7 @@ namespace GraphExpectedValue.Utility
 
         }
 
-        public Matrix(double[][] content) : this()
+        public Matrix(SymbolicExpression[][] content) : this()
         {
             var cols = content[0].Length;
             for (var i = 1; i < content.Length; i++)
@@ -118,7 +123,7 @@ namespace GraphExpectedValue.Utility
         /// </summary>
         /// <param name="row">Номер строки</param>
         /// <param name="coeff">Коэффициент умножения</param>
-        public void MultiplyRow(int row, double coeff)
+        public void MultiplyRow(int row, SymbolicExpression coeff)
         {
             for (var j = 0; j < Cols; j++)
             {
@@ -131,7 +136,7 @@ namespace GraphExpectedValue.Utility
         /// <param name="row1">Номер первой строки</param>
         /// <param name="row2">Номер второй строки</param>
         /// <param name="coeff">Коэффициент прибавления</param>
-        public void AddRow(int row1, int row2, double coeff)
+        public void AddRow(int row1, int row2, SymbolicExpression coeff)
         {
             for (var j = 0; j < Cols; j++)
             {
@@ -145,13 +150,13 @@ namespace GraphExpectedValue.Utility
         {
             for (var col = 0; col < Rows && col < Cols; col++)
             {
-                if (Math.Abs(content[col][col]) < EPS)
+                if (Math.Abs(content[col][col].Evaluate(null).RealValue) < EPS)
                 {
                     var swapRow = col + 1;
                     var foundPivot = false;
                     for (; swapRow < Rows; swapRow++)
                     {
-                        if (Math.Abs(content[swapRow][col]) > EPS)
+                        if (Math.Abs(content[swapRow][col].Evaluate(null).RealValue) > EPS)
                         {
                             foundPivot = true;
                             break;
@@ -168,7 +173,7 @@ namespace GraphExpectedValue.Utility
                 MultiplyRow(col, 1.0 / content[col][col]);
                 for (var elimRow = 0; elimRow < Rows; elimRow++)
                 {
-                    if (elimRow == col || Math.Abs(content[elimRow][col]) < EPS)
+                    if (elimRow == col || Math.Abs(content[elimRow][col].Evaluate(null).RealValue) < EPS)
                     {
                         continue;
                     }
@@ -306,7 +311,7 @@ namespace GraphExpectedValue.Utility
             var builder = new StringBuilder();
             for (var i = 0; i < Rows; i++)
             {
-                builder.Append(string.Join(" ", content[i]));
+                builder.Append(string.Join<SymbolicExpression>(" ", content[i]));
                 builder.Append("\n");
             }
 
