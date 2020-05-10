@@ -1,5 +1,6 @@
 ﻿using System;
 using GraphExpectedValue.GraphLogic;
+using MathNet.Symbolics;
 
 namespace GraphExpectedValue.Utility.ConcreteStrategies
 {
@@ -17,12 +18,12 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
         /// </summary>
         /// <param name="metadata">Данные графа</param>
         /// <returns>Искомые математические ожидания</returns>
-        public double[] Solve(GraphMetadata metadata)
+        public SymbolicExpression[] Solve(GraphMetadata metadata)
         {
             FormMatrices(metadata);
             var inverse = A ^ (-1);
             var resMatrix = inverse * b;
-            var res = new double[resMatrix.Rows];
+            var res = new SymbolicExpression[resMatrix.Rows];
             for (var i = 0; i < res.Length; i++)
             {
                 res[i] = resMatrix[i, 0];
@@ -61,6 +62,8 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
 
             foreach (var edge in metadata.EdgeMetadatas)
             {
+                var lengthExpr = SymbolicExpression.Parse(edge.Length);
+
                 var startVertexDegree = vertexDegrees[edge.StartVertexNumber - 1];
                 var endVertexDegree = vertexDegrees[edge.EndVertexNumber - 1];
 
@@ -79,7 +82,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
                         A[startVertexIndex, endVertexIndex] = -startProba;
                     }
 
-                    b[startVertexIndex, 0] += startProba * edge.Length;
+                    b[startVertexIndex, 0] += startProba * lengthExpr;
                 }
 
                 if (!metadata.IsOriented && edge.EndVertexNumber != metadata.EndVertexNumber)
@@ -90,7 +93,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
                         A[endVertexIndex, startVertexIndex] = -endProba;
                     }
 
-                    b[endVertexIndex, 0] = endProba * edge.Length;
+                    b[endVertexIndex, 0] = endProba * lengthExpr;
                 }
             }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Documents;
+using MathNet.Symbolics;
 
 namespace GraphExpectedValue.Utility.ConcreteStrategies
 {
@@ -101,7 +102,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             var c = matrix[1, 0];
             var d = matrix[1, 1];
             var det = a * d - b * c;
-            var content = new double[][]
+            var content = new[]
             {
                 new[] {d / det, -b / det},
                 new[] {-c / det, a / det},
@@ -109,7 +110,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             return new Matrix(content);
         }
 
-        private static double BlockGet(Matrix matrix, int i, int j)
+        private static SymbolicExpression BlockGet(Matrix matrix, int i, int j)
         {
             if (i < 0 || i >= matrix.Rows || j < 0 || j >= matrix.Cols)
             {

@@ -19,6 +19,7 @@ using GraphExpectedValue.Utility.ConcreteStrategies;
 using Microsoft.Win32;
 using MathNet.Numerics;
 using MathNet.Symbolics;
+using Expression = MathNet.Symbolics.Expression;
 
 namespace GraphExpectedValue.Windows
 {
@@ -151,6 +152,7 @@ namespace GraphExpectedValue.Windows
             var edgeStartVertex = vertexes[startVertexNumber];
             var edgeEndVertex = vertexes[endVertexNumber];
             var edgeLength = edgePickWindow.EdgeLength;
+            var edgeLengthExpr = edgePickWindow.EdgeLengthExpr;
 
             if (edges.TryGetValue(new Tuple<Vertex, Vertex>(edgeStartVertex, edgeEndVertex), out _))
             {
@@ -163,7 +165,7 @@ namespace GraphExpectedValue.Windows
                 return;
             }
 
-            var edge = new Edge(edgeStartVertex, edgeEndVertex, edgeLength)
+            var edge = new Edge(edgeStartVertex, edgeEndVertex, edgeLengthExpr)
             {
                 Backed = !graphMetadata.IsOriented
             };
@@ -535,6 +537,14 @@ namespace GraphExpectedValue.Windows
                     new Tuple<int, int>(edgeData.StartVertexNumber, edgeData.EndVertexNumber),
                     edgeData
                 );
+                try
+                {
+                    var len = SymbolicExpression.Parse(edgeData.Length);
+                }
+                catch
+                {
+                    return false;
+                }
             }
 
             //if (metadata.StartVertexNumber != -1 && (metadata.StartVertexNumber < 1 ||
@@ -642,6 +652,13 @@ namespace GraphExpectedValue.Windows
 
         private async void CalculateButton_OnClick(object sender, RoutedEventArgs e)
         {
+            //var a = SymbolicExpression.Parse("sin(pi / 2)");
+            //var b = SymbolicExpression.Parse("2");
+            //a *= b;
+            //MessageBox.Show(
+            //    a.ToString() + " " + a.Evaluate(new Dictionary<string, FloatingPoint>()).RealValue
+            //);
+            //return;
             var algo = new GraphAlgorithms(graphMetadata);
             var status = algo.Check();
             if (status != CheckStatus.Ok)
@@ -668,21 +685,21 @@ namespace GraphExpectedValue.Windows
 
             var watcher = Stopwatch.StartNew();
             //var res = graphMetadata.Solve();
-            var res = await Task<double[]>.Factory.StartNew(() =>
+            var res = await Task<SymbolicExpression[]>.Factory.StartNew(() =>
             {
                 //Task.Delay(1000).Wait();
                 return graphMetadata.Solve();
             });
             watcher.Stop();
-            var calcResults = new List<Tuple<int, double>>();
+            var calcResults = new List<Tuple<int, SymbolicExpression>>();
             for (var i = 0; i < graphMetadata.EndVertexNumber - 1; i++)
             {
-                calcResults.Add(new Tuple<int, double>(i + 1, res[i]));
+                calcResults.Add(new Tuple<int, SymbolicExpression>(i + 1, res[i]));
             }
 
             for (var i = graphMetadata.EndVertexNumber; i <= res.Length; i++)
             {
-                calcResults.Add(new Tuple<int, double>(i + 1, res[i - 1]));
+                calcResults.Add(new Tuple<int, SymbolicExpression>(i + 1, res[i - 1]));
             }
 
             //for (var i = 0; i < 6; i++)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using GraphExpectedValue.GraphWidgets;
 using GraphExpectedValue.Utility;
 using GraphExpectedValue.Utility.ConcreteStrategies;
+using MathNet.Symbolics;
 
 namespace GraphExpectedValue.GraphLogic
 {
@@ -53,7 +54,7 @@ namespace GraphExpectedValue.GraphLogic
         /// <summary>
         /// Находит искомые математические ожидания
         /// </summary>
-        public double[] Solve()
+        public SymbolicExpression[] Solve()
         {
             return solutionStrategy.Solve(this);
         }

@@ -49,12 +49,17 @@
         
         <StackPanel Grid.Row="3" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
             <TextBlock Text="Length of edge" HorizontalAlignment="Center"/>
-            <n:NumericUpDownPicker
+            <!--<n:NumericUpDownPicker
                 Width="200"
                 HorizontalAlignment="Center"
                 Minimum="0"
                 Value="{Binding ElementName=this, Path=EdgeLength, Mode=OneWayToSource}"
                 DoubleAllowed="True"
+            />-->
+            <TextBox
+                Width="200"
+                HorizontalAlignment="Center"
+                Text="{Binding ElementName=this, Path=EdgeLengthExpr, Mode=OneWayToSource}"
             />
         </StackPanel>
         <Button Grid.Row="4" Content="Create edge" Click="CreateEdgeButton_OnClick"/>
