@@ -143,66 +143,107 @@ namespace GraphExpectedValue.Windows
         private void AddEdgeButton_OnClick(object sender, RoutedEventArgs e)
         {
             if (vertexes.Count < 2) return;
-            var edgePickWindow = new EdgePickWindow() { TotalVertexes = vertexes.Count };
+            Func<int, int, bool> checker = (startVertexNumber, endVertexNumber) =>
+            {
+                if (startVertexNumber == endVertexNumber)
+                {
+                    MessageBox.Show("Can\'t create loop edges", "", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return false;
+                }
+
+                startVertexNumber--;
+                endVertexNumber--;
+                var edgeStartVertex = vertexes[startVertexNumber];
+                var edgeEndVertex = vertexes[endVertexNumber];
+                if (edges.TryGetValue(new Tuple<Vertex, Vertex>(edgeStartVertex, edgeEndVertex), out _)
+                || (!graphMetadata.IsOriented && edges.TryGetValue(new Tuple<Vertex, Vertex>(edgeEndVertex, edgeStartVertex), out _)))
+                {
+                    MessageBox.Show(
+                        "Such edge already exists",
+                        "",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning
+                    );
+                    return false;
+                }
+
+                return true;
+            };
+            var edgePickWindow = new EdgePickWindow(checker) { TotalVertexes = vertexes.Count };
             if (edgePickWindow.ShowDialog() != true) return;
 
-            var startVertexNumber = edgePickWindow.StartVertexNumber - 1;
-            var endVertexNumber = edgePickWindow.EndVertexNumber - 1;
+            var chosenStartVertexNumber = edgePickWindow.StartVertexNumber - 1;
+            var chosenEndVertexNumber = edgePickWindow.EndVertexNumber - 1;
 
-            var edgeStartVertex = vertexes[startVertexNumber];
-            var edgeEndVertex = vertexes[endVertexNumber];
+            var chosenEdgeStartVertex = vertexes[chosenStartVertexNumber];
+            var chosenEdgeEndVertex = vertexes[chosenEndVertexNumber];
             var edgeLengthExpr = edgePickWindow.EdgeLengthExpr;
 
-            if (edges.TryGetValue(new Tuple<Vertex, Vertex>(edgeStartVertex, edgeEndVertex), out _))
-            {
-                MessageBox.Show(
-                    "Such edge already exists",
-                    "",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning
-                );
-                return;
-            }
-
-            var edge = new Edge(edgeStartVertex, edgeEndVertex, edgeLengthExpr)
+            var edge = new Edge(chosenEdgeStartVertex, chosenEdgeEndVertex, edgeLengthExpr)
             {
                 Backed = !graphMetadata.IsOriented
             };
             edge.UpdateEdge();
-            AddEdge(edge, edgeStartVertex, edgeEndVertex);
+            AddEdge(edge, chosenEdgeStartVertex, chosenEdgeEndVertex);
         }
 
         private void EditEdgeButton_OnClick(object sender, RoutedEventArgs e)
         {
-            if(edges.Count == 0)return;
-            var edgePickWindow = new EdgePickWindow
+            if (edges.Count == 0) return;
+            Func<int, int, bool> checker = (startVertexNumber, endVertexNumber) =>
+            {
+                if (startVertexNumber == endVertexNumber)
+                {
+                    MessageBox.Show(
+                        "There are no loop edges in graph",
+                        "",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning
+                    );
+                    return false;
+                }
+                startVertexNumber--;
+                endVertexNumber--;
+
+                var edgeStartVertex = vertexes[startVertexNumber];
+                var edgeEndVertex = vertexes[endVertexNumber];
+
+                var edgeTuple = new Tuple<Vertex, Vertex>(edgeStartVertex, edgeEndVertex);
+                var backEdgeTuple = new Tuple<Vertex, Vertex>(edgeEndVertex, edgeStartVertex);
+                if (!edges.TryGetValue(edgeTuple, out _))
+                {
+                    if (!graphMetadata.IsOriented && !edges.TryGetValue(backEdgeTuple, out _))
+                    {
+                        MessageBox.Show(
+                            "There is no such edge in graph",
+                            "",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning
+                        );
+                        return false;
+                    }
+                }
+
+                return true;
+            };
+            var edgePickWindow = new EdgePickWindow(checker)
             {
                 TotalVertexes = vertexes.Count,
                 Title = "Edit edge",
                 EndButton = { Content = "Edit edge" }
             };
-            if (edgePickWindow.ShowDialog() != true)return;
+            if (edgePickWindow.ShowDialog() != true) return;
 
-            var startVertexNumber = edgePickWindow.StartVertexNumber - 1;
-            var endVertexNumber = edgePickWindow.EndVertexNumber - 1;
+            var chosenStartVertexNumber = edgePickWindow.StartVertexNumber - 1;
+            var chosenEndVertexNumber = edgePickWindow.EndVertexNumber - 1;
 
-            var edgeStartVertex = vertexes[startVertexNumber];
-            var edgeEndVertex = vertexes[endVertexNumber];
+            var chosenEdgeStartVertex = vertexes[chosenStartVertexNumber];
+            var chosenEdgeEndVertex = vertexes[chosenEndVertexNumber];
             var edgeLengthExpr = edgePickWindow.EdgeLengthExpr;
 
-            if (!edges.TryGetValue(new Tuple<Vertex, Vertex>(edgeStartVertex, edgeEndVertex), out var edge))
+            if (!edges.TryGetValue(new Tuple<Vertex, Vertex>(chosenEdgeStartVertex, chosenEdgeEndVertex), out var edge))
             {
-                if (!graphMetadata.IsOriented &&
-                    !edges.TryGetValue(new Tuple<Vertex, Vertex>(edgeEndVertex, edgeStartVertex), out edge))
-                {
-                    MessageBox.Show(
-                        "There is no such edge in graph",
-                        "",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning
-                    );
-                    return;
-                }
+                edge = edges[new Tuple<Vertex, Vertex>(chosenEdgeEndVertex, chosenEdgeStartVertex)];
             }
 
             edge.Expression = edgeLengthExpr;
