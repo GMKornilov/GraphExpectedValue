@@ -43,7 +43,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             var res = new Tuple<int, SymbolicExpression>[resMatrix.Rows];
             for (var i = 0; i < res.Length; i++)
             {
-                res[i] = new Tuple<int, SymbolicExpression>(vertexPseudoIndexes[i], resMatrix[i, 0]);
+                res[i] = new Tuple<int, SymbolicExpression>(vertexPseudoIndexes[i] + 1, resMatrix[i, 0]);
             }
 
             return res;

@@ -333,20 +333,71 @@ namespace GraphExpectedValue.Windows
         //    //SetStartVertex(chosenVertex);
         //}
 
-        private void EndVertexButton_OnClick(object sender, RoutedEventArgs e)
+        private void AddEndVertexButton_OnClick(object sender, RoutedEventArgs e)
         {
             if (vertexes.Count == 0) return;
             var vertexPickWindow = new VertexChooseWindow()
             {
-                Prompt = "Choose end vertex",
+                Prompt = "Add end vertex",
                 TotalVertexes = vertexes.Count,
-                ConfirmButtonText = "Choose end vertex"
+                ConfirmButtonText = "Add end vertex"
             };
+            Func<int, bool> checker = vertexNumber =>
+            {
+                var vertex = vertexes[vertexNumber - 1];
+                if (vertex.VertexType == VertexType.EndVertex)
+                {
+                    MessageBox.Show(
+                        "This vertex is already ending",
+                        "",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning
+                    );
+                    return false;
+                }
+
+                return true;
+            };
+            vertexPickWindow.AddChecker(checker);
             if (vertexPickWindow.ShowDialog() == true)
             {
                 var chosenVertexNumber = vertexPickWindow.ChosenVertex - 1;
                 var chosenVertex = vertexes[chosenVertexNumber];
-                SetEndVertex(chosenVertex);
+                chosenVertex.VertexType = VertexType.EndVertex;
+            }
+        }
+
+        private void RemoveEndVertexButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (vertexes.Count == 0) return;
+            var vertexPickWindow = new VertexChooseWindow()
+            {
+                Prompt = "Add end vertex",
+                TotalVertexes = vertexes.Count,
+                ConfirmButtonText = "Add end vertex"
+            };
+            Func<int, bool> checker = vertexNumber =>
+            {
+                var vertex = vertexes[vertexNumber - 1];
+                if (vertex.VertexType != VertexType.EndVertex)
+                {
+                    MessageBox.Show(
+                        "This vertex isn't ending",
+                        "",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning
+                    );
+                    return false;
+                }
+
+                return true;
+            };
+            vertexPickWindow.AddChecker(checker);
+            if (vertexPickWindow.ShowDialog() == true)
+            {
+                var chosenVertexNumber = vertexPickWindow.ChosenVertex - 1;
+                var chosenVertex = vertexes[chosenVertexNumber];
+                chosenVertex.VertexType = VertexType.PathVertex;
             }
         }
 
@@ -491,28 +542,6 @@ namespace GraphExpectedValue.Windows
         //    vertex.VertexType = VertexType.StartVertex;
         //    startVertex = vertex;
         //}
-
-        private void SetEndVertex(Vertex vertex)
-        {
-            if (endVertex != null && !endVertex.Equals(vertex))
-            {
-                endVertex.PropertyChanged -= UpdateEndVertexNumber;
-                endVertex.VertexType = VertexType.PathVertex;
-                endVertex = null;
-            }
-
-            //if (vertex == startVertex)
-            //{
-            //    startVertex.PropertyChanged -= UpdateStartVertexNumber;
-            //    startVertex.VertexType = VertexType.PathVertex;
-            //    startVertex = null;
-            //    graphMetadata.StartVertexNumber = -1;
-            //}
-
-            vertex.PropertyChanged += UpdateEndVertexNumber;
-            vertex.VertexType = VertexType.EndVertex;
-            endVertex = vertex;
-        }
 
         private void AddEdge(Edge edge, Vertex edgeStartVertex, Vertex edgeEndVertex, bool addToMetadata = true)
         {

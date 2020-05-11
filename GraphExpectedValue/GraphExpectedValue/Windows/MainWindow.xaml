@@ -54,9 +54,14 @@
                     Choose starting vertex
                 </TextBlock>
             </Button>-->
-            <Button Name="EndVertexButton" Click="EndVertexButton_OnClick">
+            <Button Name="AddEndVertexButton" Click="AddEndVertexButton_OnClick">
                 <TextBlock>
-                    Choose ending vertex
+                    Add ending vertex
+                </TextBlock>
+            </Button>
+            <Button Name="RemoveEndVertexButton" Click="RemoveEndVertexButton_OnClick">
+                <TextBlock>
+                    Remove ending vertex
                 </TextBlock>
             </Button>
             <Button Name="CalculateButton" Click="CalculateButton_OnClick">

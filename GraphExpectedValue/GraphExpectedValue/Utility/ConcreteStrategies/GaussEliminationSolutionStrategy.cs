@@ -163,7 +163,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             result = new Tuple<int, SymbolicExpression>[matrix.Rows];
             for (var i = 0; i < result.Length; i++)
             {
-                result[i] = new Tuple<int, SymbolicExpression>(vertexPseudoIndexes[i], matrix[i, matrix.Cols - 1]);
+                result[i] = new Tuple<int, SymbolicExpression>(vertexPseudoIndexes[i] + 1, matrix[i, matrix.Cols - 1]);
             }
 
             return true;
