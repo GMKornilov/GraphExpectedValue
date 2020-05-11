@@ -307,7 +307,6 @@ namespace GraphExpectedValue.Windows
             if (chosenVertex == endVertex)
             {
                 endVertex = null;
-                graphMetadata.EndVertexNumber = -1;
             }
 
             graphMetadata.VertexMetadatas.Remove(chosenVertex.Metadata);
@@ -588,7 +587,7 @@ namespace GraphExpectedValue.Windows
         {
             if (sender is Vertex vertex)
             {
-                graphMetadata.EndVertexNumber = vertex.Number;
+                //graphMetadata.EndVertexNumber = vertex.Number;
             }
         }
 
@@ -623,19 +622,12 @@ namespace GraphExpectedValue.Windows
                 }
             }
 
+            return true;
             //if (metadata.StartVertexNumber != -1 && (metadata.StartVertexNumber < 1 ||
             //                                         metadata.StartVertexNumber > metadata.VertexMetadatas.Count))
             //{
             //    return false;
             //}
-
-            if (metadata.EndVertexNumber != -1 &&
-                (metadata.EndVertexNumber < 1 || metadata.EndVertexNumber > metadata.VertexMetadatas.Count))
-            {
-                return false;
-            }
-
-            return true;
         }
         private void LoadGraph(GraphMetadata metadata)
         {
@@ -671,10 +663,10 @@ namespace GraphExpectedValue.Windows
             //    SetStartVertex(vertexes[metadata.StartVertexNumber - 1]);
             //}
 
-            if (metadata.EndVertexNumber != -1)
-            {
-                SetEndVertex(vertexes[metadata.EndVertexNumber - 1]);
-            }
+            //if (metadata.EndVertexNumber != -1)
+            //{
+            //    SetEndVertex(vertexes[metadata.EndVertexNumber - 1]);
+            //}
             GraphMetadata.solutionStrategy = cmbSolution.SelectedItem as SolutionStrategy;
             Matrix.inverseStrategy = cmbInverse.SelectedItem as InverseStrategy;
             Matrix.multiplyStrategy = cmbMult.SelectedItem as MultiplyStrategy;
@@ -754,27 +746,17 @@ namespace GraphExpectedValue.Windows
 
             var watcher = Stopwatch.StartNew();
             //var res = graphMetadata.Solve();
-            var res = await Task<SymbolicExpression[]>.Factory.StartNew(() =>
+            var res = await Task<Tuple<int, SymbolicExpression>[]>.Factory.StartNew(() =>
             {
                 //Task.Delay(1000).Wait();
                 return graphMetadata.Solve();
             });
-            for (var i = 0; i < res.Length; i++)
-            {
-                res[i] = Algebraic.Expand(res[i].Expression);
-            }
             watcher.Stop();
             var calcResults = new List<Tuple<int, SymbolicExpression, double>>();
-            for (var i = 0; i < graphMetadata.EndVertexNumber - 1; i++)
+            for (var i = 0; i < res.Length; i++)
             {
-                calcResults.Add(new Tuple<int, SymbolicExpression, double>(i + 1, res[i], res[i].Evaluate(null).RealValue));
+                calcResults.Add(new Tuple<int, SymbolicExpression, double>(res[i].Item1, res[i].Item2, res[i].Item2.Evaluate(null).RealValue));
             }
-
-            for (var i = graphMetadata.EndVertexNumber; i <= res.Length; i++)
-            {
-                calcResults.Add(new Tuple<int, SymbolicExpression, double>(i + 1, res[i - 1], res[i - 1].Evaluate(null).RealValue));
-            }
-
             //for (var i = 0; i < 6; i++)
             //{
             //    calcResults.AddRange(calcResults);

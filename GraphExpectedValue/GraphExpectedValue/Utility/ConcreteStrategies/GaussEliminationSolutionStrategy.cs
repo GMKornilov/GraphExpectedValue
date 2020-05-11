@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using GraphExpectedValue.GraphLogic;
+using GraphExpectedValue.GraphWidgets;
 using MathNet.Symbolics;
 
 namespace GraphExpectedValue.Utility.ConcreteStrategies
@@ -26,11 +28,23 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
         /// </summary>
         private bool formed;
         /// <summary>
+        /// Позиции номеров вершин в матрице для восстановления ответа
+        /// </summary>
+        private List<int> vertexPseudoIndexes;
+        /// <summary>
+        /// Какие вершины являются поглощающими
+        /// </summary>
+        private List<bool> isEnding;
+        /// <summary>
+        /// Индексы для матрицы
+        /// </summary>
+        private List<int> vertexMatrixIndex;
+        /// <summary>
         /// Решение СЛАУ при помощи метода Гаусса
         /// </summary>
         /// <param name="metadata">Данные графа</param>
         /// <returns>Искомые математические ожидания</returns>
-        public SymbolicExpression[] Solve(GraphMetadata metadata)
+        public Tuple<int, SymbolicExpression>[] Solve(GraphMetadata metadata)
         {
             FormMatrices(metadata);
             if (!GaussElimination(out var result))
@@ -45,7 +59,29 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
         /// <param name="metadata">Данные графа</param>
         public void FormMatrices(GraphMetadata metadata)
         {
-            matrix = new Matrix(metadata.VertexMetadatas.Count - 1, metadata.VertexMetadatas.Count);
+            var endVertexesIndexes = new List<int>();
+            isEnding = new List<bool>(Enumerable.Repeat(false, metadata.VertexMetadatas.Count));
+            foreach (var vertexMetadata in metadata.VertexMetadatas)
+            {
+                if (vertexMetadata.Type == VertexType.EndVertex)
+                {
+                    isEnding[vertexMetadata.Number - 1] = true;
+                    endVertexesIndexes.Add(vertexMetadata.Number - 1);
+                }
+            }
+            vertexMatrixIndex = new List<int>(Enumerable.Repeat(0, metadata.VertexMetadatas.Count));
+            vertexPseudoIndexes = new List<int>(Enumerable.Repeat(0, metadata.VertexMetadatas.Count - endVertexesIndexes.Count));
+            var index = 0;
+            foreach (var vertexMetadata in metadata.VertexMetadatas)
+            {
+                if (vertexMetadata.Type == VertexType.PathVertex)
+                {
+                    vertexPseudoIndexes[index] = vertexMetadata.Number - 1;
+                    vertexMatrixIndex[vertexMetadata.Number - 1] = index;
+                    index++;
+                }
+            }
+            matrix = new Matrix(vertexPseudoIndexes.Count, vertexPseudoIndexes.Count + 1);
             var vertexDegrees = new int[metadata.VertexMetadatas.Count];
 
             for (var i = 0; i < vertexDegrees.Length; i++)
@@ -72,34 +108,34 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
                 var startProba = 1.0 / startVertexDegree;
                 
                 var startVertexIndex = edge.StartVertexNumber - 1;
-                startVertexIndex -= (startVertexIndex >= metadata.EndVertexNumber) ? 1 : 0;
 
                 var endVertexIndex = edge.EndVertexNumber - 1;
-                endVertexIndex -= (endVertexIndex >= metadata.EndVertexNumber) ? 1 : 0;
-
-                if (edge.StartVertexNumber != metadata.EndVertexNumber)
+                // start vertex is not ending
+                if (!isEnding[startVertexIndex])
                 {
-                    if (edge.EndVertexNumber != metadata.EndVertexNumber)
+                    // end vertex is not ending
+                    if (!isEnding[endVertexIndex])
                     {
-                        matrix[startVertexIndex, endVertexIndex] = -startProba;
+                        matrix[vertexMatrixIndex[startVertexIndex], vertexMatrixIndex[endVertexIndex]] = -startProba;
                     }
 
-                    matrix[startVertexIndex, metadata.VertexMetadatas.Count - 1] += startProba * lengthExpr;
+                    matrix[vertexMatrixIndex[startVertexIndex], matrix.Cols - 1] += startProba * lengthExpr;
                 }
-
-                if (!metadata.IsOriented && edge.EndVertexNumber != metadata.EndVertexNumber)
+                // unoriented and end vertex is not ending
+                if (!metadata.IsOriented && !isEnding[endVertexIndex])
                 {
                     var endProba = 1.0 / endVertexDegree;
-                    if (edge.StartVertexNumber != metadata.EndVertexNumber)
+                    // start vertex is not ending
+                    if (!isEnding[startVertexIndex])
                     {
-                        matrix[endVertexIndex, startVertexIndex] = -endProba;
+                        matrix[vertexMatrixIndex[endVertexIndex], vertexMatrixIndex[startVertexIndex]] = -endProba;
                     }
 
-                    matrix[endVertexIndex, metadata.VertexMetadatas.Count - 1] = endProba * lengthExpr;
+                    matrix[vertexMatrixIndex[endVertexIndex], metadata.VertexMetadatas.Count - 1] = endProba * lengthExpr;
                 }
             }
 
-            for (var i = 0; i < metadata.VertexMetadatas.Count - 1; i++)
+            for (var i = 0; i < matrix.Rows && i < matrix.Cols; i++)
             {
                 matrix[i, i] += 1;
             }
@@ -109,7 +145,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
         /// <summary>
         /// Решение СЛАУ при помощи метода Гаусса
         /// </summary>
-        public bool GaussElimination(out SymbolicExpression[] result)
+        public bool GaussElimination(out Tuple<int, SymbolicExpression>[] result)
         {
             if (!formed)
             {
@@ -124,10 +160,10 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
                     return false;
                 }
             }
-            result = new SymbolicExpression[matrix.Rows];
+            result = new Tuple<int, SymbolicExpression>[matrix.Rows];
             for (var i = 0; i < result.Length; i++)
             {
-                result[i] = matrix[i, matrix.Cols - 1];
+                result[i] = new Tuple<int, SymbolicExpression>(vertexPseudoIndexes[i], matrix[i, matrix.Cols - 1]);
             }
 
             return true;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using GraphExpectedValue.GraphWidgets;
 
 namespace GraphExpectedValue.GraphLogic
 {
@@ -28,10 +29,8 @@ namespace GraphExpectedValue.GraphLogic
         /// Список, проверяющий, какие вершины были посещены во время обхода в глубину
         /// </summary>
         private List<bool> used;
-        /// <summary>
-        /// Поглощающая вершина в данном графе
-        /// </summary>
-        private int startVertex;
+
+        private int _endVertexesAmount = 0;
 
         public GraphAlgorithms(GraphMetadata metadata) => FormData(metadata);
         /// <summary>
@@ -40,7 +39,7 @@ namespace GraphExpectedValue.GraphLogic
         public CheckStatus Check()
         {
             var res = CheckStatus.Ok;
-            if (startVertex == -1)
+            if (_endVertexesAmount == 0)
             {
                 res |= CheckStatus.EndVertexNotSelected;
             }
@@ -62,6 +61,10 @@ namespace GraphExpectedValue.GraphLogic
             for (var i = 0; i < metadata.VertexMetadatas.Count; i++)
             {
                 adjacencyList.Add(new List<int>());
+                if (metadata.VertexMetadatas[i].Type == VertexType.EndVertex)
+                {
+                    _endVertexesAmount++;
+                }
             }
             reversedAdjacencyList = new List<List<int>>();
             for (var i = 0; i < metadata.VertexMetadatas.Count; i++)
@@ -82,15 +85,6 @@ namespace GraphExpectedValue.GraphLogic
                     adjacencyList[end].Add(start);
                     reversedAdjacencyList[start].Add(end);
                 }
-            }
-
-            if (metadata.EndVertexNumber == -1)
-            {
-                startVertex = -1;
-            }
-            else
-            {
-                startVertex = metadata.EndVertexNumber - 1;
             }
         }
         /// <summary>
