@@ -784,7 +784,8 @@ namespace GraphExpectedValue.Windows
             var calcResults = new List<Tuple<int, SymbolicExpression, double>>();
             for (var i = 0; i < res.Length; i++)
             {
-                calcResults.Add(new Tuple<int, SymbolicExpression, double>(res[i].Item1, res[i].Item2, res[i].Item2.Evaluate(null).RealValue));
+                var expanded = MathNet.Symbolics.Algebraic.Expand(res[i].Item2.Expression);
+                calcResults.Add(new Tuple<int, SymbolicExpression, double>(res[i].Item1, expanded, res[i].Item2.Evaluate(null).RealValue));
             }
             //for (var i = 0; i < 6; i++)
             //{
