@@ -169,7 +169,7 @@ namespace GraphExpectedValue.Windows
 
                 return true;
             };
-            var edgePickWindow = new EdgePickWindow(checker) { TotalVertexes = vertexes.Count };
+            var edgePickWindow = new EdgePickWindow(checker, graphMetadata.CustomProbabilities) { TotalVertexes = vertexes.Count };
             if (edgePickWindow.ShowDialog() != true) return;
 
             var chosenStartVertexNumber = edgePickWindow.StartVertexNumber - 1;
@@ -179,10 +179,22 @@ namespace GraphExpectedValue.Windows
             var chosenEdgeEndVertex = vertexes[chosenEndVertexNumber];
             var edgeLengthExpr = edgePickWindow.EdgeLengthExpr;
 
-            var edge = new Edge(chosenEdgeStartVertex, chosenEdgeEndVertex, edgeLengthExpr)
+            Edge edge;
+            if (graphMetadata.CustomProbabilities)
             {
-                Backed = !graphMetadata.IsOriented
-            };
+                var edgeProbaExpr = edgePickWindow.EdgeProbabilityExpr;
+                edge = new Edge(chosenEdgeStartVertex, chosenEdgeEndVertex, edgeLengthExpr, edgeProbaExpr)
+                {
+                    Backed = !graphMetadata.IsOriented
+                };
+            }
+            else
+            {
+                edge = new Edge(chosenEdgeStartVertex, chosenEdgeEndVertex, edgeLengthExpr)
+                {
+                    Backed = !graphMetadata.IsOriented
+                };
+            }
             edge.UpdateEdge();
             AddEdge(edge, chosenEdgeStartVertex, chosenEdgeEndVertex);
         }
@@ -226,7 +238,7 @@ namespace GraphExpectedValue.Windows
 
                 return true;
             };
-            var edgePickWindow = new EdgePickWindow(checker)
+            var edgePickWindow = new EdgePickWindow(checker, graphMetadata.CustomProbabilities)
             {
                 TotalVertexes = vertexes.Count,
                 Title = "Edit edge",
@@ -246,7 +258,12 @@ namespace GraphExpectedValue.Windows
                 edge = edges[new Tuple<Vertex, Vertex>(chosenEdgeEndVertex, chosenEdgeStartVertex)];
             }
 
-            edge.Expression = edgeLengthExpr;
+            edge.LengthExpression = edgeLengthExpr;
+            if (graphMetadata.CustomProbabilities)
+            {
+                var edgeProbaExpr = edgePickWindow.EdgeProbabilityExpr;
+                edge.ProbabilityExpression = edgeProbaExpr;
+            }
             edge.UpdateEdge();
         }
 
@@ -612,14 +629,6 @@ namespace GraphExpectedValue.Windows
         //    }
         //}
 
-        private void UpdateEndVertexNumber(object sender, PropertyChangedEventArgs e)
-        {
-            if (sender is Vertex vertex)
-            {
-                //graphMetadata.EndVertexNumber = vertex.Number;
-            }
-        }
-
         private static bool CheckMetadata(GraphMetadata metadata)
         {
             metadata.VertexMetadatas.Sort(((metadata1, metadata2) => metadata1.Number.CompareTo(metadata2.Number)));
@@ -643,7 +652,7 @@ namespace GraphExpectedValue.Windows
                 );
                 try
                 {
-                    var len = SymbolicExpression.Parse(edgeData.Length);
+                    var parseTest = SymbolicExpression.Parse(edgeData.Length);
                 }
                 catch
                 {
@@ -718,22 +727,23 @@ namespace GraphExpectedValue.Windows
             endVertex = null;
         }
 
-        private void ItemOriented_OnClick(object sender, RoutedEventArgs e)
+        private void MenuItem_OnClick(object sender, RoutedEventArgs e)
         {
-            CreateGraph(true);
+            var createGraphWindow = new GraphCreateWindow();
+            if(createGraphWindow.ShowDialog() != true)return;
+            var isOrientedString = (createGraphWindow.GraphTypeComboBox.SelectedItem as TextBlock)?.Text;
+            var isOriented = isOrientedString.Equals("Digraph");
+            var customProbas = createGraphWindow.CustomProbasCheckBox.IsChecked == true;
+            CreateGraph(isOriented, customProbas);
         }
 
-        private void ItemUnoriented_OnClick(object sender, RoutedEventArgs e)
-        {
-            CreateGraph(false);
-        }
-
-        private void CreateGraph(bool isOriented)
+        private void CreateGraph(bool isOriented, bool customProbas)
         {
             ClearGraph();
             graphMetadata = new GraphMetadata()
             {
-                IsOriented = isOriented
+                IsOriented = isOriented,
+                CustomProbabilities = customProbas
             };
             vertexes = new List<Vertex>();
             edges = new Dictionary<Tuple<Vertex, Vertex>, Edge>();
@@ -757,6 +767,16 @@ namespace GraphExpectedValue.Windows
                 if (status.HasFlag(CheckStatus.EndVertexNotSelected))
                 {
                     errMessage += "End vertex wasn't selected\n";
+                }
+
+                if (status.HasFlag(CheckStatus.AllVertexesAreEnding))
+                {
+                    errMessage += "There should be at least one path vertex.\n";
+                }
+
+                if (status.HasFlag(CheckStatus.WrongProbabilities))
+                {
+                    errMessage += "Sum of all probabilities of outcoming edges of one's vertex should be 1";
                 }
 
                 if (status.HasFlag(CheckStatus.WrongConnectionComponents))

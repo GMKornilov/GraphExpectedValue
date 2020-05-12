@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using GraphExpectedValue.GraphWidgets;
+using MathNet.Symbolics;
 
 namespace GraphExpectedValue.GraphLogic
 {
@@ -10,7 +11,9 @@ namespace GraphExpectedValue.GraphLogic
     {
         Ok = 0,
         EndVertexNotSelected = (1 << 0),
-        WrongConnectionComponents = (1 << 1)
+        WrongConnectionComponents = (1 << 1),
+        WrongProbabilities = (1 << 2),
+        AllVertexesAreEnding = (1 << 3)
     }
     /// <summary>
     /// Класс, проверяющий корректность заданного графа
@@ -25,14 +28,35 @@ namespace GraphExpectedValue.GraphLogic
         /// Список смежности транспорированного графа
         /// </summary>
         private List<List<int>> reversedAdjacencyList;
+
+        private List<List<SymbolicExpression>> adjProbaList;
         /// <summary>
         /// Список, проверяющий, какие вершины были посещены во время обхода в глубину
         /// </summary>
         private List<bool> used;
 
-        private int _endVertexesAmount = 0;
+        private int _endVertexesAmount;
+        private bool _checkProbas;
+        public GraphAlgorithms(GraphMetadata metadata)
+        {
+            FormData(metadata);
+            _checkProbas = metadata.CustomProbabilities;
+            if (_checkProbas)
+            {
+                adjProbaList = new List<List<SymbolicExpression>>();
+                for (var i = 0; i < metadata.VertexMetadatas.Count; i++)
+                {
+                    adjProbaList.Add(new List<SymbolicExpression>());
+                }
 
-        public GraphAlgorithms(GraphMetadata metadata) => FormData(metadata);
+                foreach (var edge in metadata.EdgeMetadatas)
+                {
+                    var startVertexNumber = edge.StartVertexNumber - 1;
+                    adjProbaList[startVertexNumber].Add(Infix.ParseOrThrow(edge.Probability));
+                }
+            }
+        }
+
         /// <summary>
         /// Проверяет граф, данный в конструкторе, на корректность
         /// </summary>
@@ -43,10 +67,20 @@ namespace GraphExpectedValue.GraphLogic
             {
                 res |= CheckStatus.EndVertexNotSelected;
             }
+
+            if (_endVertexesAmount == adjacencyList.Count)
+            {
+                res |= CheckStatus.AllVertexesAreEnding;
+            }
             var strongComponents = StrongComponents();
             if (strongComponents.Count != 1)
             {
                 res |= CheckStatus.WrongConnectionComponents;
+            }
+
+            if (_checkProbas && !CheckProbas())
+            {
+                res |= CheckStatus.WrongProbabilities;
             }
 
             return res;
@@ -135,6 +169,22 @@ namespace GraphExpectedValue.GraphLogic
             }
 
             return res;
+        }
+
+        private bool CheckProbas()
+        {
+            foreach (var vertexAdjList in adjProbaList)
+            {
+                if(vertexAdjList.Count == 0)continue;
+                var sum = vertexAdjList.Aggregate(SymbolicExpression.Zero, (current, proba) => current + proba);
+                var realSumValue = sum.Evaluate(null).RealValue;
+                if (Math.Abs(realSumValue - 1) > 1e-6)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

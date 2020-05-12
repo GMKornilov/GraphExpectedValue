@@ -26,10 +26,7 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" VerticalAlignment="Center">
-            <MenuItem Header="New graph">
-                <MenuItem Header="Digrpaph" Click="ItemOriented_OnClick"/>
-                <MenuItem Header="Unoriented graph" Click="ItemUnoriented_OnClick"/>
-            </MenuItem>
+            <MenuItem Header="New graph" Click="MenuItem_OnClick"/>
             <MenuItem Header="Open graph" Click="OpenGraphButton_OnClick"/>
             <MenuItem Header="Save graph" Click="SafeGraphButton_OnClick"/>
         </Menu>

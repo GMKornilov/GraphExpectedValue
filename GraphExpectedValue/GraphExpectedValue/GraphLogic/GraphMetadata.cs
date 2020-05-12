@@ -26,6 +26,8 @@ namespace GraphExpectedValue.GraphLogic
         /// Список представлений ребер для сериализации
         /// </summary>
         public List<EdgeMetadata> EdgeMetadatas { get; private set; }
+
+        public bool CustomProbabilities { get; set; }
         /// <summary>
         /// Стратегия нахождения искомых математических ожиданий
         /// </summary>
@@ -36,14 +38,16 @@ namespace GraphExpectedValue.GraphLogic
             //StartVertexNumber = -1;
             VertexMetadatas = new List<VertexMetadata>();
             EdgeMetadatas = new List<EdgeMetadata>();
+            CustomProbabilities = false;
         }
 
-        public GraphMetadata(List<VertexMetadata> vertexMetadatas, List<EdgeMetadata> edgeMetadatas)
+        public GraphMetadata(List<VertexMetadata> vertexMetadatas, List<EdgeMetadata> edgeMetadatas, bool customProbabilities)
         {
             //StartVertexNumber = startVertexNumber;
 
             VertexMetadatas = vertexMetadatas;
             EdgeMetadatas = edgeMetadatas;
+            CustomProbabilities = customProbabilities;
         }
         /// <summary>
         /// Находит искомые математические ожидания
