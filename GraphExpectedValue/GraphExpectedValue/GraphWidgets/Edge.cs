@@ -161,6 +161,7 @@ namespace GraphExpectedValue.GraphWidgets
                     a *= Math.Sign(a.X);
                 }
                 var angle = Math.Atan2(a.Y, a.X) / Math.PI * 180;
+                //return angle;
                 return angle <= 90 ? angle : 180 - angle;
             }
         }
@@ -293,6 +294,10 @@ namespace GraphExpectedValue.GraphWidgets
             var heightOffsetVector = bezierMidVec;
             heightOffsetVector.Normalize();
             var heightOffset = offset + TextSize.Height + bezierMidLength / 2.0;
+            if (pt1 == StartPoint)
+            {
+                heightOffset -= TextSize.Height;
+            }
             heightOffsetVector *= heightOffset;
 
             var offsetVector = heightOffsetVector + widthOffsetVector;
@@ -372,9 +377,14 @@ namespace GraphExpectedValue.GraphWidgets
             ProbabilityExpression = probaVal;
         }
 
-        public Edge(Vertex from, Vertex to, EdgeMetadata metadata) : this(from, to, SymbolicExpression.Parse(metadata.Length))
+        public Edge(Vertex from, Vertex to, EdgeMetadata metadata, bool customProba) : this(from, to, SymbolicExpression.Parse(metadata.Length))
         {
             this.Metadata = metadata;
+            if (customProba)
+            {
+                _showProba = true;
+                ProbabilityExpression = SymbolicExpression.Parse(Metadata.Probability);
+            }
         }
     }
 }

@@ -105,7 +105,8 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
                 var startVertexDegree = vertexDegrees[edge.StartVertexNumber - 1];
                 var endVertexDegree = vertexDegrees[edge.EndVertexNumber - 1];
 
-                var startProba = 1.0 / startVertexDegree;
+                var parseStartString = metadata.CustomProbabilities ? edge.Probability : "1.0 / " + startVertexDegree;
+                var startProba = SymbolicExpression.Parse(parseStartString);
                 
                 var startVertexIndex = edge.StartVertexNumber - 1;
 
@@ -124,7 +125,8 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
                 // unoriented and end vertex is not ending
                 if (!metadata.IsOriented && !isEnding[endVertexIndex])
                 {
-                    var endProba = 1.0 / endVertexDegree;
+                    var parseEndString = metadata.CustomProbabilities ? edge.Probability : "1.0 / " + endVertexDegree;
+                    var endProba = SymbolicExpression.Parse(parseEndString);
                     // start vertex is not ending
                     if (!isEnding[startVertexIndex])
                     {

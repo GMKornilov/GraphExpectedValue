@@ -689,7 +689,8 @@ namespace GraphExpectedValue.Windows
                 var edge = new Edge(
                     edgeStartVertex,
                     edgeEndVertex,
-                    edgeData
+                    edgeData,
+                    graphMetadata.CustomProbabilities
                 );
                 edge.Backed = !graphMetadata.IsOriented;
                 edge.UpdateEdge();
