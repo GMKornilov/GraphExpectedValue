@@ -24,6 +24,7 @@ namespace GraphExpectedValue.Windows
     {
         private int _totalVertexes;
         private string _confirmButtonText, _prompt;
+        private Func<int, bool> _checker;
 
         public string Prompt
         {
@@ -55,6 +56,11 @@ namespace GraphExpectedValue.Windows
         }
 
         public int ChosenVertex { get; set; }
+
+        public void AddChecker(Func<int, bool> checker)
+        {
+            _checker += checker;
+        }
         public VertexChooseWindow()
         {
             InitializeComponent();
@@ -70,7 +76,6 @@ namespace GraphExpectedValue.Windows
 
         private void ConfirmButton_OnClick(object sender, RoutedEventArgs e)
         {
-            //ConfirmButtonClickHandler?.Invoke(sender, e);
             if (ChosenVertex < 1 || ChosenVertex > TotalVertexes)
             {
                 MessageBox.Show(
@@ -81,7 +86,11 @@ namespace GraphExpectedValue.Windows
                 );
                 return;
             }
-            DialogResult = true;
+
+            if (_checker?.Invoke(ChosenVertex) == true || _checker == null)
+            {
+                DialogResult = true;
+            }
         }
     }
 }
