@@ -7,6 +7,5 @@ namespace GraphExpectedValue.Utility
     public interface SolutionStrategy
     {
         Tuple<int, SymbolicExpression>[] Solve(GraphMetadata metadata);
-        void FormMatrices(GraphMetadata metadata);
     }
 }

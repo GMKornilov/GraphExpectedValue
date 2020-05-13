@@ -92,6 +92,7 @@
     <Compile Include="Utility\ConcreteStrategies\GaussEliminationInverseStrategy.cs" />
     <Compile Include="Utility\ConcreteStrategies\GaussEliminationSolutionStrategy.cs" />
     <Compile Include="Utility\ConcreteStrategies\InverseMatrixSolutionStrategy.cs" />
+    <Compile Include="Utility\ConcreteStrategies\LinearEquationSolutionStrategy.cs" />
     <Compile Include="Utility\ConcreteStrategies\SimpleMultiplyStrategy.cs" />
     <Compile Include="Utility\ConcreteStrategies\StrassenMultiplyStrategy.cs" />
     <Compile Include="Utility\InverseStrategy.cs" />
