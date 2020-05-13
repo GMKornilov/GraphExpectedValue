@@ -1,4 +1,5 @@
 ﻿using System;
+using MathNet.Symbolics;
 
 namespace GraphExpectedValue.Utility.ConcreteStrategies
 {
@@ -21,7 +22,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             {
                 for (var j = 0; j < result.Cols; j++)
                 {
-                    result[i, j] = 0;
+                    result[i, j] = SymbolicExpression.Zero;
                     for (var k = 0; k < lhs.Cols; k++)
                     {
                         result[i, j] += lhs[i, k] * rhs[k, j];

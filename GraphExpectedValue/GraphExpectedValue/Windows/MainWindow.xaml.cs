@@ -389,9 +389,9 @@ namespace GraphExpectedValue.Windows
             if (vertexes.Count == 0) return;
             var vertexPickWindow = new VertexChooseWindow()
             {
-                Prompt = "Add end vertex",
+                Prompt = "Remove end vertex",
                 TotalVertexes = vertexes.Count,
-                ConfirmButtonText = "Add end vertex"
+                ConfirmButtonText = "Remove end vertex"
             };
             Func<int, bool> checker = vertexNumber =>
             {

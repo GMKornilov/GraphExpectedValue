@@ -98,7 +98,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
                         matrix[vertexMatrixIndex[endVertexIndex], vertexMatrixIndex[startVertexIndex]] = -endProba;
                     }
 
-                    matrix[vertexMatrixIndex[endVertexIndex], metadata.VertexMetadatas.Count - 1] = endProba * lengthExpr;
+                    matrix[vertexMatrixIndex[endVertexIndex], metadata.VertexMetadatas.Count - 1] += endProba * lengthExpr;
                 }
             }
 
