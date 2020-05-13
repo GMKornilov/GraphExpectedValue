@@ -170,7 +170,7 @@ namespace GraphExpectedValue.Utility
 
                     SwapRows(col, swapRow);
                 }
-                MultiplyRow(col, 1.0 / content[col][col]);
+                MultiplyRow(col, SymbolicExpression.One / content[col][col]);
                 for (var elimRow = 0; elimRow < Rows; elimRow++)
                 {
                     if (elimRow == col || Math.Abs(content[elimRow][col].Evaluate(null).RealValue) < EPS)
