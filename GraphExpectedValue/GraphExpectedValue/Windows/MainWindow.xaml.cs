@@ -169,7 +169,7 @@ namespace GraphExpectedValue.Windows
 
                 return true;
             };
-            var edgePickWindow = new EdgePickWindow(checker) { TotalVertexes = vertexes.Count };
+            var edgePickWindow = new EdgePickWindow(checker, graphMetadata.CustomProbabilities) { TotalVertexes = vertexes.Count };
             if (edgePickWindow.ShowDialog() != true) return;
 
             var chosenStartVertexNumber = edgePickWindow.StartVertexNumber - 1;
@@ -179,10 +179,22 @@ namespace GraphExpectedValue.Windows
             var chosenEdgeEndVertex = vertexes[chosenEndVertexNumber];
             var edgeLengthExpr = edgePickWindow.EdgeLengthExpr;
 
-            var edge = new Edge(chosenEdgeStartVertex, chosenEdgeEndVertex, edgeLengthExpr)
+            Edge edge;
+            if (graphMetadata.CustomProbabilities)
             {
-                Backed = !graphMetadata.IsOriented
-            };
+                var edgeProbaExpr = edgePickWindow.EdgeProbabilityExpr;
+                edge = new Edge(chosenEdgeStartVertex, chosenEdgeEndVertex, edgeLengthExpr, edgeProbaExpr)
+                {
+                    Backed = !graphMetadata.IsOriented
+                };
+            }
+            else
+            {
+                edge = new Edge(chosenEdgeStartVertex, chosenEdgeEndVertex, edgeLengthExpr)
+                {
+                    Backed = !graphMetadata.IsOriented
+                };
+            }
             edge.UpdateEdge();
             AddEdge(edge, chosenEdgeStartVertex, chosenEdgeEndVertex);
         }
@@ -226,7 +238,7 @@ namespace GraphExpectedValue.Windows
 
                 return true;
             };
-            var edgePickWindow = new EdgePickWindow(checker)
+            var edgePickWindow = new EdgePickWindow(checker, graphMetadata.CustomProbabilities)
             {
                 TotalVertexes = vertexes.Count,
                 Title = "Edit edge",
@@ -246,7 +258,12 @@ namespace GraphExpectedValue.Windows
                 edge = edges[new Tuple<Vertex, Vertex>(chosenEdgeEndVertex, chosenEdgeStartVertex)];
             }
 
-            edge.Expression = edgeLengthExpr;
+            edge.LengthExpression = edgeLengthExpr;
+            if (graphMetadata.CustomProbabilities)
+            {
+                var edgeProbaExpr = edgePickWindow.EdgeProbabilityExpr;
+                edge.ProbabilityExpression = edgeProbaExpr;
+            }
             edge.UpdateEdge();
         }
 
@@ -307,7 +324,6 @@ namespace GraphExpectedValue.Windows
             if (chosenVertex == endVertex)
             {
                 endVertex = null;
-                graphMetadata.EndVertexNumber = -1;
             }
 
             graphMetadata.VertexMetadatas.Remove(chosenVertex.Metadata);
@@ -334,20 +350,71 @@ namespace GraphExpectedValue.Windows
         //    //SetStartVertex(chosenVertex);
         //}
 
-        private void EndVertexButton_OnClick(object sender, RoutedEventArgs e)
+        private void AddEndVertexButton_OnClick(object sender, RoutedEventArgs e)
         {
             if (vertexes.Count == 0) return;
             var vertexPickWindow = new VertexChooseWindow()
             {
-                Prompt = "Choose end vertex",
+                Prompt = "Add end vertex",
                 TotalVertexes = vertexes.Count,
-                ConfirmButtonText = "Choose end vertex"
+                ConfirmButtonText = "Add end vertex"
             };
+            Func<int, bool> checker = vertexNumber =>
+            {
+                var vertex = vertexes[vertexNumber - 1];
+                if (vertex.VertexType == VertexType.EndVertex)
+                {
+                    MessageBox.Show(
+                        "This vertex is already ending",
+                        "",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning
+                    );
+                    return false;
+                }
+
+                return true;
+            };
+            vertexPickWindow.AddChecker(checker);
             if (vertexPickWindow.ShowDialog() == true)
             {
                 var chosenVertexNumber = vertexPickWindow.ChosenVertex - 1;
                 var chosenVertex = vertexes[chosenVertexNumber];
-                SetEndVertex(chosenVertex);
+                chosenVertex.VertexType = VertexType.EndVertex;
+            }
+        }
+
+        private void RemoveEndVertexButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (vertexes.Count == 0) return;
+            var vertexPickWindow = new VertexChooseWindow()
+            {
+                Prompt = "Add end vertex",
+                TotalVertexes = vertexes.Count,
+                ConfirmButtonText = "Add end vertex"
+            };
+            Func<int, bool> checker = vertexNumber =>
+            {
+                var vertex = vertexes[vertexNumber - 1];
+                if (vertex.VertexType != VertexType.EndVertex)
+                {
+                    MessageBox.Show(
+                        "This vertex isn't ending",
+                        "",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning
+                    );
+                    return false;
+                }
+
+                return true;
+            };
+            vertexPickWindow.AddChecker(checker);
+            if (vertexPickWindow.ShowDialog() == true)
+            {
+                var chosenVertexNumber = vertexPickWindow.ChosenVertex - 1;
+                var chosenVertex = vertexes[chosenVertexNumber];
+                chosenVertex.VertexType = VertexType.PathVertex;
             }
         }
 
@@ -493,28 +560,6 @@ namespace GraphExpectedValue.Windows
         //    startVertex = vertex;
         //}
 
-        private void SetEndVertex(Vertex vertex)
-        {
-            if (endVertex != null && !endVertex.Equals(vertex))
-            {
-                endVertex.PropertyChanged -= UpdateEndVertexNumber;
-                endVertex.VertexType = VertexType.PathVertex;
-                endVertex = null;
-            }
-
-            //if (vertex == startVertex)
-            //{
-            //    startVertex.PropertyChanged -= UpdateStartVertexNumber;
-            //    startVertex.VertexType = VertexType.PathVertex;
-            //    startVertex = null;
-            //    graphMetadata.StartVertexNumber = -1;
-            //}
-
-            vertex.PropertyChanged += UpdateEndVertexNumber;
-            vertex.VertexType = VertexType.EndVertex;
-            endVertex = vertex;
-        }
-
         private void AddEdge(Edge edge, Vertex edgeStartVertex, Vertex edgeEndVertex, bool addToMetadata = true)
         {
             // if we have oriented graph and trying to add back edge,
@@ -584,14 +629,6 @@ namespace GraphExpectedValue.Windows
         //    }
         //}
 
-        private void UpdateEndVertexNumber(object sender, PropertyChangedEventArgs e)
-        {
-            if (sender is Vertex vertex)
-            {
-                graphMetadata.EndVertexNumber = vertex.Number;
-            }
-        }
-
         private static bool CheckMetadata(GraphMetadata metadata)
         {
             metadata.VertexMetadatas.Sort(((metadata1, metadata2) => metadata1.Number.CompareTo(metadata2.Number)));
@@ -615,7 +652,7 @@ namespace GraphExpectedValue.Windows
                 );
                 try
                 {
-                    var len = SymbolicExpression.Parse(edgeData.Length);
+                    var parseTest = SymbolicExpression.Parse(edgeData.Length);
                 }
                 catch
                 {
@@ -623,19 +660,12 @@ namespace GraphExpectedValue.Windows
                 }
             }
 
+            return true;
             //if (metadata.StartVertexNumber != -1 && (metadata.StartVertexNumber < 1 ||
             //                                         metadata.StartVertexNumber > metadata.VertexMetadatas.Count))
             //{
             //    return false;
             //}
-
-            if (metadata.EndVertexNumber != -1 &&
-                (metadata.EndVertexNumber < 1 || metadata.EndVertexNumber > metadata.VertexMetadatas.Count))
-            {
-                return false;
-            }
-
-            return true;
         }
         private void LoadGraph(GraphMetadata metadata)
         {
@@ -659,7 +689,8 @@ namespace GraphExpectedValue.Windows
                 var edge = new Edge(
                     edgeStartVertex,
                     edgeEndVertex,
-                    edgeData
+                    edgeData,
+                    graphMetadata.CustomProbabilities
                 );
                 edge.Backed = !graphMetadata.IsOriented;
                 edge.UpdateEdge();
@@ -671,10 +702,10 @@ namespace GraphExpectedValue.Windows
             //    SetStartVertex(vertexes[metadata.StartVertexNumber - 1]);
             //}
 
-            if (metadata.EndVertexNumber != -1)
-            {
-                SetEndVertex(vertexes[metadata.EndVertexNumber - 1]);
-            }
+            //if (metadata.EndVertexNumber != -1)
+            //{
+            //    SetEndVertex(vertexes[metadata.EndVertexNumber - 1]);
+            //}
             GraphMetadata.solutionStrategy = cmbSolution.SelectedItem as SolutionStrategy;
             Matrix.inverseStrategy = cmbInverse.SelectedItem as InverseStrategy;
             Matrix.multiplyStrategy = cmbMult.SelectedItem as MultiplyStrategy;
@@ -697,22 +728,23 @@ namespace GraphExpectedValue.Windows
             endVertex = null;
         }
 
-        private void ItemOriented_OnClick(object sender, RoutedEventArgs e)
+        private void MenuItem_OnClick(object sender, RoutedEventArgs e)
         {
-            CreateGraph(true);
+            var createGraphWindow = new GraphCreateWindow();
+            if(createGraphWindow.ShowDialog() != true)return;
+            var isOrientedString = (createGraphWindow.GraphTypeComboBox.SelectedItem as TextBlock)?.Text;
+            var isOriented = isOrientedString.Equals("Digraph");
+            var customProbas = createGraphWindow.CustomProbasCheckBox.IsChecked == true;
+            CreateGraph(isOriented, customProbas);
         }
 
-        private void ItemUnoriented_OnClick(object sender, RoutedEventArgs e)
-        {
-            CreateGraph(false);
-        }
-
-        private void CreateGraph(bool isOriented)
+        private void CreateGraph(bool isOriented, bool customProbas)
         {
             ClearGraph();
             graphMetadata = new GraphMetadata()
             {
-                IsOriented = isOriented
+                IsOriented = isOriented,
+                CustomProbabilities = customProbas
             };
             vertexes = new List<Vertex>();
             edges = new Dictionary<Tuple<Vertex, Vertex>, Edge>();
@@ -738,6 +770,16 @@ namespace GraphExpectedValue.Windows
                     errMessage += "End vertex wasn't selected\n";
                 }
 
+                if (status.HasFlag(CheckStatus.AllVertexesAreEnding))
+                {
+                    errMessage += "There should be at least one path vertex.\n";
+                }
+
+                if (status.HasFlag(CheckStatus.WrongProbabilities))
+                {
+                    errMessage += "Sum of all probabilities of outcoming edges of one's vertex should be 1";
+                }
+
                 if (status.HasFlag(CheckStatus.WrongConnectionComponents))
                 {
                     errMessage += "All vertexes should be in one strong component";
@@ -754,27 +796,18 @@ namespace GraphExpectedValue.Windows
 
             var watcher = Stopwatch.StartNew();
             //var res = graphMetadata.Solve();
-            var res = await Task<SymbolicExpression[]>.Factory.StartNew(() =>
+            var res = await Task<Tuple<int, SymbolicExpression>[]>.Factory.StartNew(() =>
             {
                 //Task.Delay(1000).Wait();
                 return graphMetadata.Solve();
             });
-            for (var i = 0; i < res.Length; i++)
-            {
-                res[i] = Algebraic.Expand(res[i].Expression);
-            }
             watcher.Stop();
             var calcResults = new List<Tuple<int, SymbolicExpression, double>>();
-            for (var i = 0; i < graphMetadata.EndVertexNumber - 1; i++)
+            for (var i = 0; i < res.Length; i++)
             {
-                calcResults.Add(new Tuple<int, SymbolicExpression, double>(i + 1, res[i], res[i].Evaluate(null).RealValue));
+                var expanded = MathNet.Symbolics.Algebraic.Expand(res[i].Item2.Expression);
+                calcResults.Add(new Tuple<int, SymbolicExpression, double>(res[i].Item1, expanded, res[i].Item2.Evaluate(null).RealValue));
             }
-
-            for (var i = graphMetadata.EndVertexNumber; i <= res.Length; i++)
-            {
-                calcResults.Add(new Tuple<int, SymbolicExpression, double>(i + 1, res[i - 1], res[i - 1].Evaluate(null).RealValue));
-            }
-
             //for (var i = 0; i < 6; i++)
             //{
             //    calcResults.AddRange(calcResults);

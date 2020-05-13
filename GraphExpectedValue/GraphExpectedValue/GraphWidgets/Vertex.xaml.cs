@@ -139,16 +139,21 @@ namespace GraphExpectedValue.GraphWidgets
             Number = number;
         }
 
-        public Vertex(double x, double y, int number) : this(number)
+        public Vertex(double x, double y, int number, VertexType type) : this(number)
         {
             this.x = x;
             this.y = y;
+            VertexType = type;
             Metadata.Position = Center;
             Canvas.SetLeft(this, x - Size / 2);
             Canvas.SetTop(this, y - Size / 2);
         }
 
-        public Vertex(VertexMetadata metadata):this(metadata.Position.X, metadata.Position.Y, metadata.Number)
+        public Vertex(double x, double y, int number) : this(x, y, number, VertexType.PathVertex)
+        {
+        }
+
+        public Vertex(VertexMetadata metadata):this(metadata.Position.X, metadata.Position.Y, metadata.Number, metadata.Type)
         {
             this.Metadata = metadata;
         }

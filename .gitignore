@@ -8,6 +8,7 @@ GraphExpectedValue/GraphExpectedValue/TestWindow.xaml.cs
 *.user
 *.sln.docstates
 *.ide*
+*.ide
 
 # Build results
 [Dd]ebug/

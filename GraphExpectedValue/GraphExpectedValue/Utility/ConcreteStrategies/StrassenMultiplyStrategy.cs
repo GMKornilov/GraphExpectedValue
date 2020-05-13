@@ -190,7 +190,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             {
                 for (var j = 0; j < m2 - m1; j++)
                 {
-                    result[i, j] = getter(matrix, i + n1, j + n2);
+                    result[i, j] = getter(matrix, i + n1, j + m1);
                     //result[i, j] = StrassenGet(matrix, i + n1, j + m1);
                 }
             }

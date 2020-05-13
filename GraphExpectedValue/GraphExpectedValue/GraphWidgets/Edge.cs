@@ -49,7 +49,9 @@ namespace GraphExpectedValue.GraphWidgets
         /// </summary>
         public readonly TextBlock edgeText;
 
-        private SymbolicExpression expr;
+        private SymbolicExpression lengthExpr, probaExpr;
+
+        private bool _showProba = false;
         /// <summary>
         /// ПРедставление ребра для сериализации
         /// </summary>
@@ -67,14 +69,37 @@ namespace GraphExpectedValue.GraphWidgets
                 EdgeChangedEvent?.Invoke(ChangeType.TextChange);
             }
         }
-        public SymbolicExpression Expression
+        public SymbolicExpression LengthExpression
         {
-            get => expr;
+            get => lengthExpr;
             set
             {
-                expr = value;
-                Text = expr.ToString();
-                Metadata.Length = expr.ToString();
+                lengthExpr = value;
+                var text = lengthExpr.ToString();
+                if (_showProba)
+                {
+                    text += "  /  " + probaExpr.ToString();
+                }
+
+                Text = text;
+                Metadata.Length = lengthExpr.ToString();
+            }
+        }
+
+        public SymbolicExpression ProbabilityExpression
+        {
+            get => probaExpr;
+            set
+            {
+                probaExpr = value;
+                var text = lengthExpr.ToString();
+                if (_showProba)
+                {
+                    text += "  /  " + probaExpr.ToString();
+                }
+
+                Text = text;
+                Metadata.Probability = probaExpr.ToString();
             }
         }
         /// <summary>
@@ -136,6 +161,7 @@ namespace GraphExpectedValue.GraphWidgets
                     a *= Math.Sign(a.X);
                 }
                 var angle = Math.Atan2(a.Y, a.X) / Math.PI * 180;
+                //return angle;
                 return angle <= 90 ? angle : 180 - angle;
             }
         }
@@ -268,6 +294,10 @@ namespace GraphExpectedValue.GraphWidgets
             var heightOffsetVector = bezierMidVec;
             heightOffsetVector.Normalize();
             var heightOffset = offset + TextSize.Height + bezierMidLength / 2.0;
+            if (pt1 == StartPoint)
+            {
+                heightOffset -= TextSize.Height;
+            }
             heightOffsetVector *= heightOffset;
 
             var offsetVector = heightOffsetVector + widthOffsetVector;
@@ -314,9 +344,9 @@ namespace GraphExpectedValue.GraphWidgets
             edgeText.Width = 100;
         }
 
-        public Edge(Vertex from, Vertex to, SymbolicExpression val) : this()
+        public Edge(Vertex from, Vertex to, SymbolicExpression lengthVal) : this()
         {
-            Metadata = new EdgeMetadata(from, to, val.ToString());
+            Metadata = new EdgeMetadata(from, to, lengthVal.ToString());
 
             var firstCenter = from.Center;
             var secondCenter = to.Center;
@@ -329,15 +359,32 @@ namespace GraphExpectedValue.GraphWidgets
             firstCenter += lineBetweenCenters;
             secondCenter -= lineBetweenCenters;
 
-            Text = val.ToString();
+            Text = lengthVal.ToString();
+
             StartPoint = firstCenter;
             EndPoint = secondCenter;
-            Expression = val;
+            LengthExpression = lengthVal;
         }
 
-        public Edge(Vertex from, Vertex to, EdgeMetadata metadata) : this(from, to, SymbolicExpression.Parse(metadata.Length))
+        public Edge(Vertex from, Vertex to, SymbolicExpression lengthVal, SymbolicExpression probaVal) : this(from, to, lengthVal)
+        {
+            _showProba = true;
+
+            Metadata = new EdgeMetadata(from, to, lengthVal.ToString(), probaVal.ToString());
+            
+            Text = lengthVal.ToString() + "  /  " + probaVal.ToString();
+            
+            ProbabilityExpression = probaVal;
+        }
+
+        public Edge(Vertex from, Vertex to, EdgeMetadata metadata, bool customProba) : this(from, to, SymbolicExpression.Parse(metadata.Length))
         {
             this.Metadata = metadata;
+            if (customProba)
+            {
+                _showProba = true;
+                ProbabilityExpression = SymbolicExpression.Parse(Metadata.Probability);
+            }
         }
     }
 }

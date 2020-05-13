@@ -92,6 +92,7 @@
     <Compile Include="Utility\ConcreteStrategies\GaussEliminationInverseStrategy.cs" />
     <Compile Include="Utility\ConcreteStrategies\GaussEliminationSolutionStrategy.cs" />
     <Compile Include="Utility\ConcreteStrategies\InverseMatrixSolutionStrategy.cs" />
+    <Compile Include="Utility\ConcreteStrategies\LinearEquationSolutionStrategy.cs" />
     <Compile Include="Utility\ConcreteStrategies\SimpleMultiplyStrategy.cs" />
     <Compile Include="Utility\ConcreteStrategies\StrassenMultiplyStrategy.cs" />
     <Compile Include="Utility\InverseStrategy.cs" />
@@ -104,6 +105,9 @@
     <Compile Include="Windows\EdgePickWindow.xaml.cs">
       <DependentUpon>EdgePickWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Windows\GraphCreateWindow.xaml.cs">
+      <DependentUpon>GraphCreateWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Windows\ResultsWindow.xaml.cs">
       <DependentUpon>ResultsWindow.xaml</DependentUpon>
     </Compile>
@@ -111,6 +115,10 @@
       <DependentUpon>VertexChooseWindow.xaml</DependentUpon>
     </Compile>
     <Page Include="Windows\EdgeChooseWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\GraphCreateWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

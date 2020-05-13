@@ -9,12 +9,12 @@
         mc:Ignorable="d"
         ResizeMode="NoResize"
         Title="Create new edge" Height="500" Width="500">
-    <Grid>
+    <Grid Name="LayoutGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
             <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
         <TextBlock 
@@ -76,13 +76,6 @@
                 </TextBlock>
             </StackPanel.ToolTip>
             <TextBlock Text="Length of edge" HorizontalAlignment="Center"/>
-            <!--<n:NumericUpDownPicker
-                Width="200"
-                HorizontalAlignment="Center"
-                Minimum="0"
-                Value="{Binding ElementName=this, Path=EdgeLength, Mode=OneWayToSource}"
-                DoubleAllowed="True"
-            />-->
             <TextBox
                 Width="200"
                 HorizontalAlignment="Center"
