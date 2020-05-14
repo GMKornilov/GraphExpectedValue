@@ -69,7 +69,7 @@ namespace GraphExpectedValue.Windows
             if (CustomProbabilities)
             {
                 LayoutGrid.RowDefinitions.Insert(
-                    3,
+                    4,
                     new RowDefinition()
                     {
                         Height = new GridLength(1.0, GridUnitType.Star)
@@ -124,7 +124,6 @@ namespace GraphExpectedValue.Windows
             }
             catch(Exception ex)
             {
-                Debug.WriteLine(ex.Message);
                 var errorMessage = "input correct expression for length";
                 if (CustomProbabilities) errorMessage += "/probability";
                 MessageBox.Show(errorMessage);

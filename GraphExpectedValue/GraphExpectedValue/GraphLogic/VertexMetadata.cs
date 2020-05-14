@@ -11,11 +11,16 @@ namespace GraphExpectedValue.GraphLogic
         public VertexType Type { get; set; }
         public Point Position { get; set; }
 
-        public VertexMetadata(Vertex graphicVertex)
+        public VertexMetadata(Vertex graphicVertex) : this(graphicVertex.Number, graphicVertex.VertexType, graphicVertex.Center)
         {
-            Number = graphicVertex.Number;
-            Type = graphicVertex.VertexType;
-            Position = graphicVertex.Center;
+
+        }
+
+        public VertexMetadata(int number, VertexType type, Point position)
+        {
+            Number = number;
+            Type = type;
+            Position = position;
         }
 
         public VertexMetadata()

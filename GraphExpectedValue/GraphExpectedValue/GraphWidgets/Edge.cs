@@ -52,6 +52,8 @@ namespace GraphExpectedValue.GraphWidgets
         private SymbolicExpression lengthExpr, probaExpr;
 
         private bool _showProba = false;
+
+        private Canvas _canvas;
         /// <summary>
         /// ПРедставление ребра для сериализации
         /// </summary>
@@ -313,16 +315,17 @@ namespace GraphExpectedValue.GraphWidgets
         /// </summary>
         public void AddToCanvas(Canvas canvas)
         {
+            _canvas = canvas;
             canvas.Children.Add(edgeLine);
             canvas.Children.Add(edgeText);
         }
         /// <summary>
         /// Убирает ребро из заданного канваса
         /// </summary>
-        public void RemoveFromCanvas(Canvas canvas)
+        public void RemoveFromCanvas()
         {
-            canvas.Children.Remove(edgeLine);
-            canvas.Children.Remove(edgeText);
+            _canvas.Children.Remove(edgeLine);
+            _canvas.Children.Remove(edgeText);
         }
         /// <summary>
         /// Обновляет свойства ребра

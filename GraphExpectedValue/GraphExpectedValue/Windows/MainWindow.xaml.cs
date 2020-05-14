@@ -53,8 +53,10 @@ namespace GraphExpectedValue.Windows
         public readonly ActionCommand openActionCommand;
         private GraphMetadata graphMetadata = new GraphMetadata();
         private List<Vertex> vertexes = new List<Vertex>();
+        private List<int> degrees = new List<int>();
         private Dictionary<Tuple<Vertex, Vertex>, Edge> edges = new Dictionary<Tuple<Vertex, Vertex>, Edge>();
         private Vertex startVertex = null, endVertex = null;
+        private Vertex clickedVertex = null;
         private bool Working = false;
 
         public MainWindow()
@@ -134,10 +136,8 @@ namespace GraphExpectedValue.Windows
                 point.Y + Vertex.Size / 2.0 > testCanvas.ActualHeight
             ) return;
             if (!vertexes.TrueForAll(v => v.CheckIntersection(point))) return;
-            var vertex = new Vertex(point.X, point.Y, vertexes.Count + 1);
-            vertexes.Add(vertex);
-            graphMetadata.VertexMetadatas.Add(vertex.Metadata);
-            testCanvas.Children.Add(vertex);
+            var vertexMetadata = new VertexMetadata(vertexes.Count + 1, VertexType.PathVertex, point);
+            AddVertex(vertexMetadata, true);
         }
 
         private void AddEdgeButton_OnClick(object sender, RoutedEventArgs e)
@@ -560,6 +560,63 @@ namespace GraphExpectedValue.Windows
         //    startVertex = vertex;
         //}
 
+        private void AddVertex(VertexMetadata vertexMetadata, bool addToMetadata = false)
+        {
+            var vertex = new Vertex(vertexMetadata);
+            vertexes.Add(vertex);
+            degrees.Add(0);
+            testCanvas.Children.Add(vertex);
+            // TODO: add update and click handler
+            vertex.MouseLeftButtonDown += VertexClicked;
+            if (addToMetadata)
+            {
+                graphMetadata.VertexMetadatas.Add(vertexMetadata);
+            }
+        }
+
+        private void VertexClicked(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Vertex vertex)
+            {
+                if (clickedVertex == null)
+                {
+                    clickedVertex = vertex;
+                    return;
+                }
+
+                Edge edge;
+                if (edges.TryGetValue(new Tuple<Vertex, Vertex>(clickedVertex, vertex), out edge) ||
+                    !graphMetadata.IsOriented &&
+                    edges.TryGetValue(new Tuple<Vertex, Vertex>(vertex, clickedVertex), out edge))
+                {
+                    //TODO: edit
+                }
+                else
+                {
+                    var edgeParametersWindow = new EdgeParametersWindow(graphMetadata.CustomProbabilities);
+                    if(edgeParametersWindow.ShowDialog() != true) return;
+                    var edgeLength = edgeParametersWindow.EdgeLength;
+                    if (graphMetadata.CustomProbabilities)
+                    {
+                        var edgeProba = edgeParametersWindow.EdgeProba;
+                        edge = new Edge(clickedVertex, vertex, edgeLength, edgeProba)
+                        {
+                            Backed = !graphMetadata.IsOriented
+                        };
+                    }
+                    else
+                    {
+                        edge = new Edge(clickedVertex, vertex, edgeLength)
+                        {
+                            Backed = !graphMetadata.IsOriented
+                        };
+                    }
+                    edge.UpdateEdge();
+                    AddEdge(edge, clickedVertex, vertex);
+                }
+            }
+        }
+
         private void AddEdge(Edge edge, Vertex edgeStartVertex, Vertex edgeEndVertex, bool addToMetadata = true)
         {
             // if we have oriented graph and trying to add back edge,
@@ -618,7 +675,7 @@ namespace GraphExpectedValue.Windows
             }
             edges.Remove(new Tuple<Vertex, Vertex>(chosenStartVertex, chosenEndVertex));
             graphMetadata.EdgeMetadatas.Remove(edge.Metadata);
-            edge.RemoveFromCanvas(testCanvas);
+            edge.RemoveFromCanvas();
         }
 
         //private void UpdateStartVertexNumber(object sender, PropertyChangedEventArgs e)
@@ -677,9 +734,7 @@ namespace GraphExpectedValue.Windows
             edges = new Dictionary<Tuple<Vertex, Vertex>, Edge>();
             foreach (var vertexData in metadata.VertexMetadatas)
             {
-                var vertex = new Vertex(vertexData);
-                vertexes.Add(vertex);
-                testCanvas.Children.Add(vertex);
+                AddVertex(vertexData);
             }
 
             foreach (var edgeData in metadata.EdgeMetadatas)
@@ -696,16 +751,6 @@ namespace GraphExpectedValue.Windows
                 edge.UpdateEdge();
                 AddEdge(edge, edgeStartVertex, edgeEndVertex, false);
             }
-
-            //if (metadata.StartVertexNumber != -1)
-            //{
-            //    SetStartVertex(vertexes[metadata.StartVertexNumber - 1]);
-            //}
-
-            //if (metadata.EndVertexNumber != -1)
-            //{
-            //    SetEndVertex(vertexes[metadata.EndVertexNumber - 1]);
-            //}
             GraphMetadata.solutionStrategy = cmbSolution.SelectedItem as SolutionStrategy;
             Matrix.inverseStrategy = cmbInverse.SelectedItem as InverseStrategy;
             Matrix.multiplyStrategy = cmbMult.SelectedItem as MultiplyStrategy;
@@ -721,7 +766,7 @@ namespace GraphExpectedValue.Windows
             foreach (var edgePair in edges)
             {
                 var edge = edgePair.Value;
-                edge.RemoveFromCanvas(testCanvas);
+                edge.RemoveFromCanvas();
             }
 
             //startVertex = null;
