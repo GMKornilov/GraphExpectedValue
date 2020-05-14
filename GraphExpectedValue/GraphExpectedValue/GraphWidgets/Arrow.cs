@@ -24,7 +24,7 @@ namespace GraphExpectedValue.GraphWidgets
         /// <summary>
         /// Угол, под которым выходит кривая Безье
         /// </summary>
-        private const int BezierAngle = 15;
+        public static int BezierAngle = 15;
         public static readonly DependencyProperty X1Property;
         public static readonly DependencyProperty X2Property;
         public static readonly DependencyProperty Y1Property;

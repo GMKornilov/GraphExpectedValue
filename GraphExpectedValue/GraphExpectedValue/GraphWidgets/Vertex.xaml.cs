@@ -27,6 +27,8 @@ namespace GraphExpectedValue.GraphWidgets
         public static DependencyProperty NumberProperty;
         public static DependencyProperty VertexTypeProperty;
         public static DependencyProperty ColorProperty;
+
+        public event Action<int> DegreeChangedEvent;
         /// <summary>
         /// Diameter of vertex
         /// </summary>
@@ -156,6 +158,11 @@ namespace GraphExpectedValue.GraphWidgets
         public Vertex(VertexMetadata metadata):this(metadata.Position.X, metadata.Position.Y, metadata.Number, metadata.Type)
         {
             this.Metadata = metadata;
+        }
+
+        public void UpdateDegree(int degree)
+        {
+            DegreeChangedEvent?.Invoke(degree);
         }
         /// <summary>
         /// Событие, вызываемое при изменении свойств вершины

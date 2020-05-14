@@ -183,7 +183,7 @@ namespace GraphExpectedValue.Windows
             if (graphMetadata.CustomProbabilities)
             {
                 var edgeProbaExpr = edgePickWindow.EdgeProbabilityExpr;
-                edge = new Edge(chosenEdgeStartVertex, chosenEdgeEndVertex, edgeLengthExpr, edgeProbaExpr)
+                edge = new Edge(chosenEdgeStartVertex, chosenEdgeEndVertex, edgeLengthExpr)
                 {
                     Backed = !graphMetadata.IsOriented
                 };
@@ -195,7 +195,7 @@ namespace GraphExpectedValue.Windows
                     Backed = !graphMetadata.IsOriented
                 };
             }
-            edge.UpdateEdge();
+            edge.UpdateEdge(ChangeType.BackedChanged);
             AddEdge(edge, chosenEdgeStartVertex, chosenEdgeEndVertex);
         }
 
@@ -264,7 +264,6 @@ namespace GraphExpectedValue.Windows
                 var edgeProbaExpr = edgePickWindow.EdgeProbabilityExpr;
                 edge.ProbabilityExpression = edgeProbaExpr;
             }
-            edge.UpdateEdge();
         }
 
         private void RemoveEdgeButton_OnClick(object sender, RoutedEventArgs e)
@@ -568,7 +567,6 @@ namespace GraphExpectedValue.Windows
                 {
                     edge.ProbabilityExpression = edgeProba;
                 }
-                edge.UpdateEdge();
             }
             else
             {
@@ -578,7 +576,7 @@ namespace GraphExpectedValue.Windows
                 if (graphMetadata.CustomProbabilities)
                 {
                     var edgeProba = edgeParametersWindow.EdgeProba;
-                    edge = new Edge(clickedVertex, vertex, edgeLength, edgeProba)
+                    edge = new Edge(clickedVertex, vertex, edgeLength)
                     {
                         Backed = !graphMetadata.IsOriented
                     };
@@ -590,9 +588,10 @@ namespace GraphExpectedValue.Windows
                         Backed = !graphMetadata.IsOriented
                     };
                 }
-                edge.UpdateEdge();
                 AddEdge(edge, clickedVertex, vertex);
             }
+
+            clickedVertex = null;
         }
 
         private void AddEdge(Edge edge, Vertex edgeStartVertex, Vertex edgeEndVertex, bool addToMetadata = true)
@@ -604,9 +603,9 @@ namespace GraphExpectedValue.Windows
                 if (graphMetadata.IsOriented)
                 {
                     backEdge.Curved = true;
-                    backEdge.UpdateEdge();
+                    backEdge.UpdateEdge(ChangeType.CurvedChanged);
                     edge.Curved = true;
-                    edge.UpdateEdge();
+                    edge.UpdateEdge(ChangeType.CurvedChanged);
                 }
                 else
                 {
@@ -617,6 +616,21 @@ namespace GraphExpectedValue.Windows
                         MessageBoxImage.Warning
                     );
                     return;
+                }
+            }
+
+            if (!graphMetadata.CustomProbabilities)
+            {
+                var startVertexNumber = edgeStartVertex.Number - 1;
+                degrees[startVertexNumber]++;
+                edgeStartVertex.DegreeChangedEvent += degree => edge.UpdatedDegree(degree, false);
+                edgeStartVertex.UpdateDegree(degrees[startVertexNumber]);
+                if (!graphMetadata.IsOriented)
+                {
+                    var endVertexNumber = edgeEndVertex.Number - 1;
+                    degrees[endVertexNumber]++;
+                    edgeEndVertex.DegreeChangedEvent += degree => edge.UpdatedDegree(degree, true);
+                    edgeEndVertex.UpdateDegree(degrees[endVertexNumber]);
                 }
             }
 
@@ -649,21 +663,12 @@ namespace GraphExpectedValue.Windows
             if (graphMetadata.IsOriented && edges.TryGetValue(new Tuple<Vertex, Vertex>(chosenEndVertex, chosenStartVertex), out var backEdge))
             {
                 backEdge.Curved = false;
-                backEdge.UpdateEdge();
+                backEdge.UpdateEdge(ChangeType.CurvedChanged);
             }
             edges.Remove(new Tuple<Vertex, Vertex>(chosenStartVertex, chosenEndVertex));
             graphMetadata.EdgeMetadatas.Remove(edge.Metadata);
             edge.RemoveFromCanvas();
         }
-
-        //private void UpdateStartVertexNumber(object sender, PropertyChangedEventArgs e)
-        //{
-        //    if (sender is Vertex vertex)
-        //    {
-        //        graphMetadata.StartVertexNumber = vertex.Number;
-        //    }
-        //}
-
         private static bool CheckMetadata(GraphMetadata metadata)
         {
             metadata.VertexMetadatas.Sort(((metadata1, metadata2) => metadata1.Number.CompareTo(metadata2.Number)));
@@ -722,11 +727,10 @@ namespace GraphExpectedValue.Windows
                 var edge = new Edge(
                     edgeStartVertex,
                     edgeEndVertex,
-                    edgeData,
-                    graphMetadata.CustomProbabilities
+                    edgeData
                 );
                 edge.Backed = !graphMetadata.IsOriented;
-                edge.UpdateEdge();
+                edge.UpdateEdge(ChangeType.BackedChanged);
                 AddEdge(edge, edgeStartVertex, edgeEndVertex, false);
             }
             GraphMetadata.solutionStrategy = cmbSolution.SelectedItem as SolutionStrategy;
