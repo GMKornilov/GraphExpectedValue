@@ -335,21 +335,6 @@ namespace GraphExpectedValue.Windows
             }
         }
 
-        //private void StartVertexButton_OnClick(object sender, RoutedEventArgs e)
-        //{
-        //    if (vertexes.Count == 0) return;
-        //    var vertexPickWindow = new VertexChooseWindow()
-        //    {
-        //        Prompt = "Choose start vertex",
-        //        TotalVertexes = vertexes.Count,
-        //        ConfirmButtonText = "Choose start vertex"
-        //    };
-        //    if (vertexPickWindow.ShowDialog() != true) return;
-        //    var chosenVertexNumber = vertexPickWindow.ChosenVertex - 1;
-        //    var chosenVertex = vertexes[chosenVertexNumber];
-        //    //SetStartVertex(chosenVertex);
-        //}
-
         private void AddEndVertexButton_OnClick(object sender, RoutedEventArgs e)
         {
             if (vertexes.Count == 0) return;
@@ -538,28 +523,6 @@ namespace GraphExpectedValue.Windows
             }
         }
 
-        //private void SetStartVertex(Vertex vertex)
-        //{
-        //    if (startVertex != null && !startVertex.Equals(vertex))
-        //    {
-        //        startVertex.PropertyChanged -= UpdateStartVertexNumber;
-        //        startVertex.VertexType = VertexType.PathVertex;
-        //        startVertex = null;
-        //    }
-
-        //    if (vertex == endVertex)
-        //    {
-        //        endVertex.PropertyChanged -= UpdateEndVertexNumber;
-        //        endVertex.VertexType = VertexType.PathVertex;
-        //        endVertex = null;
-        //        graphMetadata.EndVertexNumber = -1;
-        //    }
-
-        //    vertex.PropertyChanged += UpdateStartVertexNumber;
-        //    vertex.VertexType = VertexType.StartVertex;
-        //    startVertex = vertex;
-        //}
-
         private void AddVertex(VertexMetadata vertexMetadata, bool addToMetadata = false)
         {
             var vertex = new Vertex(vertexMetadata);
@@ -576,55 +539,59 @@ namespace GraphExpectedValue.Windows
 
         private void VertexClicked(object sender, MouseButtonEventArgs e)
         {
-            if (sender is Vertex vertex)
+            if (!(sender is Vertex vertex)) return;
+            if (clickedVertex == null)
             {
-                if (clickedVertex == null)
-                {
-                    clickedVertex = vertex;
-                    return;
-                }
+                clickedVertex = vertex;
+                return;
+            }
 
-                Edge edge;
-                EdgeParametersWindow edgeParametersWindow;
-                if (edges.TryGetValue(new Tuple<Vertex, Vertex>(clickedVertex, vertex), out edge) ||
-                    !graphMetadata.IsOriented &&
-                    edges.TryGetValue(new Tuple<Vertex, Vertex>(vertex, clickedVertex), out edge))
+            if (vertex.Number == clickedVertex.Number)
+            {
+                MessageBox.Show("Cant create loop edges");
+                return;
+            }
+
+
+            EdgeParametersWindow edgeParametersWindow;
+            if (edges.TryGetValue(new Tuple<Vertex, Vertex>(clickedVertex, vertex), out var edge) ||
+                !graphMetadata.IsOriented &&
+                edges.TryGetValue(new Tuple<Vertex, Vertex>(vertex, clickedVertex), out edge))
+            {
+                //TODO: edit
+                edgeParametersWindow = new EdgeParametersWindow(graphMetadata.CustomProbabilities);
+                if(edgeParametersWindow.ShowDialog() != true)return;
+                var edgeLength = edgeParametersWindow.EdgeLength;
+                var edgeProba = edgeParametersWindow.EdgeProba;
+                edge.LengthExpression = edgeLength;
+                if (graphMetadata.CustomProbabilities)
                 {
-                    //TODO: edit
-                    edgeParametersWindow = new EdgeParametersWindow(graphMetadata.CustomProbabilities);
-                    if(edgeParametersWindow.ShowDialog() != true)return;
-                    var edgeLength = edgeParametersWindow.EdgeLength;
+                    edge.ProbabilityExpression = edgeProba;
+                }
+                edge.UpdateEdge();
+            }
+            else
+            {
+                edgeParametersWindow = new EdgeParametersWindow(graphMetadata.CustomProbabilities);
+                if(edgeParametersWindow.ShowDialog() != true) return;
+                var edgeLength = edgeParametersWindow.EdgeLength;
+                if (graphMetadata.CustomProbabilities)
+                {
                     var edgeProba = edgeParametersWindow.EdgeProba;
-                    edge.LengthExpression = edgeLength;
-                    if (graphMetadata.CustomProbabilities)
+                    edge = new Edge(clickedVertex, vertex, edgeLength, edgeProba)
                     {
-                        edge.ProbabilityExpression = edgeProba;
-                    }
-                    edge.UpdateEdge();
+                        Backed = !graphMetadata.IsOriented
+                    };
                 }
                 else
                 {
-                    edgeParametersWindow = new EdgeParametersWindow(graphMetadata.CustomProbabilities);
-                    if(edgeParametersWindow.ShowDialog() != true) return;
-                    var edgeLength = edgeParametersWindow.EdgeLength;
-                    if (graphMetadata.CustomProbabilities)
+                    edge = new Edge(clickedVertex, vertex, edgeLength)
                     {
-                        var edgeProba = edgeParametersWindow.EdgeProba;
-                        edge = new Edge(clickedVertex, vertex, edgeLength, edgeProba)
-                        {
-                            Backed = !graphMetadata.IsOriented
-                        };
-                    }
-                    else
-                    {
-                        edge = new Edge(clickedVertex, vertex, edgeLength)
-                        {
-                            Backed = !graphMetadata.IsOriented
-                        };
-                    }
-                    edge.UpdateEdge();
-                    AddEdge(edge, clickedVertex, vertex);
+                        Backed = !graphMetadata.IsOriented
+                    };
                 }
+                edge.UpdateEdge();
+                AddEdge(edge, clickedVertex, vertex);
             }
         }
 
