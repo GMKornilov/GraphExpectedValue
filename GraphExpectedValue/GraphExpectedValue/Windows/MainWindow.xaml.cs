@@ -585,15 +585,26 @@ namespace GraphExpectedValue.Windows
                 }
 
                 Edge edge;
+                EdgeParametersWindow edgeParametersWindow;
                 if (edges.TryGetValue(new Tuple<Vertex, Vertex>(clickedVertex, vertex), out edge) ||
                     !graphMetadata.IsOriented &&
                     edges.TryGetValue(new Tuple<Vertex, Vertex>(vertex, clickedVertex), out edge))
                 {
                     //TODO: edit
+                    edgeParametersWindow = new EdgeParametersWindow(graphMetadata.CustomProbabilities);
+                    if(edgeParametersWindow.ShowDialog() != true)return;
+                    var edgeLength = edgeParametersWindow.EdgeLength;
+                    var edgeProba = edgeParametersWindow.EdgeProba;
+                    edge.LengthExpression = edgeLength;
+                    if (graphMetadata.CustomProbabilities)
+                    {
+                        edge.ProbabilityExpression = edgeProba;
+                    }
+                    edge.UpdateEdge();
                 }
                 else
                 {
-                    var edgeParametersWindow = new EdgeParametersWindow(graphMetadata.CustomProbabilities);
+                    edgeParametersWindow = new EdgeParametersWindow(graphMetadata.CustomProbabilities);
                     if(edgeParametersWindow.ShowDialog() != true) return;
                     var edgeLength = edgeParametersWindow.EdgeLength;
                     if (graphMetadata.CustomProbabilities)

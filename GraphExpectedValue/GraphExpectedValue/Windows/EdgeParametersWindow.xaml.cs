@@ -64,7 +64,7 @@ namespace GraphExpectedValue.Windows
                 var binding = new Binding()
                 {
                     ElementName = Name,
-                    Path = new PropertyPath("EdgeProbabilityExpr"),
+                    Path = new PropertyPath("EdgeProbaExpr"),
                     Mode = BindingMode.OneWayToSource
                 };
 
