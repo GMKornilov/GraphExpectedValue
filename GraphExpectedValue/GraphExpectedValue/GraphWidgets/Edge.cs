@@ -14,12 +14,12 @@ namespace GraphExpectedValue.GraphWidgets
     [Flags]
     public enum ChangeType
     {
-        LineChange = 0,
-        LengthTextChange = (1 << 0),
-        ProbaTextChange = (1 << 1),
-        BackProbaTextChange = (1 << 2),
-        CurvedChanged = (1 << 3),
-        BackedChanged = (1 << 4)
+        LineChange = 1,
+        LengthTextChange = (1 << 1),
+        ProbaTextChange = (1 << 2),
+        BackProbaTextChange = (1 << 3),
+        CurvedChanged = (1 << 4),
+        BackedChanged = (1 << 5)
     }
     /// <summary>
     /// Графическое представление ребра графа
@@ -246,12 +246,6 @@ namespace GraphExpectedValue.GraphWidgets
         /// </summary>
         private void Update(ChangeType changeType)
         {
-            edgeLine.X1 = StartPoint.X;
-            edgeLine.Y1 = StartPoint.Y;
-            edgeLine.X2 = EndPoint.X;
-            edgeLine.Y2 = EndPoint.Y;
-            edgeLine.IsCurved = Curved;
-            edgeLine.IsBacked = Backed;
             switch (changeType)
             {
                 case ChangeType.LineChange:
@@ -287,54 +281,83 @@ namespace GraphExpectedValue.GraphWidgets
         {
             var s = EndPoint - StartPoint;
 
+            var oldS = s;
+            oldS.Normalize();
+
             var textSize = TextSize(textBlock);
             var textWidth = textSize.Width;
             var textHeight = textSize.Height;
 
             var lineWidth = s.Length;
-            s.Normalize();
 
             var widthOffset = (lineWidth - textWidth) / 2;
 
             var offsetPoint = s.X > 0 ? StartPoint : EndPoint;
-            if (s.X > TOLERANCE)
+
+            double offsetSign = Math.Sign(s.X);
+            if (Math.Sign(s.X) != 0)
             {
                 s *= Math.Sign(s.X);
             }
             else
             {
+                offsetSign = Math.Sign(s.Y);
                 offsetPoint = StartPoint;
             }
+            s.Normalize();
 
             var perpS = new Vector(
                 s.Y,
                 -s.X
             );
+            perpS.Normalize();
 
             Vector widthOffsetVector, heightOffsetVector, offsetVector = new Vector();
             double heightOffset, angle;
             var matrix = new Matrix();
             if (changeType.HasFlag(ChangeType.ProbaTextChange))
             {
-                widthOffsetVector = 3 * s;
+                offsetPoint = StartPoint;
+                s = oldS;
+                perpS = new Vector(
+                    s.Y * offsetSign,
+                    -s.X * offsetSign
+                );
                 perpS.Normalize();
+                widthOffsetVector = 5 * s;
+                if (s.X < 0)
+                {
+                    widthOffsetVector += textWidth * s;
+                }
                 heightOffset = offset + textHeight;
-                heightOffsetVector = perpS * heightOffset;
-                offsetVector = widthOffsetVector + heightOffsetVector;
                 angle = Angle;
                 if (Curved)
                 {
+                    perpS = new Vector(
+                        -s.Y,
+                        s.X
+                    );
+                    perpS.Normalize();
+                    if (s.X > 0 || Math.Sign(s.X) == 0)
+                    {
+                        heightOffset -= textHeight;
+                    }
+
+                    heightOffsetVector = heightOffset * perpS;
+                    offsetVector = widthOffsetVector + heightOffsetVector;
                     angle += Arrow.BezierAngle;
-                    matrix.Rotate(Arrow.BezierAngle);
-                    offsetVector = Vector.Multiply(offsetVector, matrix);
+                }
+                else
+                {
+                    heightOffsetVector = perpS * heightOffset;
+                    offsetVector = widthOffsetVector + heightOffsetVector;
                 }
             }
             else if (changeType.HasFlag(ChangeType.BackProbaTextChange))
             {
-                offsetPoint = offsetPoint == StartPoint ? EndPoint : StartPoint;
-
+                offsetPoint = EndPoint;
                 s *= -1;
-                widthOffsetVector = (3 + textWidth) * s;
+                widthOffsetVector = (5 + textWidth) * s;
                 heightOffset = offset + textHeight;
                 heightOffsetVector = perpS * heightOffset;
                 offsetVector = widthOffsetVector + heightOffsetVector;
@@ -354,14 +377,15 @@ namespace GraphExpectedValue.GraphWidgets
                     var bezierPoint = edgeLine.BezierPoint;
                     var midPoint = offsetPoint + s * (lineWidth / 2);
                     var bezierMidVec = bezierPoint - midPoint;
-                    bezierMidVec.Normalize();
                     var bezierMidLength = bezierMidVec.Length;
+                    bezierMidVec.Normalize();
                     heightOffset = offset + textHeight + bezierMidLength / 2.0;
-                    if (offsetPoint == StartPoint && Math.Abs(s.X) > TOLERANCE)
+                    if (offsetPoint == StartPoint && Math.Abs(s.X) > TOLERANCE || Math.Sign(s.X) == 0)
                     {
                         heightOffset -= textHeight;
                     }
                     heightOffsetVector = bezierMidVec * heightOffset;
+                    offsetVector = widthOffsetVector + heightOffsetVector;
                 }
                 else
                 {

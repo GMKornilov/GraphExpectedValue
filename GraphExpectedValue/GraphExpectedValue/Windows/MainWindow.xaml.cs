@@ -548,6 +548,7 @@ namespace GraphExpectedValue.Windows
             if (vertex.Number == clickedVertex.Number)
             {
                 MessageBox.Show("Cant create loop edges");
+                clickedVertex = null;
                 return;
             }
 
@@ -603,9 +604,7 @@ namespace GraphExpectedValue.Windows
                 if (graphMetadata.IsOriented)
                 {
                     backEdge.Curved = true;
-                    backEdge.UpdateEdge(ChangeType.CurvedChanged);
                     edge.Curved = true;
-                    edge.UpdateEdge(ChangeType.CurvedChanged);
                 }
                 else
                 {
@@ -750,9 +749,7 @@ namespace GraphExpectedValue.Windows
                 var edge = edgePair.Value;
                 edge.RemoveFromCanvas();
             }
-
             //startVertex = null;
-            endVertex = null;
         }
 
         private void MenuItem_OnClick(object sender, RoutedEventArgs e)
@@ -774,6 +771,7 @@ namespace GraphExpectedValue.Windows
                 CustomProbabilities = customProbas
             };
             vertexes = new List<Vertex>();
+            degrees = new List<int>();
             edges = new Dictionary<Tuple<Vertex, Vertex>, Edge>();
             //startVertex = null;
             endVertex = null;
