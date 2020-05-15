@@ -169,7 +169,7 @@ namespace GraphExpectedValue.Windows
 
                 return true;
             };
-            var edgePickWindow = new EdgePickWindow(checker, graphMetadata.CustomProbabilities) { TotalVertexes = vertexes.Count };
+            var edgePickWindow = new EdgePickWindow(checker) { TotalVertexes = vertexes.Count };
             if (edgePickWindow.ShowDialog() != true) return;
 
             var chosenStartVertexNumber = edgePickWindow.StartVertexNumber - 1;
@@ -179,23 +179,10 @@ namespace GraphExpectedValue.Windows
             var chosenEdgeEndVertex = vertexes[chosenEndVertexNumber];
             var edgeLengthExpr = edgePickWindow.EdgeLengthExpr;
 
-            Edge edge;
-            if (graphMetadata.CustomProbabilities)
+            var edge = new Edge(chosenEdgeStartVertex, chosenEdgeEndVertex, edgeLengthExpr)
             {
-                var edgeProbaExpr = edgePickWindow.EdgeProbabilityExpr;
-                edge = new Edge(chosenEdgeStartVertex, chosenEdgeEndVertex, edgeLengthExpr)
-                {
-                    Backed = !graphMetadata.IsOriented
-                };
-            }
-            else
-            {
-                edge = new Edge(chosenEdgeStartVertex, chosenEdgeEndVertex, edgeLengthExpr)
-                {
-                    Backed = !graphMetadata.IsOriented
-                };
-            }
-            edge.UpdateEdge(ChangeType.BackedChanged);
+                Backed = !graphMetadata.IsOriented
+            };
             AddEdge(edge, chosenEdgeStartVertex, chosenEdgeEndVertex);
         }
 
@@ -238,7 +225,7 @@ namespace GraphExpectedValue.Windows
 
                 return true;
             };
-            var edgePickWindow = new EdgePickWindow(checker, graphMetadata.CustomProbabilities)
+            var edgePickWindow = new EdgePickWindow(checker)
             {
                 TotalVertexes = vertexes.Count,
                 Title = "Edit edge",
@@ -257,13 +244,7 @@ namespace GraphExpectedValue.Windows
             {
                 edge = edges[new Tuple<Vertex, Vertex>(chosenEdgeEndVertex, chosenEdgeStartVertex)];
             }
-
             edge.LengthExpression = edgeLengthExpr;
-            if (graphMetadata.CustomProbabilities)
-            {
-                var edgeProbaExpr = edgePickWindow.EdgeProbabilityExpr;
-                edge.ProbabilityExpression = edgeProbaExpr;
-            }
         }
 
         private void RemoveEdgeButton_OnClick(object sender, RoutedEventArgs e)
@@ -528,15 +509,15 @@ namespace GraphExpectedValue.Windows
             vertexes.Add(vertex);
             degrees.Add(0);
             testCanvas.Children.Add(vertex);
-            // TODO: add update and click handler
-            vertex.MouseLeftButtonDown += VertexClicked;
+            vertex.MouseLeftButtonDown += VertexLeftButtonClicked;
+            vertex.MouseDoubleClick += VertexDoubleClicked;
             if (addToMetadata)
             {
                 graphMetadata.VertexMetadatas.Add(vertexMetadata);
             }
         }
 
-        private void VertexClicked(object sender, MouseButtonEventArgs e)
+        private void VertexLeftButtonClicked(object sender, MouseButtonEventArgs e)
         {
             if (!(sender is Vertex vertex)) return;
             if (clickedVertex == null)
@@ -547,7 +528,6 @@ namespace GraphExpectedValue.Windows
 
             if (vertex.Number == clickedVertex.Number)
             {
-                MessageBox.Show("Cant create loop edges");
                 clickedVertex = null;
                 return;
             }
@@ -559,42 +539,56 @@ namespace GraphExpectedValue.Windows
                 edges.TryGetValue(new Tuple<Vertex, Vertex>(vertex, clickedVertex), out edge))
             {
                 //TODO: edit
-                edgeParametersWindow = new EdgeParametersWindow(graphMetadata.CustomProbabilities);
+                edgeParametersWindow = new EdgeParametersWindow();
                 if(edgeParametersWindow.ShowDialog() != true)return;
                 var edgeLength = edgeParametersWindow.EdgeLength;
-                var edgeProba = edgeParametersWindow.EdgeProba;
                 edge.LengthExpression = edgeLength;
-                if (graphMetadata.CustomProbabilities)
-                {
-                    edge.ProbabilityExpression = edgeProba;
-                }
             }
             else
             {
-                edgeParametersWindow = new EdgeParametersWindow(graphMetadata.CustomProbabilities);
+                edgeParametersWindow = new EdgeParametersWindow();
                 if(edgeParametersWindow.ShowDialog() != true) return;
                 var edgeLength = edgeParametersWindow.EdgeLength;
-                if (graphMetadata.CustomProbabilities)
+                edge = new Edge(clickedVertex, vertex, edgeLength)
                 {
-                    var edgeProba = edgeParametersWindow.EdgeProba;
-                    edge = new Edge(clickedVertex, vertex, edgeLength)
-                    {
-                        Backed = !graphMetadata.IsOriented
-                    };
-                }
-                else
-                {
-                    edge = new Edge(clickedVertex, vertex, edgeLength)
-                    {
-                        Backed = !graphMetadata.IsOriented
-                    };
-                }
+                    Backed = !graphMetadata.IsOriented
+                };
                 AddEdge(edge, clickedVertex, vertex);
             }
 
             clickedVertex = null;
         }
 
+        private void VertexDoubleClicked(object sender, MouseButtonEventArgs e)
+        {
+            if(!graphMetadata.CustomProbabilities)return;
+            if (!(sender is Vertex vertex)) return;
+            var neighbors = new List<Tuple<int, Edge, bool>>();
+            var adjPairs =
+                from edge in edges
+                where edge.Key.Item1 == vertex
+                select (edge.Key.Item2.Number, edge.Value);
+            foreach (var (adjVertex, adjEdge) in adjPairs)
+            {
+                neighbors.Add(new Tuple<int, Edge, bool>(adjVertex, adjEdge, false));
+            }
+
+            if (!graphMetadata.IsOriented)
+            {
+                var backAdjPairs =
+                    from edge in edges
+                    where edge.Key.Item2 == vertex
+                    select (edge.Key.Item1.Number, edge.Value);
+                foreach (var (backAdjVertex, backAdjEdge) in backAdjPairs)
+                {
+                    neighbors.Add(new Tuple<int, Edge, bool>(backAdjVertex, backAdjEdge, true));
+                }
+            }
+            if(neighbors.Count == 0)return;
+            //TODO: add proba choose window
+            var edgeProbaWindow = new EdgeProbaWindow(neighbors);
+            edgeProbaWindow.ShowDialog();
+        }
         private void AddEdge(Edge edge, Vertex edgeStartVertex, Vertex edgeEndVertex, bool addToMetadata = true)
         {
             // if we have oriented graph and trying to add back edge,

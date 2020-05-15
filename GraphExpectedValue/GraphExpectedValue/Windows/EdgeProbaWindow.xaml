@@ -1,0 +1,56 @@
+﻿<Window x:Class="GraphExpectedValue.Windows.EdgeProbaWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GraphExpectedValue.Windows"
+        x:Name="this"
+        mc:Ignorable="d"
+        Title="EdgeProbaWindow" Height="500" Width="500">
+    <Window.Resources>
+        <Style x:Key="CenterGridHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="RightGridCellStyle" TargetType="DataGridCell">
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+        </Style>
+        <Style x:Key="LeftGridCellStyle" TargetType="DataGridCell">
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" Text="Input edge transition probabilites" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <DataGrid 
+            Grid.Row="1"
+            ColumnWidth="*"
+            Name="probasGrid"
+            AutoGenerateColumns="False"
+            RowBackground="LightGray"
+            AlternatingRowBackground="White"
+            ItemsSource="{Binding ElementName=this, Path=Probas}">
+            <DataGrid.Columns>
+                <DataGridTextColumn 
+                    Header="Vertex number"
+                    IsReadOnly="True"
+                    Binding="{Binding Path=Item1}"
+                    Width="*"
+                    HeaderStyle="{StaticResource CenterGridHeaderStyle}"
+                    CanUserSort="False"/>
+                <DataGridTextColumn
+                    Header="Transition probability"
+                    Binding="{Binding Path=Item2}"
+                    Width="*"
+                    IsReadOnly="False"
+                    CanUserSort="False"
+                    HeaderStyle="{StaticResource CenterGridHeaderStyle}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Button Grid.Row="2" Content="Input transition probas" Click="ButtonBase_OnClick"/>
+    </Grid>
+</Window>

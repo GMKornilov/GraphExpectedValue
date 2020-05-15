@@ -356,8 +356,18 @@ namespace GraphExpectedValue.GraphWidgets
             else if (changeType.HasFlag(ChangeType.BackProbaTextChange))
             {
                 offsetPoint = EndPoint;
-                s *= -1;
+                s = StartPoint - EndPoint;
+                s.Normalize();
+                perpS = new Vector(
+                    s.Y,
+                    -s.X
+                );
+                perpS.Normalize();
                 widthOffsetVector = (5 + textWidth) * s;
+                if (offsetSign < 0)
+                {
+                    widthOffsetVector -= textWidth * s;
+                }
                 heightOffset = offset + textHeight;
                 heightOffsetVector = perpS * heightOffset;
                 offsetVector = widthOffsetVector + heightOffsetVector;

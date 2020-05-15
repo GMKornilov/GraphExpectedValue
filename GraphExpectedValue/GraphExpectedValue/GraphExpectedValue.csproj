@@ -98,6 +98,7 @@
     <Compile Include="Utility\InverseStrategy.cs" />
     <Compile Include="Utility\Matrix.cs" />
     <Compile Include="Utility\MultiplyStrategy.cs" />
+    <Compile Include="Utility\Pair.cs" />
     <Compile Include="Utility\SolutionStrategy.cs" />
     <Compile Include="Windows\EdgeChooseWindow.xaml.cs">
       <DependentUpon>EdgeChooseWindow.xaml</DependentUpon>
@@ -107,6 +108,9 @@
     </Compile>
     <Compile Include="Windows\EdgePickWindow.xaml.cs">
       <DependentUpon>EdgePickWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\EdgeProbaWindow.xaml.cs">
+      <DependentUpon>EdgeProbaWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\GraphCreateWindow.xaml.cs">
       <DependentUpon>GraphCreateWindow.xaml</DependentUpon>
@@ -122,6 +126,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Windows\EdgeParametersWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\EdgeProbaWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

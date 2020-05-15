@@ -24,57 +24,10 @@ namespace GraphExpectedValue.Windows
     public partial class EdgeParametersWindow : Window, INotifyPropertyChanged
     {
         private string _inputTitle;
-        private StackPanel customProbaPanel = new StackPanel()
-        {
-            HorizontalAlignment = HorizontalAlignment.Center,
-            Orientation = Orientation.Vertical,
-            VerticalAlignment = VerticalAlignment.Center
-        };
-        private TextBlock customProbaText = new TextBlock()
-        {
-            Text = "Transition probability",
-            HorizontalAlignment = HorizontalAlignment.Center
-        };
-        private TextBox customProbaInput = new TextBox()
-        {
-            Width = 200,
-            HorizontalAlignment = HorizontalAlignment.Center
-        };
 
         public EdgeParametersWindow()
         {
             InitializeComponent();
-        }
-
-        public EdgeParametersWindow(bool customProbas) : this()
-        {
-            CustomProbabilites = customProbas;
-            if (customProbas)
-            {
-                LayoutGrid.RowDefinitions.Insert(
-                    2,
-                    new RowDefinition()
-                    {
-                        Height = new GridLength(1.0, GridUnitType.Star)
-                    }
-                );
-                customProbaPanel.Children.Add(customProbaText);
-                customProbaPanel.Children.Add(customProbaInput);
-
-                var binding = new Binding()
-                {
-                    ElementName = Name,
-                    Path = new PropertyPath("EdgeProbaExpr"),
-                    Mode = BindingMode.OneWayToSource
-                };
-
-                customProbaInput.SetBinding(TextBox.TextProperty, binding);
-
-                Grid.SetRow(customProbaPanel, 2);
-                Grid.SetRow(EndButton, 3);
-
-                LayoutGrid.Children.Add(customProbaPanel);
-            }
         }
 
         public string InputTitle
@@ -86,44 +39,27 @@ namespace GraphExpectedValue.Windows
                 OnPropertyChanged();
             }
         }
-        
-        private bool CustomProbabilites { get; }
 
         public string EdgeLengthExpr { get; set; }
         public SymbolicExpression EdgeLength { get; set; }
-        public string EdgeProbaExpr { get; set; }
-        public SymbolicExpression EdgeProba { get; set; }
 
         private void EndButton_OnClick(object sender, RoutedEventArgs e)
         {
-            double len, proba = 0;
+            double len;
             try
             {
                 EdgeLength = Infix.ParseOrThrow(EdgeLengthExpr);
                 len = EdgeLength.Evaluate(null).RealValue;
-                if (CustomProbabilites)
-                {
-                    EdgeProba = Infix.ParseOrThrow(EdgeProbaExpr);
-                    proba = EdgeProba.Evaluate(null).RealValue;
-                }
             }
             catch
             {
-                var errorMessage = "input correct expression for length";
-                if (CustomProbabilites) errorMessage += "/probability";
-                MessageBox.Show(errorMessage);
+                MessageBox.Show("input correct expression for length");
                 return;
             }
 
             if (len <= 0)
             {
                 MessageBox.Show("Length should be positive");
-                return;
-            }
-
-            if (CustomProbabilites && (proba < 0 || proba > 1))
-            {
-                MessageBox.Show("Probability should be in [0;1] segment");
                 return;
             }
 
