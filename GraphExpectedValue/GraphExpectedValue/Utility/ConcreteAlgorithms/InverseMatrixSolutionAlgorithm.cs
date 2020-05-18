@@ -1,33 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using GraphExpectedValue.GraphLogic;
-using GraphExpectedValue.GraphWidgets;
 using MathNet.Symbolics;
 
-namespace GraphExpectedValue.Utility.ConcreteStrategies
+namespace GraphExpectedValue.Utility.ConcreteAlgorithms
 {
-    /// <summary>
-    /// "Стратегия" нахождения искомых математических ожиданий при помощи обратной матрицы
-    /// </summary>
-    public class InverseMatrixSolutionStrategy : LinearEquationSolutionStrategy
+    public class InverseMatrixSolutionAlgorithm : LinearEquationSolutionAlgorithm
     {
-        /// <summary>
-        /// Решение СЛАУ при помощи обратной матрицы
-        /// </summary>
-        /// <param name="metadata">Данные графа</param>
-        /// <returns>Искомые математические ожидания</returns>
         public override Tuple<int, SymbolicExpression>[] Solve(GraphMetadata metadata)
         {
             FormMatrices(metadata);
             var rows = matrix.Rows;
-            var A = StrassenMultiplyStrategy.GetSubMatrix(
+            var A = StrassenMultiplyAlgorithm.GetSubMatrix(
                 matrix,
                 new Tuple<int, int>(0, 0),
                 new Tuple<int, int>(rows, rows),
                 ((matrix1, i, j) => matrix1[i, j])
             );
-            var b = StrassenMultiplyStrategy.GetSubMatrix(
+            var b = StrassenMultiplyAlgorithm.GetSubMatrix(
                 matrix,
                 new Tuple<int, int>(0, rows),
                 new Tuple<int, int>(rows, rows + 1),

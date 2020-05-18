@@ -1,6 +1,6 @@
 ﻿namespace GraphExpectedValue.Utility
 {
-    public interface MultiplyStrategy
+    public interface MultiplyAlgorithm
     {
         Matrix Multiply(Matrix lhs, Matrix rhs);
     }

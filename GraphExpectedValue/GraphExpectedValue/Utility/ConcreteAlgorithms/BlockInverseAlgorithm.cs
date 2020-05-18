@@ -1,17 +1,10 @@
 ﻿using System;
-using System.Windows.Documents;
 using MathNet.Symbolics;
 
-namespace GraphExpectedValue.Utility.ConcreteStrategies
+namespace GraphExpectedValue.Utility.ConcreteAlgorithms
 {
-    /// <summary>
-    /// "Стратегия" по нахождению обратной матрицы при помощи разибения на блока
-    /// </summary>
-    public class BlockInverseStrategy : InverseStrategy
+    public class BlockInverseAlgorithm : InverseAlgorithm
     {
-        /// <summary>
-        /// Нахожденре обратной матрицы
-        /// </summary>
         public Matrix Inverse(Matrix matrix)
         {
             if (matrix.Rows != matrix.Cols)
@@ -20,17 +13,16 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             }
             var transposed = matrix.Transpose();
             var lhs = BlockInverse(transposed * matrix);
-            var res = lhs * transposed;
-            return StrassenMultiplyStrategy.GetSubMatrix(
-                res,
+            lhs = StrassenMultiplyAlgorithm.GetSubMatrix(
+                lhs,
                 new Tuple<int, int>(0, 0),
                 new Tuple<int, int>(matrix.Rows, matrix.Rows),
                 BlockGet
             );
+            var res = lhs * transposed;
+            return res;
         }
-        /// <summary>
-        /// Нахождение обратной матрицы при условии, что все галвные миноры матрицы обратимы
-        /// </summary>
+        
         private Matrix BlockInverse(Matrix matrix)
         {
             if (matrix.Rows != matrix.Cols)
@@ -42,26 +34,26 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             {
                 return InverseSquare(matrix);
             }
-            var N = StrassenMultiplyStrategy.NextPowerOfTwo(matrix.Rows);
-            var A = StrassenMultiplyStrategy.GetSubMatrix(
+            var N = StrassenMultiplyAlgorithm.NextPowerOfTwo(matrix.Rows);
+            var A = StrassenMultiplyAlgorithm.GetSubMatrix(
                 matrix,
                 new Tuple<int, int>(0, 0),
                 new Tuple<int, int>(N / 2, N / 2),
                 BlockGet
             );
-            var B = StrassenMultiplyStrategy.GetSubMatrix(
+            var B = StrassenMultiplyAlgorithm.GetSubMatrix(
                 matrix,
                 new Tuple<int, int>(0, N / 2),
                 new Tuple<int, int>(N / 2, N),
                 BlockGet
             );
-            var C = StrassenMultiplyStrategy.GetSubMatrix(
+            var C = StrassenMultiplyAlgorithm.GetSubMatrix(
                 matrix,
                 new Tuple<int, int>(N / 2, 0),
                 new Tuple<int, int>(N, N / 2),
                 BlockGet
             );
-            var D = StrassenMultiplyStrategy.GetSubMatrix(
+            var D = StrassenMultiplyAlgorithm.GetSubMatrix(
                 matrix,
                 new Tuple<int, int>(N / 2, N / 2),
                 new Tuple<int, int>(N, N),
@@ -84,12 +76,9 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             var res12 = -(AInverseB * schurInverse);
             var res21 = -(schurCA);
             var res22 = schurInverse;
-            return StrassenMultiplyStrategy.CombineSubMatrices(res11, res12, res21, res22);
+            return StrassenMultiplyAlgorithm.CombineSubMatrices(res11, res12, res21, res22);
         }
 
-        /// <summary>
-        /// Нахождение обратной матрицы для мматрицы размером 2 на 2
-        /// </summary>
         private Matrix InverseSquare(Matrix matrix)
         {
             if (matrix.Rows != 2 || matrix.Cols != 2)
@@ -114,7 +103,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
         {
             if (i < 0 || i >= matrix.Rows || j < 0 || j >= matrix.Cols)
             {
-                return i == j ? 1 : 0;
+                return i == j ? SymbolicExpression.One : SymbolicExpression.Zero;
             }
 
             return matrix[i, j];

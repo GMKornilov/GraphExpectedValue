@@ -1,29 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using System.Windows;
 using GraphExpectedValue.GraphLogic;
-using GraphExpectedValue.GraphWidgets;
 using MathNet.Symbolics;
 
-namespace GraphExpectedValue.Utility.ConcreteStrategies
+namespace GraphExpectedValue.Utility.ConcreteAlgorithms
 {
-    /// <summary>
-    /// "Стратегия" нахождения искомых математических ожиданий методом Гаусса
-    /// </summary>
-    public class GaussEliminationSolutionStrategy : LinearEquationSolutionStrategy
+    public class GaussEliminationSolutionAlgorithm : LinearEquationSolutionAlgorithm
     {
-        /// <summary>
-        /// Константа для сравнения вещественных чисел
-        /// </summary>
         private const double EPS = 1e-6;
-        /// <summary>
-        /// Решение СЛАУ при помощи метода Гаусса
-        /// </summary>
-        /// <param name="metadata">Данные графа</param>
-        /// <returns>Искомые математические ожидания</returns>
+        
         public override Tuple<int, SymbolicExpression>[] Solve(GraphMetadata metadata)
         {
             FormMatrices(metadata);
@@ -33,9 +17,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             }
             return result;
         }
-        /// <summary>
-        /// Решение СЛАУ при помощи метода Гаусса
-        /// </summary>
+        
         private bool GaussElimination(out Tuple<int, SymbolicExpression>[] result)
         {
             if (!formed)
