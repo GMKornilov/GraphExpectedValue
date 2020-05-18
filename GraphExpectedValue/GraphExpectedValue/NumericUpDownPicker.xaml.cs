@@ -8,9 +8,6 @@ using System.Windows.Media;
 
 namespace GraphExpectedValue
 {
-    /// <summary>
-    /// Interaction logic for NumericUpDownPicker.xaml
-    /// </summary>
     public partial class NumericUpDownPicker : UserControl
     {
         public static readonly DependencyProperty MaximumProperty;
@@ -20,7 +17,7 @@ namespace GraphExpectedValue
 
         public delegate bool Parser(string input, out double result);
 
-        public Parser parser = (string s, out double res) =>
+        private Parser _parser = (string s, out double res) =>
         {
             var success = int.TryParse(s, out var r);
             res = r;
@@ -134,14 +131,14 @@ namespace GraphExpectedValue
             if (DoubleAllowed && (textBox.Text.EndsWith(",") || textBox.Text.EndsWith(".")))
             {
                 var copy = textBox.Text.Substring(0, textBox.Text.Length - 1);
-                if (!parser(copy, out newValue))
+                if (!_parser(copy, out newValue))
                 {
                     ResetText(textBox);
                 }
                 return;
             }
 
-            if (!parser(textBox.Text, out newValue) && !textBox.Text.Equals("-"))
+            if (!_parser(textBox.Text, out newValue) && !textBox.Text.Equals("-"))
             {
                 ResetText(textBox);
                 return;
@@ -183,11 +180,11 @@ namespace GraphExpectedValue
             var numController = target as NumericUpDownPicker;
             if ((bool) e.NewValue)
             {
-                numController.parser = double.TryParse;
+                numController._parser = double.TryParse;
             }
             else
             {
-                numController.parser = (string s, out double res) =>
+                numController._parser = (string s, out double res) =>
                 {
                     var success = int.TryParse(s, out var r);
                     res = r;

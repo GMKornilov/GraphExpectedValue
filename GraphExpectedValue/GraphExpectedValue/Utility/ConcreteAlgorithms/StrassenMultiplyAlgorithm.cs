@@ -1,19 +1,11 @@
 ﻿using System;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
 using MathNet.Symbolics;
 
-namespace GraphExpectedValue.Utility.ConcreteStrategies
+namespace GraphExpectedValue.Utility.ConcreteAlgorithms
 {
-    /// <summary>
-    /// "Стратегия" умножения матриц при помощи алгоритма Штрассена
-    /// </summary>
-    public class StrassenMultiplyStrategy : MultiplyStrategy
+    public class StrassenMultiplyAlgorithm : MultiplyAlgorithm
     {
-        /// <summary>
-        /// Под данному числу v находит ближайшее "сверху" число, являющееся степенью двойки
-        /// </summary>
         public static int NextPowerOfTwo(int v)
         {
             --v;
@@ -25,25 +17,17 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             ++v;
             return v;
         }
-        /// <summary>
-        /// Псевдорасширение исходной матрицы до размера степени двойки
-        /// </summary>
-        /// <param name="matrix">Данная матрица</param>
-        /// <param name="i">Индекс строки</param>
-        /// <param name="j">Индекс столбца</param>
-        /// <returns>Элемент матрицы matrix[i, j], если индексы i j находятся внутри размеров матрицы и 0 в ином случае</returns>
-        public static SymbolicExpression StrassenGet(Matrix matrix, int i, int j)
+
+        private static SymbolicExpression StrassenGet(Matrix matrix, int i, int j)
         {
             if (i < 0 || i >= matrix.Rows || j < 0 || j >= matrix.Cols)
             {
-                return 0;
+                return SymbolicExpression.Zero;
             }
 
             return matrix[i, j];
         }
-        /// <summary>
-        /// Умножение двух матриц алгоритмом Штрассена
-        /// </summary>
+        
         public Matrix Multiply(Matrix lhs, Matrix rhs)
         {
             if (lhs.Cols != rhs.Rows)
@@ -58,9 +42,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
                 StrassenGet
             );
         }
-        /// <summary>
-        /// Умножение 2 квадратных матриц алгоритмом Штрассена
-        /// </summary>
+        
         private Matrix MatrixStrassenMultiply(Matrix lhs, Matrix rhs)
         {
             if (lhs.Rows == 2 && lhs.Cols == 2 && rhs.Rows == 2 && rhs.Cols == 2)
@@ -142,9 +124,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             var c22 = P[0] - P[1] + P[2] + P[5];
             return CombineSubMatrices(c11, c12, c21, c22);
         }
-        /// <summary>
-        /// Умножение 2 матриц размером 2 на 2
-        /// </summary>
+        
         private Matrix SimpleMultiply(Matrix lhs, Matrix rhs)
         {
             if (!(lhs.Rows == 2 && lhs.Cols == 2 && rhs.Rows == 2 && rhs.Cols == 2))
@@ -177,9 +157,7 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
             };
             return new Matrix(res);
         }
-        /// <summary>
-        /// Получение минора данной матрицы
-        /// </summary>
+        
         public static Matrix GetSubMatrix(Matrix matrix, Tuple<int, int> leftBorder, Tuple<int, int> rightBorder, Func<Matrix, int, int, SymbolicExpression> getter) 
         {
             var (n1, m1) = leftBorder;
@@ -191,15 +169,12 @@ namespace GraphExpectedValue.Utility.ConcreteStrategies
                 for (var j = 0; j < m2 - m1; j++)
                 {
                     result[i, j] = getter(matrix, i + n1, j + m1);
-                    //result[i, j] = StrassenGet(matrix, i + n1, j + m1);
                 }
             }
 
             return result;
         }
-        /// <summary>
-        /// Комбинирует 4 блока в одну матрицу
-        /// </summary>
+        
         public static Matrix CombineSubMatrices(Matrix c11, Matrix c12, Matrix c21, Matrix c22)
         {
             if (c11.Rows != c12.Rows || c21.Rows != c22.Rows || c11.Cols != c21.Cols || c12.Cols != c22.Cols)

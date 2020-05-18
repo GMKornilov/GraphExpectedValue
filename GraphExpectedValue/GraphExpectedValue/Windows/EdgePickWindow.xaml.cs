@@ -11,25 +11,26 @@ using MathNet.Symbolics;
 
 namespace GraphExpectedValue.Windows
 {
-    /// <summary>
-    /// Interaction logic for EdgePickWindow.xaml
-    /// </summary>
     public partial class EdgePickWindow : Window, INotifyPropertyChanged
     {
         private int _totalVertexes;
+
         private Func<int, int, bool> _checker;
-        private StackPanel customProbaPanel = new StackPanel()
+
+        private readonly StackPanel _customProbaPanel = new StackPanel()
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             Orientation = Orientation.Vertical,
             VerticalAlignment = VerticalAlignment.Center
         };
-        private TextBlock customProbaText = new TextBlock()
+
+        private readonly TextBlock _customProbaText = new TextBlock()
         {
             Text = "Transition probability",
             HorizontalAlignment = HorizontalAlignment.Center
         };
-        private TextBox customProbaInput = new TextBox()
+
+        private readonly TextBox _customProbaInput = new TextBox()
         {
             Width = 200,
             HorizontalAlignment = HorizontalAlignment.Center
@@ -46,9 +47,11 @@ namespace GraphExpectedValue.Windows
         }
 
         public int StartVertexNumber { get; set; }
-        public int EndVertexNumber { get; set; }
-        public string EdgeLengthExpr { get; set; }
 
+        public int EndVertexNumber { get; set; }
+
+        public string EdgeLengthExpr { get; set; }
+        
         public string EdgeProbabilityExpr { get; set; }
 
         public SymbolicExpression LengthExpression { get; set; }
@@ -56,7 +59,8 @@ namespace GraphExpectedValue.Windows
         public SymbolicExpression ProbabilityExpression { get; set; }
 
         private bool CustomProbabilities { get; }
-        public EdgePickWindow()
+
+        private EdgePickWindow()
         {
             InitializeComponent();
             StartVertexNumber = -1;
@@ -68,6 +72,8 @@ namespace GraphExpectedValue.Windows
             CustomProbabilities = customProbas;
             if (CustomProbabilities)
             {
+                var inputTooltip = FindResource("inputTooltip") as ToolTip;
+
                 LayoutGrid.RowDefinitions.Insert(
                     3,
                     new RowDefinition()
@@ -75,8 +81,9 @@ namespace GraphExpectedValue.Windows
                         Height = new GridLength(1.0, GridUnitType.Star)
                     }
                 );
-                customProbaPanel.Children.Add(customProbaText);
-                customProbaPanel.Children.Add(customProbaInput);
+                _customProbaPanel.ToolTip = inputTooltip;
+                _customProbaPanel.Children.Add(_customProbaText);
+                _customProbaPanel.Children.Add(_customProbaInput);
 
                 var binding = new Binding()
                 {
@@ -85,12 +92,12 @@ namespace GraphExpectedValue.Windows
                     Mode = BindingMode.OneWayToSource
                 };
 
-                customProbaInput.SetBinding(TextBox.TextProperty, binding);
+                _customProbaInput.SetBinding(TextBox.TextProperty, binding);
 
-                Grid.SetRow(customProbaPanel, 4);
+                Grid.SetRow(_customProbaPanel, 4);
                 Grid.SetRow(EndButton, 5);
 
-                LayoutGrid.Children.Add(customProbaPanel);
+                LayoutGrid.Children.Add(_customProbaPanel);
             }
         }
 
