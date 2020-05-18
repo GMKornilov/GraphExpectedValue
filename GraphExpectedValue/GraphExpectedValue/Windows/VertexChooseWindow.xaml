@@ -5,6 +5,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:n="clr-namespace:GraphExpectedValue"
+        xmlns:local="clr-namespace:GraphExpectedValue.Windows"
         mc:Ignorable="d"
         ResizeMode="NoResize"
         Title="Choose vertex" Height="500" Width="500">

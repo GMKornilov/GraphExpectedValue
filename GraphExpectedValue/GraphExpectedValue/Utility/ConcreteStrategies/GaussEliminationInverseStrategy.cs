@@ -1,11 +1,20 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 
-namespace GraphExpectedValue.Utility.ConcreteAlgorithms
+namespace GraphExpectedValue.Utility.ConcreteStrategies
 {
-    public class GaussEliminationInverseAlgorithm : InverseAlgorithm
+    /// <summary>
+    /// "Стратегия" нахождения обратной матрицы при помощи метода Гаусса
+    /// </summary>
+    public class GaussEliminationInverseStrategy : InverseStrategy
     {
+        /// <summary>
+        /// Константа для сравнения вещественных чисео
+        /// </summary>
         private const double EPS = 1e-6;
-        
+        /// <summary>
+        /// Нахождение обратной матрицы методом Гаусса
+        /// </summary>
         public Matrix Inverse(Matrix matrix)
         {
             if (matrix.Rows != matrix.Cols)

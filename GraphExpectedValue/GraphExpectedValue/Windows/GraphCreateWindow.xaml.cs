@@ -14,6 +14,9 @@ using System.Windows.Shapes;
 
 namespace GraphExpectedValue.Windows
 {
+    /// <summary>
+    /// Interaction logic for GraphCreateWindow.xaml
+    /// </summary>
     public partial class GraphCreateWindow : Window
     {
         public GraphCreateWindow()

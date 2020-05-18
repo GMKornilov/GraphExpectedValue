@@ -1,18 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 using GraphExpectedValue.Annotations;
 using MathNet.Symbolics;
 
 namespace GraphExpectedValue.Windows
 {
+    /// <summary>
+    /// Interaction logic for ResultsWindow.xaml
+    /// </summary>
     public partial class ResultsWindow : Window, INotifyPropertyChanged
     {
         private string _elapsedTime;
-
-        private List<Tuple<int, SymbolicExpression>> _calcResults;
+        private List<Tuple<int, SymbolicExpression, double>> _calcResults;
 
         public string ElapsedTime
         {
@@ -24,7 +37,7 @@ namespace GraphExpectedValue.Windows
             }
         }
 
-        public List<Tuple<int, SymbolicExpression>> CalcResults
+        public List<Tuple<int, SymbolicExpression, double>> CalcResults
         {
             get => _calcResults;
             set
@@ -34,12 +47,12 @@ namespace GraphExpectedValue.Windows
             }
         }
 
-        private ResultsWindow()
+        public ResultsWindow()
         {
             InitializeComponent();
         }
 
-        public ResultsWindow(List<Tuple<int, SymbolicExpression>> calcResults, string elapsedTime) : this()
+        public ResultsWindow(List<Tuple<int, SymbolicExpression, double>> calcResults, string elapsedTime) : this()
         {
             CalcResults = calcResults;
             ElapsedTime = elapsedTime;

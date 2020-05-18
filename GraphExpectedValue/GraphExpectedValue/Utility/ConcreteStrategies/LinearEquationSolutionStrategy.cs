@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Documents;
 using GraphExpectedValue.GraphLogic;
 using GraphExpectedValue.GraphWidgets;
 using MathNet.Symbolics;
 
-namespace GraphExpectedValue.Utility.ConcreteAlgorithms
+namespace GraphExpectedValue.Utility.ConcreteStrategies
 {
-    public abstract class LinearEquationSolutionAlgorithm : SolutionAlgorithm
+    public abstract class LinearEquationSolutionStrategy : SolutionStrategy
     {
         protected Matrix matrix;
 
-        protected bool formed;
+        protected bool formed = false;
 
         protected List<int> vertexPseudoIndexes;
 
@@ -97,13 +98,13 @@ namespace GraphExpectedValue.Utility.ConcreteAlgorithms
                         matrix[vertexMatrixIndex[endVertexIndex], vertexMatrixIndex[startVertexIndex]] = -endProba;
                     }
 
-                    matrix[vertexMatrixIndex[endVertexIndex], matrix.Cols - 1] = endProba * lengthExpr;
+                    matrix[vertexMatrixIndex[endVertexIndex], metadata.VertexMetadatas.Count - 1] = endProba * lengthExpr;
                 }
             }
 
             for (var i = 0; i < matrix.Rows && i < matrix.Cols; i++)
             {
-                matrix[i, i] += SymbolicExpression.One;
+                matrix[i, i] += 1;
             }
 
             formed = true;

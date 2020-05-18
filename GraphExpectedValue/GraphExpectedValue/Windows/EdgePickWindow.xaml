@@ -4,6 +4,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GraphExpectedValue.Windows"
         xmlns:n="clr-namespace:GraphExpectedValue"
         mc:Ignorable="d"
         ResizeMode="NoResize"
@@ -46,7 +47,34 @@
             />
         </StackPanel>
         
-        <StackPanel Grid.Row="3" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="{StaticResource inputTooltip}">
+        <StackPanel Grid.Row="3" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel.ToolTip>
+                <TextBlock>
+                    Suppoerted operations:
+                    <LineBreak/>
+                    sin(x), cos(x), tan(x), cot(x) - standart trigonometry functions;
+                    <LineBreak/>
+                    asin(x), acos(x), atan(x), acot(x) - inverse trigonometry functions;
+                    <LineBreak/>
+                    sinh(x), cosh(x), tanh(x), coth(x) - hyperbolic trigonometry functions;
+                    <LineBreak/>
+                    asinh(x), acosh(x), atanh(x), acoth(x) - inverse hyperbolic trigonometry functions;
+                    <LineBreak/>
+                    sqrt(x) - square root;
+                    <LineBreak/>
+                    ln(x) - natural logarithm;
+                    <LineBreak/>
+                    log(a) - decimal logarithm;
+                    <LineBreak/>
+                    log(a, b) = log_b(a);
+                    <LineBreak/>
+                    e;
+                    <LineBreak/>
+                    pi;
+                    <LineBreak/>
+                    a^b = a in power of b
+                </TextBlock>
+            </StackPanel.ToolTip>
             <TextBlock Text="Length of edge" HorizontalAlignment="Center"/>
             <TextBox
                 Width="200"

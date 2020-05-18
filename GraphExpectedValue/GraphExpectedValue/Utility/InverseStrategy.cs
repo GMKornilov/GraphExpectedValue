@@ -1,6 +1,6 @@
 ﻿namespace GraphExpectedValue.Utility
 {
-    public interface InverseAlgorithm
+    public interface InverseStrategy
     {
         Matrix Inverse(Matrix matrix);
     }

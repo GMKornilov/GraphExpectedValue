@@ -3,11 +3,19 @@ using GraphExpectedValue.GraphWidgets;
 
 namespace GraphExpectedValue.GraphLogic
 {
+    /// <summary>
+    /// Представление ребра для сериализации
+    /// </summary>
     [Serializable]
     public class EdgeMetadata
     {
+        /// <summary>
+        /// Номера начальной и конечной вершины ребра
+        /// </summary>
         public int StartVertexNumber, EndVertexNumber;
-        
+        /// <summary>
+        /// Длина ребра
+        /// </summary>
         public string Length;
 
         public string Probability;

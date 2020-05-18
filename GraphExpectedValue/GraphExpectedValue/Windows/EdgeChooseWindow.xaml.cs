@@ -1,16 +1,29 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 using GraphExpectedValue.Annotations;
 
 namespace GraphExpectedValue.Windows
 {
+    /// <summary>
+    /// Interaction logic for EdgeChooseWindow.xaml
+    /// </summary>
     public partial class EdgeChooseWindow : Window, INotifyPropertyChanged
     {
         private int _totalVertexes;
-
-        private Func<Tuple<int, int>, bool> _checker;
+        private Func<Tuple<int, int>, bool> checker;
 
         public int TotalVertexes
         {
@@ -33,7 +46,7 @@ namespace GraphExpectedValue.Windows
 
         public EdgeChooseWindow(Func<Tuple<int, int>, bool> checker) : this()
         {
-            _checker = checker;
+            this.checker = checker;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -48,7 +61,7 @@ namespace GraphExpectedValue.Windows
         {
             if(ChosenStartVertex == 0 || ChosenEndVertex == 0)return;
             ;
-            if (!_checker(new Tuple<int, int>(ChosenStartVertex, ChosenEndVertex)))
+            if (!checker(new Tuple<int, int>(ChosenStartVertex, ChosenEndVertex)))
             {
                 MessageBox.Show(
                     "Such edge doesnt exist",

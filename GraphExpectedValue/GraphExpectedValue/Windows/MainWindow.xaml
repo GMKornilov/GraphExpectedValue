@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GraphExpectedValue"
         mc:Ignorable="d"
         Loaded="MainWindow_OnLoaded"
         ResizeMode="NoResize"
@@ -45,6 +46,11 @@
             <Button Name="EditEdgeButton" Content="Edit edge" Click="EditEdgeButton_OnClick"/>
             <Button Name="RemoveEdgeButton" Content="Remove edge" Click="RemoveEdgeButton_OnClick" />
             <Button Name="RemoveVertexButton" Content="Remove vertex" Click="RemoveVertexButton_OnClick" />
+            <!--<Button Name="StartVertexButton" Click="StartVertexButton_OnClick">
+                <TextBlock>
+                    Choose starting vertex
+                </TextBlock>
+            </Button>-->
             <Button Name="AddEndVertexButton" Click="AddEndVertexButton_OnClick">
                 <TextBlock>
                     Add ending vertex
@@ -70,10 +76,8 @@
             BorderThickness="1"
             Name="canvasBorder">
             <Canvas
-                Name="mainCanvas"
-                Background="White"
-                MouseLeftButtonDown="MainCanvasOnMouseLeftButtonDown"
-            >
+                Name="testCanvas"
+                Background="White">
             </Canvas>
         </Border>
         <StackPanel 
@@ -110,6 +114,8 @@
             <ComboBox Name="cmbSolution" SelectionChanged="CmbSolution_OnSelectionChanged">
 
             </ComboBox>
+            <!--<Button Name="SafeGraphButton" Content="Save graph" Click="SafeGraphButton_OnClick"/>
+            <Button Name="OpenGraphButton" Content="Open graph" Click="OpenGraphButton_OnClick"></Button>-->
         </StackPanel>
     </Grid>
 </Window>

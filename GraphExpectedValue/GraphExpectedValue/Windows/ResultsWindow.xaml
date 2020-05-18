@@ -4,6 +4,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GraphExpectedValue.Windows"
         mc:Ignorable="d"
         ResizeMode="NoResize"
         Title="Expected first passage times" Height="500" Width="1000">
@@ -47,6 +48,12 @@
                     Binding="{Binding Path=Item2}"
                     Width="*"
                     CanUserSort="False"
+                    HeaderStyle="{StaticResource CenterGridHeaderStyle}"
+                    CellStyle="{StaticResource RightGridCellStyle}"/>
+                <DataGridTextColumn
+                    Header="Expected first passage time(real value)"
+                    Binding="{Binding Path=Item3}"
+                    Width="*"
                     HeaderStyle="{StaticResource CenterGridHeaderStyle}"
                     CellStyle="{StaticResource RightGridCellStyle}"/>
             </DataGrid.Columns>

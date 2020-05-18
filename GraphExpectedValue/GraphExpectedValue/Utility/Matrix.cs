@@ -1,31 +1,48 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Text;
-using GraphExpectedValue.Utility.ConcreteAlgorithms;
+using GraphExpectedValue.Utility.ConcreteStrategies;
 using MathNet.Symbolics;
 
 namespace GraphExpectedValue.Utility
 {
+    /// <summary>
+    /// Класс для работы с матрицей
+    /// </summary>
     public class Matrix
     {
+        /// <summary>
+        /// Константа для сравнения вещественных чисел
+        /// </summary>
         private const double EPS = 1e-6;
-        
+        /// <summary>
+        /// Элементы матрицы
+        /// </summary>
         private readonly SymbolicExpression[][] content;
-        
+        /// <summary>
+        /// Количество строк матрицы
+        /// </summary>
         public int Rows => content.Length;
-        
+        /// <summary>
+        /// Количесвто столбцов матрицы
+        /// </summary>
         public int Cols => content[0].Length;
-        
-        public static MultiplyAlgorithm multiplyStrategy
+        /// <summary>
+        /// "Стратегия" умножения двух матриц
+        /// </summary>
+        public static MultiplyStrategy multiplyStrategy
         {
             get;
             set;
-        } 
-        
-        public static InverseAlgorithm inverseStrategy
+        }
+        /// <summary>
+        /// "Стратегия" нахождения обратной матрицы
+        /// </summary>
+        public static InverseStrategy inverseStrategy
         {
             get;
             set;
-        } 
+        }
 
         public SymbolicExpression this[int row, int col]
         {
@@ -33,12 +50,12 @@ namespace GraphExpectedValue.Utility
             set => content[row][col] = value;
         }
 
-        static Matrix()
+        public Matrix()
         {
-            multiplyStrategy = new SimpleMultiplyAlgorithm();
-            inverseStrategy = new GaussEliminationInverseAlgorithm();
+            multiplyStrategy = new SimpleMultiplyStrategy();
+            inverseStrategy = new GaussEliminationInverseStrategy();
         }
-        public Matrix(int rows, int cols)
+        public Matrix(int rows, int cols) : this()
         {
             content = new SymbolicExpression[rows][];
             for (var i = 0; i < rows; i++)
@@ -56,7 +73,7 @@ namespace GraphExpectedValue.Utility
 
         }
 
-        public Matrix(SymbolicExpression[][] content)
+        public Matrix(SymbolicExpression[][] content) : this()
         {
             var cols = content[0].Length;
             for (var i = 1; i < content.Length; i++)
@@ -68,9 +85,15 @@ namespace GraphExpectedValue.Utility
             }
             this.content = content;
         }
-        
+        /// <summary>
+        /// Метод,создающий матрицу с такими же элементами
+        /// </summary>
+        /// <returns></returns>
         public Matrix Copy() => new Matrix(content);
-        
+        /// <summary>
+        /// Транспонирование матрицы
+        /// </summary>
+        /// <returns></returns>
         public Matrix Transpose()
         {
             var result = new Matrix(Cols, Rows);
@@ -84,14 +107,22 @@ namespace GraphExpectedValue.Utility
 
             return result;
         }
-        
+        /// <summary>
+        /// Меняет местами 2 строки в матрице
+        /// </summary>
+        /// <param name="row1">Номер первой строки</param>
+        /// <param name="row2">Номер второй строки</param>
         public void SwapRows(int row1, int row2)
         {
             var temp = content[row1];
             content[row1] = content[row2];
             content[row2] = temp;
         }
-        
+        /// <summary>
+        /// Умножает элементы строки на вещественне число
+        /// </summary>
+        /// <param name="row">Номер строки</param>
+        /// <param name="coeff">Коэффициент умножения</param>
         public void MultiplyRow(int row, SymbolicExpression coeff)
         {
             for (var j = 0; j < Cols; j++)
@@ -99,7 +130,12 @@ namespace GraphExpectedValue.Utility
                 content[row][j] *= coeff;
             }
         }
-        
+        /// <summary>
+        /// Добавляет первую строку ко второй с определенным коэффициентом
+        /// </summary>
+        /// <param name="row1">Номер первой строки</param>
+        /// <param name="row2">Номер второй строки</param>
+        /// <param name="coeff">Коэффициент прибавления</param>
         public void AddRow(int row1, int row2, SymbolicExpression coeff)
         {
             for (var j = 0; j < Cols; j++)
@@ -107,7 +143,9 @@ namespace GraphExpectedValue.Utility
                 content[row2][j] += content[row1][j] * coeff;
             }
         }
-        
+        /// <summary>
+        /// Применение метода Гаусса к матрицу
+        /// </summary>
         public void GaussElimination()
         {
             for (var col = 0; col < Rows && col < Cols; col++)
@@ -132,7 +170,7 @@ namespace GraphExpectedValue.Utility
 
                     SwapRows(col, swapRow);
                 }
-                MultiplyRow(col, SymbolicExpression.One / content[col][col]);
+                MultiplyRow(col, 1.0 / content[col][col]);
                 for (var elimRow = 0; elimRow < Rows; elimRow++)
                 {
                     if (elimRow == col || Math.Abs(content[elimRow][col].Evaluate(null).RealValue) < EPS)
@@ -143,7 +181,9 @@ namespace GraphExpectedValue.Utility
                 }
             }
         }
-        
+        /// <summary>
+        /// Возведение матрицы в заданную целую степень
+        /// </summary>
         private static Matrix Pow(Matrix matrix, int power)
         {
             if (matrix.Rows != matrix.Cols)
@@ -176,20 +216,28 @@ namespace GraphExpectedValue.Utility
             res = Pow(matrix, power - 1);
             return matrix * res;
         }
-        
+        /// <summary>
+        /// Возвращает единичную матрицу с заданным числом строк
+        /// </summary>
+        /// <param name="rows"></param>
+        /// <returns></returns>
         public static Matrix IdentityMatrix(int rows)
         {
             var result = new Matrix(rows);
             for (var i = 0; i < rows; i++)
             {
-                result[i, i] = SymbolicExpression.One;
+                result[i, i] = 1;
             }
 
             return result;
         }
-        
+        /// <summary>
+        /// Оператор множения двух матриц
+        /// </summary>
         public static Matrix operator *(Matrix lhs, Matrix rhs) => multiplyStrategy.Multiply(lhs, rhs);
-        
+        /// <summary>
+        /// Оператор сложения двух матриц
+        /// </summary>
         public static Matrix operator +(Matrix lhs, Matrix rhs)
         {
             if (lhs.Rows != rhs.Rows || lhs.Cols != rhs.Cols)
@@ -207,7 +255,9 @@ namespace GraphExpectedValue.Utility
 
             return result;
         }
-        
+        /// <summary>
+        /// Оператор вычитания двух матриц
+        /// </summary>
         public static Matrix operator -(Matrix lhs, Matrix rhs)
         {
             if (lhs.Rows != rhs.Rows || lhs.Cols != rhs.Cols)
@@ -225,8 +275,10 @@ namespace GraphExpectedValue.Utility
 
             return result;
         }
-        
-        public static Matrix operator *(Matrix matrix, SymbolicExpression a)
+        /// <summary>
+        /// Оператор умножения матрицы на число
+        /// </summary>
+        public static Matrix operator *(Matrix matrix, double a)
         {
             var result = new Matrix(matrix.Rows, matrix.Cols);
             for (var i = 0; i < matrix.Rows; i++)
@@ -239,11 +291,19 @@ namespace GraphExpectedValue.Utility
 
             return result;
         }
-        
-        public static Matrix operator *(SymbolicExpression a, Matrix matrix) => matrix * a;
-        
-        public static Matrix operator -(Matrix matrix) => SymbolicExpression.MinusOne * matrix;
-        
+        /// <summary>
+        /// Оператор умножения числа на матрицу
+        /// </summary>
+        public static Matrix operator *(double a, Matrix matrix) => matrix * a;
+        /// <summary>
+        /// Унарный оператор противоположной по знаку матрицы
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static Matrix operator -(Matrix matrix) => -1 * matrix;
+        /// <summary>
+        /// Оператор возведения матрицы в целую степень
+        /// </summary>
         public static Matrix operator ^(Matrix matrix, int pow) => Pow(matrix, pow);
         
         public override string ToString()

@@ -1,9 +1,15 @@
 ﻿using System;
 
-namespace GraphExpectedValue.Utility.ConcreteAlgorithms
+namespace GraphExpectedValue.Utility.ConcreteStrategies
 {
-    public class SimpleMultiplyAlgorithm : MultiplyAlgorithm
+    /// <summary>
+    /// "Стратегия" умножения матриц "по определению"
+    /// </summary>
+    public class SimpleMultiplyStrategy : MultiplyStrategy
     {
+        /// <summary>
+        /// Умножение двух матриц
+        /// </summary>
         public Matrix Multiply(Matrix lhs, Matrix rhs)
         {
             if (lhs.Cols != rhs.Rows)

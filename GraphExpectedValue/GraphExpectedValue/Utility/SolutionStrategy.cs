@@ -4,7 +4,7 @@ using MathNet.Symbolics;
 
 namespace GraphExpectedValue.Utility
 {
-    public interface SolutionAlgorithm
+    public interface SolutionStrategy
     {
         Tuple<int, SymbolicExpression>[] Solve(GraphMetadata metadata);
     }

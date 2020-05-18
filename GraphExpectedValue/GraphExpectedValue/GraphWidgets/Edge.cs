@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using GraphExpectedValue.GraphLogic;
 using MathNet.Symbolics;
 
@@ -13,73 +15,96 @@ namespace GraphExpectedValue.GraphWidgets
         LineChange,
         TextChange
     }
-    
+    /// <summary>
+    /// Графическое представление ребра графа
+    /// </summary>
     public class Edge
     {
+        /// <summary>
+        /// Константа, представляющая погрешность при сравенении вещественных чисел.
+        /// </summary>
         private const double TOLERANCE = 1e-6;
-        
-        private const int OFFSET = 5;
-        
-        private event Action<ChangeType> EdgeChangedEvent;
-        
-        private string _text;
-        
+        /// <summary>
+        /// Отступ текста от линии ребра
+        /// </summary>
+        private const int offset = 5;
+        /// <summary>
+        /// Событие, вызываемое при изменеии свойств ребра
+        /// </summary>
+        public event Action<ChangeType> EdgeChangedEvent;
+        /// <summary>
+        /// Текст, который должен быть написан на ребре
+        /// </summary>
+        private string text;
+        /// <summary>
+        /// X и Y координаты начальной и конечной точки ребра
+        /// </summary>
         private double X1, X2, Y1, Y2;
-        
-        private readonly Arrow _edgeLine;
-        
-        private readonly TextBlock _edgeText;
+        /// <summary>
+        /// Стрелка, являющаяся графическим представлением ребра
+        /// </summary>
+        public readonly Arrow edgeLine;
+        /// <summary>
+        /// Виджет, являющийся графическим представлением текста, написанным на ребре
+        /// </summary>
+        public readonly TextBlock edgeText;
 
-        private SymbolicExpression _lengthExpr, _probaExpr;
+        private SymbolicExpression lengthExpr, probaExpr;
 
-        private bool _showProba;
-        
+        private bool _showProba = false;
+        /// <summary>
+        /// ПРедставление ребра для сериализации
+        /// </summary>
         public EdgeMetadata Metadata { get; }
-        
-        private string Text
+        /// <summary>
+        /// Свойство текста, написанного на ребре
+        /// </summary>
+        public string Text
         {
-            get => _text;
-            set
+            get => text;
+            private set
             {
-                _text = value;
-                _edgeText.Text = _text;
+                text = value;
+                edgeText.Text = text;
                 EdgeChangedEvent?.Invoke(ChangeType.TextChange);
             }
         }
         public SymbolicExpression LengthExpression
         {
-            get => _lengthExpr;
+            get => lengthExpr;
             set
             {
-                _lengthExpr = value;
-                var text = _lengthExpr.ToString();
+                lengthExpr = value;
+                var text = lengthExpr.ToString();
                 if (_showProba)
                 {
-                    text += "  /  " + _probaExpr.ToString();
+                    text += "  /  " + probaExpr.ToString();
                 }
 
                 Text = text;
-                Metadata.Length = _lengthExpr.ToString();
+                Metadata.Length = lengthExpr.ToString();
             }
         }
 
         public SymbolicExpression ProbabilityExpression
         {
-            get => _probaExpr;
+            get => probaExpr;
             set
             {
-                _probaExpr = value;
-                var text = _lengthExpr.ToString();
+                probaExpr = value;
+                var text = lengthExpr.ToString();
                 if (_showProba)
                 {
-                    text += "  /  " + _probaExpr.ToString();
+                    text += "  /  " + probaExpr.ToString();
                 }
 
                 Text = text;
-                Metadata.Probability = _probaExpr.ToString();
+                Metadata.Probability = probaExpr.ToString();
             }
         }
-        
+        /// <summary>
+        /// Стартовая точка ребра
+        /// </summary>
         public Point StartPoint
         {
             get => new Point(X1, Y1);
@@ -90,7 +115,9 @@ namespace GraphExpectedValue.GraphWidgets
                 EdgeChangedEvent?.Invoke(ChangeType.LineChange);
             }
         }
-        
+        /// <summary>
+        /// Конечная точка ребра
+        /// </summary>
         public Point EndPoint
         {
             get => new Point(X2, Y2);
@@ -101,7 +128,9 @@ namespace GraphExpectedValue.GraphWidgets
                 EdgeChangedEvent?.Invoke(ChangeType.LineChange);
             }
         }
-        
+        /// <summary>
+        /// Размер текста, написанного на ребре
+        /// </summary>
         private Size TextSize
         {
             get
@@ -110,8 +139,8 @@ namespace GraphExpectedValue.GraphWidgets
                     Text,
                     CultureInfo.CurrentCulture,
                     FlowDirection.LeftToRight,
-                    new Typeface(_edgeText.FontFamily, _edgeText.FontStyle, _edgeText.FontWeight, _edgeText.FontStretch),
-                    _edgeText.FontSize,
+                    new Typeface(edgeText.FontFamily, edgeText.FontStyle, edgeText.FontWeight, edgeText.FontStretch),
+                    edgeText.FontSize,
                     Brushes.Black,
                     new NumberSubstitution(),
                     1
@@ -119,7 +148,9 @@ namespace GraphExpectedValue.GraphWidgets
                 return new Size(formattedText.Width, formattedText.Height);
             }
         }
-        
+        /// <summary>
+        /// Угол, под которым наклонен текст, написанный на ребре
+        /// </summary>
         private double Angle
         {
             get
@@ -134,16 +165,28 @@ namespace GraphExpectedValue.GraphWidgets
                 return angle <= 90 ? angle : 180 - angle;
             }
         }
-        
+        /// <summary>
+        /// Необходимо ли отрисовывать ребро при помощи кривых Безье
+        /// </summary>
         public bool Curved { get; set; }
-        
+        /// <summary>
+        /// Является ли ребро "неориентированным"
+        /// </summary>
         public bool Backed { get; set; }
-
+        public Edge(Point from, Point to, double val):this()
+        {
+            Text = val.ToString(CultureInfo.CurrentCulture);
+            StartPoint = from;
+            EndPoint = to;
+        }
+        /// <summary>
+        /// Обновляет координаты ребра и стрелки
+        /// </summary>
         private void Update(ChangeType changeType)
         {
             if (changeType == ChangeType.TextChange)
             {
-                _edgeText.Text = Text;
+                edgeText.Text = Text;
                 if (Curved)
                 {
                     TransformBezier();
@@ -155,12 +198,12 @@ namespace GraphExpectedValue.GraphWidgets
                 return;
             }
 
-            _edgeLine.X1 = StartPoint.X;
-            _edgeLine.Y1 = StartPoint.Y;
-            _edgeLine.X2 = EndPoint.X;
-            _edgeLine.Y2 = EndPoint.Y;
-            _edgeLine.IsCurved = Curved;
-            _edgeLine.IsBacked = Backed;
+            edgeLine.X1 = StartPoint.X;
+            edgeLine.Y1 = StartPoint.Y;
+            edgeLine.X2 = EndPoint.X;
+            edgeLine.Y2 = EndPoint.Y;
+            edgeLine.IsCurved = Curved;
+            edgeLine.IsBacked = Backed;
 
             if (Curved)
             {
@@ -171,7 +214,9 @@ namespace GraphExpectedValue.GraphWidgets
                 TransformText();
             }
         }
-        
+        /// <summary>
+        /// Обновляет координаты текстового виджета, если ребро отрисовывается как пряма
+        /// </summary>
         private void TransformText()
         {
             var s = new Vector()
@@ -201,18 +246,20 @@ namespace GraphExpectedValue.GraphWidgets
 
             var heightOffsetVector = new Vector {X = s.Y, Y = -s.X};
             heightOffsetVector.Normalize();
-            var heightOffset = OFFSET + TextSize.Height;
+            var heightOffset = offset + TextSize.Height;
             heightOffsetVector *= heightOffset;
 
             var offsetVector = heightOffsetVector + widthOffsetVector;
 
             var textBlockPoint = offsetPoint + offsetVector;
-            Canvas.SetLeft(_edgeText, textBlockPoint.X);
-            Canvas.SetTop(_edgeText, textBlockPoint.Y);
+            Canvas.SetLeft(edgeText, textBlockPoint.X);
+            Canvas.SetTop(edgeText, textBlockPoint.Y);
 
-            _edgeText.RenderTransform = new RotateTransform(Angle);
+            edgeText.RenderTransform = new RotateTransform(Angle);
         }
-        
+        /// <summary>
+        /// Обновляет координаты текстового виджета, если ребро отрисовываетс как кривая Безье
+        /// </summary>
         private void TransformBezier()
         {
             var s = new Vector()
@@ -232,7 +279,7 @@ namespace GraphExpectedValue.GraphWidgets
             perpS.Normalize();
             
 
-            var bezierPoint = _edgeLine.BezierPoint;
+            var bezierPoint = edgeLine.BezierPoint;
             var midPoint = pt1 + s * lineLength / 2;
 
             var bezierMidVec = new Vector(bezierPoint.X - midPoint.X, bezierPoint.Y - midPoint.Y);
@@ -246,7 +293,7 @@ namespace GraphExpectedValue.GraphWidgets
 
             var heightOffsetVector = bezierMidVec;
             heightOffsetVector.Normalize();
-            var heightOffset = OFFSET + TextSize.Height + bezierMidLength / 2.0;
+            var heightOffset = offset + TextSize.Height + bezierMidLength / 2.0;
             if (pt1 == StartPoint)
             {
                 heightOffset -= TextSize.Height;
@@ -256,39 +303,45 @@ namespace GraphExpectedValue.GraphWidgets
             var offsetVector = heightOffsetVector + widthOffsetVector;
 
             var textBlockPoint = offsetPoint + offsetVector;
-            Canvas.SetLeft(_edgeText, textBlockPoint.X);
-            Canvas.SetTop(_edgeText, textBlockPoint.Y);
+            Canvas.SetLeft(edgeText, textBlockPoint.X);
+            Canvas.SetTop(edgeText, textBlockPoint.Y);
 
-            _edgeText.RenderTransform = new RotateTransform(Angle);
+            edgeText.RenderTransform = new RotateTransform(Angle);
         }
-        
+        /// <summary>
+        /// Добавляет ребро в заданный канвас
+        /// </summary>
         public void AddToCanvas(Canvas canvas)
         {
-            canvas.Children.Add(_edgeLine);
-            canvas.Children.Add(_edgeText);
+            canvas.Children.Add(edgeLine);
+            canvas.Children.Add(edgeText);
         }
-        
+        /// <summary>
+        /// Убирает ребро из заданного канваса
+        /// </summary>
         public void RemoveFromCanvas(Canvas canvas)
         {
-            canvas.Children.Remove(_edgeLine);
-            canvas.Children.Remove(_edgeText);
+            canvas.Children.Remove(edgeLine);
+            canvas.Children.Remove(edgeText);
         }
-        
+        /// <summary>
+        /// Обновляет свойства ребра
+        /// </summary>
         public void UpdateEdge() => EdgeChangedEvent?.Invoke(ChangeType.LineChange);
 
         private Edge()
         {
             EdgeChangedEvent += Update;
-            _edgeLine = new Arrow
+            edgeLine = new Arrow
             {
                 Stroke = new SolidColorBrush(Colors.Black),
                 ArrowLength = 10,
                 ArrowAngle = 30,
                 IsCurved = Curved
             };
-            _edgeText = new TextBlock();
-            _edgeText.Height = _edgeText.FontSize + 3;
-            _edgeText.Width = 100;
+            edgeText = new TextBlock();
+            edgeText.Height = edgeText.FontSize + 3;
+            edgeText.Width = 100;
         }
 
         public Edge(Vertex from, Vertex to, SymbolicExpression lengthVal) : this()
