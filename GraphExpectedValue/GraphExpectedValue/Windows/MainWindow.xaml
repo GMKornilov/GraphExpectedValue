@@ -96,17 +96,17 @@
                 </Style>
             </StackPanel.Resources>
 
-            <Label Content="Matrix multiplication strategy" VerticalAlignment="Top"/>
+            <Label Content="Matrix multiplication algorithm" VerticalAlignment="Top"/>
             <ComboBox Name="cmbMult" SelectionChanged="CmbMult_OnSelectionChanged">
 
             </ComboBox>
 
-            <Label Content="Matrix inverse strategy:" VerticalAlignment="Top"/>
+            <Label Content="Matrix inverse algorithm:" VerticalAlignment="Top"/>
             <ComboBox Name="cmbInverse" SelectionChanged="CmbInverse_OnSelectionChanged">
 
             </ComboBox>
 
-            <Label Content="Solution strategy:" VerticalAlignment="Top"/>
+            <Label Content="Solution algorithm:" VerticalAlignment="Top"/>
             <ComboBox Name="cmbSolution" SelectionChanged="CmbSolution_OnSelectionChanged">
 
             </ComboBox>
