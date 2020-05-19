@@ -17,7 +17,7 @@ namespace GraphExpectedValue.GraphLogic
 
         public bool CustomProbabilities { get; set; }
         
-        public static SolutionAlgorithm solutionStrategy = new GaussEliminationSolutionAlgorithm();
+        public static SolutionAlgorithm SolutionAlgorithm = new GaussEliminationSolutionAlgorithm();
 
         public GraphMetadata()
         {
@@ -35,7 +35,7 @@ namespace GraphExpectedValue.GraphLogic
         
         public Tuple<int, SymbolicExpression>[] Solve()
         {
-            return solutionStrategy.Solve(this);
+            return SolutionAlgorithm.Solve(this);
         }
     }
 }

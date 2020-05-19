@@ -47,7 +47,6 @@ namespace GraphExpectedValue.Windows
         private void RemoveButton_OnClick(object sender, RoutedEventArgs e)
         {
             if(ChosenStartVertex == 0 || ChosenEndVertex == 0)return;
-            ;
             if (!_checker(new Tuple<int, int>(ChosenStartVertex, ChosenEndVertex)))
             {
                 MessageBox.Show(

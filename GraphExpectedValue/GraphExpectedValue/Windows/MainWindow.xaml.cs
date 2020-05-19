@@ -622,9 +622,9 @@ namespace GraphExpectedValue.Windows
                 AddEdge(edge, edgeStartVertex, edgeEndVertex, false);
             }
 
-            GraphMetadata.solutionStrategy = cmbSolution.SelectedItem as SolutionAlgorithm;
-            Matrix.inverseStrategy = cmbInverse.SelectedItem as InverseAlgorithm;
-            Matrix.multiplyStrategy = cmbMult.SelectedItem as MultiplyAlgorithm;
+            GraphMetadata.SolutionAlgorithm = cmbSolution.SelectedItem as SolutionAlgorithm;
+            Matrix.InverseAlgorithm = cmbInverse.SelectedItem as InverseAlgorithm;
+            Matrix.MultiplyAlgorithm = cmbMult.SelectedItem as MultiplyAlgorithm;
         }
 
         private void ClearGraph()
@@ -721,20 +721,20 @@ namespace GraphExpectedValue.Windows
 
         private void CmbSolution_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var strategy = e.AddedItems[0] as SolutionAlgorithm;
-            GraphMetadata.solutionStrategy = strategy;
+            var algorithm = e.AddedItems[0] as SolutionAlgorithm;
+            GraphMetadata.SolutionAlgorithm = algorithm;
         }
 
         private void CmbInverse_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var strategy = e.AddedItems[0] as InverseAlgorithm;
-            Matrix.inverseStrategy = strategy;
+            var algorithm = e.AddedItems[0] as InverseAlgorithm;
+            Matrix.InverseAlgorithm = algorithm;
         }
 
         private void CmbMult_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var strategy = e.AddedItems[0] as MultiplyAlgorithm;
-            Matrix.multiplyStrategy = strategy;
+            var algorithm = e.AddedItems[0] as MultiplyAlgorithm;
+            Matrix.MultiplyAlgorithm = algorithm;
         }
     }
 }

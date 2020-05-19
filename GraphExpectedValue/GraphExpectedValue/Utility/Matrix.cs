@@ -15,13 +15,13 @@ namespace GraphExpectedValue.Utility
         
         public int Cols => content[0].Length;
         
-        public static MultiplyAlgorithm multiplyStrategy
+        public static MultiplyAlgorithm MultiplyAlgorithm
         {
             get;
             set;
         } 
         
-        public static InverseAlgorithm inverseStrategy
+        public static InverseAlgorithm InverseAlgorithm
         {
             get;
             set;
@@ -35,8 +35,8 @@ namespace GraphExpectedValue.Utility
 
         static Matrix()
         {
-            multiplyStrategy = new SimpleMultiplyAlgorithm();
-            inverseStrategy = new GaussEliminationInverseAlgorithm();
+            MultiplyAlgorithm = new SimpleMultiplyAlgorithm();
+            InverseAlgorithm = new GaussEliminationInverseAlgorithm();
         }
         public Matrix(int rows, int cols)
         {
@@ -163,7 +163,7 @@ namespace GraphExpectedValue.Utility
 
             if (power == -1)
             {
-                return inverseStrategy.Inverse(matrix);
+                return InverseAlgorithm.Inverse(matrix);
             }
 
             Matrix res;
@@ -188,7 +188,7 @@ namespace GraphExpectedValue.Utility
             return result;
         }
         
-        public static Matrix operator *(Matrix lhs, Matrix rhs) => multiplyStrategy.Multiply(lhs, rhs);
+        public static Matrix operator *(Matrix lhs, Matrix rhs) => MultiplyAlgorithm.Multiply(lhs, rhs);
         
         public static Matrix operator +(Matrix lhs, Matrix rhs)
         {
