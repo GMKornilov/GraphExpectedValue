@@ -257,6 +257,7 @@ namespace GraphExpectedValue.Windows
 
         private void RemoveEdgeButton_OnClick(object sender, RoutedEventArgs e)
         {
+            if(_edges.Count == 0)return;
             Func<Tuple<int, int>, bool> checker = tuple =>
             {
                 var (num1, num2) = tuple;
@@ -671,6 +672,7 @@ namespace GraphExpectedValue.Windows
 
         private async void CalculateButton_OnClick(object sender, RoutedEventArgs e)
         {
+            if(_vertexes.Count == 0)return;
             var algo = new GraphAlgorithms(_graphMetadata);
             var status = algo.Check();
             if (status != CheckStatus.Ok)
