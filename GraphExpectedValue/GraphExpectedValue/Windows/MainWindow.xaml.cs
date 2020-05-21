@@ -40,12 +40,15 @@ namespace GraphExpectedValue.Windows
 
         public event EventHandler CanExecuteChanged;
     }
-    
+
     public partial class MainWindow : Window
     {
         private GraphMetadata _graphMetadata = new GraphMetadata();
+        
         private List<Vertex> _vertexes = new List<Vertex>();
+        
         private Dictionary<Tuple<Vertex, Vertex>, Edge> _edges = new Dictionary<Tuple<Vertex, Vertex>, Edge>();
+        
         private bool _working;
 
         public MainWindow()
@@ -75,6 +78,7 @@ namespace GraphExpectedValue.Windows
             mainCanvas.Visibility = Visibility.Hidden;
             canvasBorder.Visibility = Visibility.Hidden;
         }
+        
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
             cmbSolution.ItemsSource = new SolutionAlgorithm[]
@@ -257,13 +261,19 @@ namespace GraphExpectedValue.Windows
 
         private void RemoveEdgeButton_OnClick(object sender, RoutedEventArgs e)
         {
-            if(_edges.Count == 0)return;
+            if (_edges.Count == 0) return;
             Func<Tuple<int, int>, bool> checker = tuple =>
             {
                 var (num1, num2) = tuple;
                 var startEdgeVertex = _vertexes[num1 - 1];
                 var endEdgeVertex = _vertexes[num2 - 1];
-                return _edges.TryGetValue(new Tuple<Vertex, Vertex>(startEdgeVertex, endEdgeVertex), out _);
+                var orientedCheck = _edges.TryGetValue(new Tuple<Vertex, Vertex>(startEdgeVertex, endEdgeVertex), out _);
+                var unorientedCheck = !_graphMetadata.IsOriented &&
+                                      _edges.TryGetValue(
+                                          new Tuple<Vertex, Vertex>(startEdgeVertex, endEdgeVertex),
+                                          out _
+                                        );
+                return orientedCheck || unorientedCheck;
             };
             var edgeChooseWindow = new EdgeChooseWindow(checker) { TotalVertexes = _vertexes.Count };
             if (edgeChooseWindow.ShowDialog() != true) return;
@@ -274,7 +284,7 @@ namespace GraphExpectedValue.Windows
             var chosenStartVertex = _vertexes[chosenStartVertexNumber];
             var chosenEndVertex = _vertexes[chosenEndVertexNumber];
 
-            if (!_edges.TryGetValue(new Tuple<Vertex, Vertex>(chosenStartVertex, chosenEndVertex), out var edge))
+            if (!_edges.TryGetValue(new Tuple<Vertex, Vertex>(chosenStartVertex, chosenEndVertex), out var edge) && _graphMetadata.IsOriented)
             {
                 MessageBox.Show(
                     "There is no such edge in graph",
@@ -282,6 +292,19 @@ namespace GraphExpectedValue.Windows
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning
                 );
+                return;
+            }
+
+            if (!_edges.TryGetValue(new Tuple<Vertex, Vertex>(chosenEndVertex, chosenStartVertex), out _) &&
+                !_graphMetadata.IsOriented)
+            {
+                MessageBox.Show(
+                    "There is no such edge in graph",
+                    "",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+                return;
             }
             RemoveEdge(chosenStartVertex, chosenEndVertex);
         }
@@ -304,7 +327,7 @@ namespace GraphExpectedValue.Windows
             {
                 RemoveEdge(fromVertex, toVertex);
             }
-            
+
             _graphMetadata.VertexMetadatas.Remove(chosenVertex.Metadata);
             _vertexes.RemoveAt(chosenVertexNumber);
 
@@ -396,7 +419,7 @@ namespace GraphExpectedValue.Windows
             try
             {
                 var serializer = new XmlSerializer(typeof(GraphMetadata));
-                
+
                 using (var stream = new FileStream(safeFileDialog.FileName, FileMode.Create))
                 {
                     serializer.Serialize(stream, _graphMetadata);
@@ -472,7 +495,7 @@ namespace GraphExpectedValue.Windows
             catch (UnauthorizedAccessException)
             {
                 MessageBox.Show(
-                    "Not enough rights to write in this path. Try running program with admin rights.",
+                    "Not enough rights to read in this path. Try running program with admin rights.",
                     "",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error
@@ -497,7 +520,7 @@ namespace GraphExpectedValue.Windows
                 );
             }
         }
-        
+
         private void AddEdge(Edge edge, Vertex edgeStartVertex, Vertex edgeEndVertex, bool addToMetadata = true)
         {
             // if we have oriented graph and trying to add back edge,
@@ -577,13 +600,24 @@ namespace GraphExpectedValue.Windows
                     // two same edges
                     return false;
                 }
+
+                if (!metadata.IsOriented &&
+                    testEdgeDict.ContainsKey(new Tuple<int, int>(edgeData.EndVertexNumber, edgeData.StartVertexNumber)))
+                {
+                    // unoriented graph with 2 same edges
+                    return false;
+                }
                 testEdgeDict.Add(
                     new Tuple<int, int>(edgeData.StartVertexNumber, edgeData.EndVertexNumber),
                     edgeData
                 );
                 try
                 {
-                    var parseTest = SymbolicExpression.Parse(edgeData.Length);
+                    var _ = SymbolicExpression.Parse(edgeData.Length);
+                    if (metadata.CustomProbabilities)
+                    {
+                        _ = SymbolicExpression.Parse(edgeData.Probability);
+                    }
                 }
                 catch
                 {
@@ -593,6 +627,7 @@ namespace GraphExpectedValue.Windows
 
             return true;
         }
+        
         private void LoadGraph(GraphMetadata metadata)
         {
             ClearGraph();
@@ -645,7 +680,7 @@ namespace GraphExpectedValue.Windows
         private void MenuItem_OnClick(object sender, RoutedEventArgs e)
         {
             var createGraphWindow = new GraphCreateWindow();
-            if(createGraphWindow.ShowDialog() != true)return;
+            if (createGraphWindow.ShowDialog() != true) return;
             var isOrientedString = (createGraphWindow.GraphTypeComboBox.SelectedItem as TextBlock)?.Text;
             var isOriented = isOrientedString.Equals("Digraph");
             var customProbas = createGraphWindow.CustomProbasCheckBox.IsChecked == true;
@@ -672,7 +707,7 @@ namespace GraphExpectedValue.Windows
 
         private async void CalculateButton_OnClick(object sender, RoutedEventArgs e)
         {
-            if(_vertexes.Count == 0)return;
+            if (_vertexes.Count == 0) return;
             var algo = new GraphAlgorithms(_graphMetadata);
             var status = algo.Check();
             if (status != CheckStatus.Ok)
@@ -708,7 +743,7 @@ namespace GraphExpectedValue.Windows
             }
 
             var watcher = Stopwatch.StartNew();
-            var res = await Task<Tuple<int, SymbolicExpression>[]>.Factory.StartNew(() => _graphMetadata.Solve());
+            var res = await Task.Run(() => _graphMetadata.Solve());
             watcher.Stop();
             var calcResults = new List<Tuple<int, SymbolicExpression>>();
             foreach (var calcResult in res)

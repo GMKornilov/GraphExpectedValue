@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using MathNet.Symbolics;
 
@@ -45,6 +46,16 @@ namespace GraphExpectedValue.Utility.ConcreteAlgorithms
         
         private Matrix MatrixStrassenMultiply(Matrix lhs, Matrix rhs)
         {
+            if (lhs.Rows == 1 && lhs.Cols == 1 && rhs.Rows == 1 && rhs.Cols == 1)
+            {
+                var el1 = lhs[0, 0];
+                var el2 = rhs[0, 0];
+                var content = new[]
+                {
+                    new[] {el1 * el2}
+                };
+                return new Matrix(content);
+            }
             if (lhs.Rows == 2 && lhs.Cols == 2 && rhs.Rows == 2 && rhs.Cols == 2)
             {
                 return SimpleMultiply(lhs, rhs);
