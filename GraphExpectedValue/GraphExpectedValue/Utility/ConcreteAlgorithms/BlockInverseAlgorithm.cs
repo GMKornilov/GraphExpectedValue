@@ -30,6 +30,17 @@ namespace GraphExpectedValue.Utility.ConcreteAlgorithms
                 throw new ArgumentException("Cant invert non-square matrix");
             }
 
+            if (matrix.Rows == 1)
+            {
+                var el = matrix[0, 0];
+                var inverse = SymbolicExpression.One / el;
+                var content = new[]
+                {
+                    new[] {inverse}
+                };
+                return new Matrix(content);
+            }
+
             if (matrix.Rows == 2)
             {
                 return InverseSquare(matrix);
