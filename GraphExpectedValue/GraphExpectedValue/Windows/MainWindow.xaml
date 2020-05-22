@@ -7,7 +7,7 @@
         Loaded="MainWindow_OnLoaded"
         ResizeMode="NoResize"
         Title="Main Window" Height="675" Width="1200">
-    <Grid ShowGridLines="False">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="25"/>
             <RowDefinition Height="80"/>

@@ -33,7 +33,8 @@ namespace GraphExpectedValue.Windows
         private readonly TextBox _customProbaInput = new TextBox()
         {
             Width = 200,
-            HorizontalAlignment = HorizontalAlignment.Center
+            HorizontalAlignment = HorizontalAlignment.Center,
+            TextAlignment =  TextAlignment.Right
         };
 
         public int TotalVertexes
