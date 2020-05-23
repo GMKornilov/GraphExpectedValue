@@ -169,12 +169,12 @@ namespace GraphExpectedValue.Windows
 
             var chosenEdgeStartVertex = _vertexes[chosenStartVertexNumber];
             var chosenEdgeEndVertex = _vertexes[chosenEndVertexNumber];
-            var edgeLengthExpr = edgePickWindow.EdgeLengthExpr;
+            var edgeLengthExpr = edgePickWindow.LengthExpression;
 
             Edge edge;
             if (_graphMetadata.CustomProbabilities)
             {
-                var edgeProbaExpr = edgePickWindow.EdgeProbabilityExpr;
+                var edgeProbaExpr = edgePickWindow.ProbabilityExpression;
                 edge = new Edge(chosenEdgeStartVertex, chosenEdgeEndVertex, edgeLengthExpr, edgeProbaExpr)
                 {
                     Backed = !_graphMetadata.IsOriented
@@ -243,7 +243,7 @@ namespace GraphExpectedValue.Windows
 
             var chosenEdgeStartVertex = _vertexes[chosenStartVertexNumber];
             var chosenEdgeEndVertex = _vertexes[chosenEndVertexNumber];
-            var edgeLengthExpr = edgePickWindow.EdgeLengthExpr;
+            var edgeLengthExpr = edgePickWindow.LengthExpression;
 
             if (!_edges.TryGetValue(new Tuple<Vertex, Vertex>(chosenEdgeStartVertex, chosenEdgeEndVertex), out var edge))
             {
@@ -253,7 +253,7 @@ namespace GraphExpectedValue.Windows
             edge.LengthExpression = edgeLengthExpr;
             if (_graphMetadata.CustomProbabilities)
             {
-                var edgeProbaExpr = edgePickWindow.EdgeProbabilityExpr;
+                var edgeProbaExpr = edgePickWindow.ProbabilityExpression;
                 edge.ProbabilityExpression = edgeProbaExpr;
             }
             edge.UpdateEdge();
@@ -376,9 +376,9 @@ namespace GraphExpectedValue.Windows
             if (_vertexes.Count == 0) return;
             var vertexPickWindow = new VertexChooseWindow()
             {
-                Prompt = "Add end vertex",
+                Prompt = "Remove end vertex",
                 TotalVertexes = _vertexes.Count,
-                ConfirmButtonText = "Add end vertex"
+                ConfirmButtonText = "Remove end vertex"
             };
             Func<int, bool> checker = vertexNumber =>
             {
@@ -595,6 +595,13 @@ namespace GraphExpectedValue.Windows
             var testEdgeDict = new Dictionary<Tuple<int, int>, EdgeMetadata>();
             foreach (var edgeData in metadata.EdgeMetadatas)
             {
+                var start = edgeData.StartVertexNumber;
+                var end = edgeData.EndVertexNumber;
+                if (start <= 0 || start > metadata.VertexMetadatas.Count || end <= 0 ||
+                    end > metadata.VertexMetadatas.Count)
+                {
+                    return false;
+                }
                 if (testEdgeDict.ContainsKey(new Tuple<int, int>(edgeData.StartVertexNumber, edgeData.EndVertexNumber)))
                 {
                     // two same edges
@@ -725,7 +732,7 @@ namespace GraphExpectedValue.Windows
 
                 if (status.HasFlag(CheckStatus.WrongProbabilities))
                 {
-                    errMessage += "Sum of all probabilities of outcoming edges of one's vertex should be 1";
+                    errMessage += "Sum of all probabilities of outcoming edges of one's vertex should be 1\n";
                 }
 
                 if (status.HasFlag(CheckStatus.WrongConnectionComponents))

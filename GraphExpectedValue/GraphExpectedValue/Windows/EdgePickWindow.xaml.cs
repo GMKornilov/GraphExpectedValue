@@ -33,7 +33,8 @@ namespace GraphExpectedValue.Windows
         private readonly TextBox _customProbaInput = new TextBox()
         {
             Width = 200,
-            HorizontalAlignment = HorizontalAlignment.Center
+            HorizontalAlignment = HorizontalAlignment.Center,
+            TextAlignment =  TextAlignment.Right
         };
 
         public int TotalVertexes
@@ -141,6 +142,12 @@ namespace GraphExpectedValue.Windows
             if (len <= 0)
             {
                 MessageBox.Show("Edge should have positive length", "", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (Math.Abs(len) > 1E10)
+            {
+                MessageBox.Show("Value too big", "", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 

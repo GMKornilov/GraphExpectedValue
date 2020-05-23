@@ -6,7 +6,7 @@
     <Application.Resources>
         <ToolTip x:Key="inputTooltip">
             <TextBlock>
-                Suppoerted operations:
+                Supported operations:
                 <LineBreak/>
                 sin(x), cos(x), tan(x), cot(x) - standart trigonometry functions;
                 <LineBreak/>

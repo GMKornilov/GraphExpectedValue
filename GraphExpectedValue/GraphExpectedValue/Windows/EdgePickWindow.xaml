@@ -52,6 +52,7 @@
                 Width="200"
                 HorizontalAlignment="Center"
                 Text="{Binding ElementName=this, Path=EdgeLengthExpr, Mode=OneWayToSource}"
+                TextAlignment="Right"
             />
         </StackPanel>
         <Button Name="EndButton" Grid.Row="4" Content="Create edge" Click="CreateEdgeButton_OnClick"/>
