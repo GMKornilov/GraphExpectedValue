@@ -145,6 +145,12 @@ namespace GraphExpectedValue.Windows
                 return;
             }
 
+            if (Math.Abs(len) > 1E10)
+            {
+                MessageBox.Show("Value too big", "", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             if (CustomProbabilities && (proba < 0 || proba > 1))
             {
                 MessageBox.Show(
