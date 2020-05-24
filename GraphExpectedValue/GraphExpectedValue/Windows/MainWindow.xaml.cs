@@ -602,20 +602,26 @@ namespace GraphExpectedValue.Windows
                 {
                     return false;
                 }
-                if (testEdgeDict.ContainsKey(new Tuple<int, int>(edgeData.StartVertexNumber, edgeData.EndVertexNumber)))
+
+                if (start == end)
+                {
+                    //dont allow loop edges
+                    return false;
+                }
+
+                if (testEdgeDict.ContainsKey(new Tuple<int, int>(start, end)))
                 {
                     // two same edges
                     return false;
                 }
 
-                if (!metadata.IsOriented &&
-                    testEdgeDict.ContainsKey(new Tuple<int, int>(edgeData.EndVertexNumber, edgeData.StartVertexNumber)))
+                if (!metadata.IsOriented && testEdgeDict.ContainsKey(new Tuple<int, int>(end, start)))
                 {
                     // unoriented graph with 2 same edges
                     return false;
                 }
                 testEdgeDict.Add(
-                    new Tuple<int, int>(edgeData.StartVertexNumber, edgeData.EndVertexNumber),
+                    new Tuple<int, int>(start, end),
                     edgeData
                 );
                 try
