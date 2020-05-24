@@ -81,7 +81,7 @@ namespace GraphExpectedValue.Utility.ConcreteAlgorithms
                     // end vertex is not ending
                     if (!isEnding[endVertexIndex])
                     {
-                        matrix[vertexMatrixIndex[startVertexIndex], vertexMatrixIndex[endVertexIndex]] = -startProba;
+                        matrix[vertexMatrixIndex[startVertexIndex], vertexMatrixIndex[endVertexIndex]] += -startProba;
                     }
 
                     matrix[vertexMatrixIndex[startVertexIndex], matrix.Cols - 1] += startProba * lengthExpr;
@@ -94,10 +94,10 @@ namespace GraphExpectedValue.Utility.ConcreteAlgorithms
                     // start vertex is not ending
                     if (!isEnding[startVertexIndex])
                     {
-                        matrix[vertexMatrixIndex[endVertexIndex], vertexMatrixIndex[startVertexIndex]] = -endProba;
+                        matrix[vertexMatrixIndex[endVertexIndex], vertexMatrixIndex[startVertexIndex]] += -endProba;
                     }
 
-                    matrix[vertexMatrixIndex[endVertexIndex], matrix.Cols - 1] = endProba * lengthExpr;
+                    matrix[vertexMatrixIndex[endVertexIndex], matrix.Cols - 1] += endProba * lengthExpr;
                 }
             }
 

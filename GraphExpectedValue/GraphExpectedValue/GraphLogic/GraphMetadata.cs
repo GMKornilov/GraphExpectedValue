@@ -32,7 +32,7 @@ namespace GraphExpectedValue.GraphLogic
             EdgeMetadatas = edgeMetadatas;
             CustomProbabilities = customProbabilities;
         }
-        
+
         public Tuple<int, SymbolicExpression>[] Solve()
         {
             return SolutionAlgorithm.Solve(this);
