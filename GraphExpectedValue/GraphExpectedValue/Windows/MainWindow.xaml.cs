@@ -175,9 +175,9 @@ namespace GraphExpectedValue.Windows
             if (_graphMetadata.CustomProbabilities)
             {
                 var edgeProbaExpr = edgePickWindow.ProbabilityExpression;
-                edge = new Edge(chosenEdgeStartVertex, chosenEdgeEndVertex, edgeLengthExpr, edgeProbaExpr)
+                edge = new Edge(chosenEdgeStartVertex, chosenEdgeEndVertex, edgeLengthExpr)
                 {
-                    Backed = !_graphMetadata.IsOriented
+                    Backed = !_graphMetadata.IsOriented,
                 };
             }
             else
@@ -663,8 +663,7 @@ namespace GraphExpectedValue.Windows
                 var edge = new Edge(
                     edgeStartVertex,
                     edgeEndVertex,
-                    edgeData,
-                    _graphMetadata.CustomProbabilities
+                    edgeData
                 );
                 edge.Backed = !_graphMetadata.IsOriented;
                 edge.UpdateEdge();

@@ -18,7 +18,7 @@ namespace GraphExpectedValue.GraphWidgets
 
     public class Arrow : Shape, INotifyPropertyChanged
     {
-        private const int BezierAngle = 15;
+        public const int BezierAngle = 15;
         
         public static readonly DependencyProperty X1Property;
         public static readonly DependencyProperty X2Property;

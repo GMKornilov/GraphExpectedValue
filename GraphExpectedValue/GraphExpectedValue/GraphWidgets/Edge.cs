@@ -8,10 +8,15 @@ using MathNet.Symbolics;
 
 namespace GraphExpectedValue.GraphWidgets
 {
+    [Flags]
     public enum ChangeType
     {
-        LineChange,
-        TextChange
+        LineChange = 0,
+        LengthTextChange = (1 << 0),
+        ProbaTextChange = (1 << 1),
+        BackProbaTextChange = (1 << 2),
+        CurvedChanged = (1 << 3),
+        BackedChanged = (1 << 4)
     }
     
     public class Edge
@@ -21,29 +26,75 @@ namespace GraphExpectedValue.GraphWidgets
         private const int OFFSET = 5;
         
         private event Action<ChangeType> EdgeChangedEvent;
-        
-        private string _text;
+
+        private string _lengthText;
+        private string _probaText;
+        private string _backProbaText;
         
         private double X1, X2, Y1, Y2;
         
         private readonly Arrow _edgeLine;
-        
-        private readonly TextBlock _edgeText;
 
-        private SymbolicExpression _lengthExpr, _probaExpr;
+        private readonly TextBlock _edgeLengthText;
+        private readonly TextBlock _edgeProbaText;
+        private readonly TextBlock _edgeBackProbaText;
 
-        private bool _showProba;
+        private SymbolicExpression _lengthExpr, _probaExpr, _backProbaExpr;
+
+        private bool _showProba = false;
+        private bool _showBackProba = false;
+
+        private bool _backed;
+        private bool _curved;
+
+        private Canvas _canvas;
         
         public EdgeMetadata Metadata { get; }
         
-        private string Text
+        public string LengthText
         {
-            get => _text;
-            set
+            get => _lengthText;
+            private set
             {
-                _text = value;
-                _edgeText.Text = _text;
-                EdgeChangedEvent?.Invoke(ChangeType.TextChange);
+                _lengthText = value;
+                _edgeLengthText.Text = _lengthText;
+
+                EdgeChangedEvent?.Invoke(ChangeType.LengthTextChange);
+            }
+        }
+
+        public string ProbaText
+        {
+            get => _probaText;
+            private set
+            {
+                _probaText = value;
+                _edgeProbaText.Text = _probaText;
+
+                if(!_showProba && _canvas != null)
+                {
+                    _showProba = true;
+                    _canvas.Children.Add(_edgeProbaText);
+                }
+            }
+        }
+
+        public string BackProbaText
+        {
+            get => _backProbaText;
+            private set
+            {
+                _backProbaText = value;
+                _edgeBackProbaText.Text = _backProbaText;
+
+                if(!_showBackProba && _canvas != null)
+                {
+                    _showBackProba = true;
+                    _canvas.Children.Add(_edgeBackProbaText);
+                }
+
+                EdgeChangedEvent?.Invoke(ChangeType.BackProbaTextChange);
+                //TODO: update dege metadata
             }
         }
         public SymbolicExpression LengthExpression
@@ -52,13 +103,7 @@ namespace GraphExpectedValue.GraphWidgets
             set
             {
                 _lengthExpr = value;
-                var text = _lengthExpr.ToString();
-                if (_showProba)
-                {
-                    text += "  /  " + _probaExpr.ToString();
-                }
-
-                Text = text;
+                LengthText = _lengthExpr.ToString();
                 Metadata.Length = _lengthExpr.ToString();
             }
         }
@@ -69,17 +114,22 @@ namespace GraphExpectedValue.GraphWidgets
             set
             {
                 _probaExpr = value;
-                var text = _lengthExpr.ToString();
-                if (_showProba)
-                {
-                    text += "  /  " + _probaExpr.ToString();
-                }
-
-                Text = text;
+                ProbaText = _probaExpr.ToString();
                 Metadata.Probability = _probaExpr.ToString();
             }
         }
-        
+
+        public SymbolicExpression BackProbabilityExpression
+        {
+            get => _backProbaExpr;
+            set
+            {
+                _backProbaExpr = value;
+                ProbaText = _probaExpr.ToString();
+                Metadata.Probability = _probaExpr.ToString();
+            }
+        }
+
         public Point StartPoint
         {
             get => new Point(X1, Y1);
@@ -102,22 +152,19 @@ namespace GraphExpectedValue.GraphWidgets
             }
         }
         
-        private Size TextSize
+        private Size TextSize(TextBlock textBlock)
         {
-            get
-            {
-                var formattedText = new FormattedText(
-                    Text,
+            var formattedText = new FormattedText(
+                    textBlock.Text,
                     CultureInfo.CurrentCulture,
                     FlowDirection.LeftToRight,
-                    new Typeface(_edgeText.FontFamily, _edgeText.FontStyle, _edgeText.FontWeight, _edgeText.FontStretch),
-                    _edgeText.FontSize,
+                    new Typeface(textBlock.FontFamily, textBlock.FontStyle, textBlock.FontWeight, textBlock.FontStretch),
+                    textBlock.FontSize,
                     Brushes.Black,
                     new NumberSubstitution(),
                     1
                 );
-                return new Size(formattedText.Width, formattedText.Height);
-            }
+            return new Size(formattedText.Width, formattedText.Height);
         }
         
         private double Angle
@@ -135,26 +182,28 @@ namespace GraphExpectedValue.GraphWidgets
             }
         }
         
-        public bool Curved { get; set; }
-        
-        public bool Backed { get; set; }
+        public bool Curved 
+        {
+            get => _curved;
+            set
+            {
+                _curved = value;
+                EdgeChangedEvent?.Invoke(ChangeType.CurvedChanged);
+            }
+        }
+       
+        public bool Backed 
+        {
+            get => _backed;
+            set
+            {
+                _backed = value;
+                EdgeChangedEvent?.Invoke(ChangeType.BackedChanged);
+            }
+        }
 
         private void Update(ChangeType changeType)
         {
-            if (changeType == ChangeType.TextChange)
-            {
-                _edgeText.Text = Text;
-                if (Curved)
-                {
-                    TransformBezier();
-                }
-                else
-                {
-                    TransformText();
-                }
-                return;
-            }
-
             _edgeLine.X1 = StartPoint.X;
             _edgeLine.Y1 = StartPoint.Y;
             _edgeLine.X2 = EndPoint.X;
@@ -162,30 +211,49 @@ namespace GraphExpectedValue.GraphWidgets
             _edgeLine.IsCurved = Curved;
             _edgeLine.IsBacked = Backed;
 
-            if (Curved)
+            switch(changeType)
             {
-                TransformBezier();
-            }
-            else
-            {
-                TransformText();
+                case ChangeType.LineChange:
+                    _edgeLine.X1 = StartPoint.X;
+                    _edgeLine.Y1 = StartPoint.Y;
+                    _edgeLine.X2 = EndPoint.X;
+                    _edgeLine.Y2 = EndPoint.Y;
+                    Transform(changeType | ChangeType.LengthTextChange, _edgeLengthText);
+                    Transform(changeType | ChangeType.ProbaTextChange, _edgeProbaText);
+                    Transform(changeType | ChangeType.BackProbaTextChange, _edgeBackProbaText);
+                    break;
+                case ChangeType.BackedChanged:
+                    _edgeLine.IsBacked = Backed;
+                    break;
+                case ChangeType.CurvedChanged:
+                    _edgeLine.IsCurved = Curved;
+                    Transform(changeType | ChangeType.LengthTextChange, _edgeLengthText);
+                    Transform(changeType | ChangeType.ProbaTextChange, _edgeProbaText);
+                    Transform(changeType | ChangeType.BackProbaTextChange, _edgeBackProbaText);
+                    break;
+                case ChangeType.LengthTextChange:
+                    Transform(changeType | ChangeType.ProbaTextChange, _edgeProbaText);
+                    break;
+                case ChangeType.BackProbaTextChange:
+                    Transform(changeType | ChangeType.BackProbaTextChange, _edgeBackProbaText);
+                    break;
             }
         }
-        
-        private void TransformText()
-        {
-            var s = new Vector()
-            {
-                X = EndPoint.X - StartPoint.X,
-                Y = EndPoint.Y - StartPoint.Y
-            };
 
-            var textWidth = TextSize.Width;
-            var lineLength = s.Length;
-            var widthOffset = (lineLength - textWidth) / 2;
+        private void Transform(ChangeType changeType, TextBlock textBlock)
+        {
+            var s = EndPoint - StartPoint;
+
+            var textSize = TextSize(textBlock);
+            var textWidth = textSize.Width;
+            var textHeight = textSize.Height;
+
+            var lineWidth = s.Length;
+            
+            s.Normalize();
+            var widthOffset = (lineWidth - textWidth) / 2;
 
             var offsetPoint = s.X > 0 ? StartPoint : EndPoint;
-
             if (Math.Abs(s.X) > TOLERANCE)
             {
                 s *= Math.Sign(s.X);
@@ -195,86 +263,136 @@ namespace GraphExpectedValue.GraphWidgets
                 offsetPoint = StartPoint;
             }
 
-            s.Normalize();
 
-            var widthOffsetVector = s * widthOffset;
-
-            var heightOffsetVector = new Vector {X = s.Y, Y = -s.X};
-            heightOffsetVector.Normalize();
-            var heightOffset = OFFSET + TextSize.Height;
-            heightOffsetVector *= heightOffset;
-
-            var offsetVector = heightOffsetVector + widthOffsetVector;
-
-            var textBlockPoint = offsetPoint + offsetVector;
-            Canvas.SetLeft(_edgeText, textBlockPoint.X);
-            Canvas.SetTop(_edgeText, textBlockPoint.Y);
-
-            _edgeText.RenderTransform = new RotateTransform(Angle);
-        }
-        
-        private void TransformBezier()
-        {
-            var s = new Vector()
-            {
-                X = EndPoint.X - StartPoint.X,
-                Y = EndPoint.Y - StartPoint.Y
-            };
-            var lineLength = s.Length;
-            var pt1 = s.X > 0 ? StartPoint : EndPoint;
-            
-            s *= Math.Sign(s.X);
-            s.Normalize();
             var perpS = new Vector(
-                -s.Y,
-                s.X
+                s.Y,
+                -s.X
             );
-            perpS.Normalize();
-            
 
-            var bezierPoint = _edgeLine.BezierPoint;
-            var midPoint = pt1 + s * lineLength / 2;
-
-            var bezierMidVec = new Vector(bezierPoint.X - midPoint.X, bezierPoint.Y - midPoint.Y);
-            var bezierMidLength = bezierMidVec.Length;
-
-            var textWidth = TextSize.Width;
-            var widthOffset = (lineLength - textWidth) / 2;
-
-            var offsetPoint = pt1;
-            var widthOffsetVector = s * widthOffset;
-
-            var heightOffsetVector = bezierMidVec;
-            heightOffsetVector.Normalize();
-            var heightOffset = OFFSET + TextSize.Height + bezierMidLength / 2.0;
-            if (pt1 == StartPoint)
+            Vector widthOffsetVector, heightOffsetVector, offsetVector = new Vector();
+            double heightOffset, angle;
+            var matrix = new Matrix();
+            if (changeType.HasFlag(ChangeType.ProbaTextChange))
             {
-                heightOffset -= TextSize.Height;
-            }
-            heightOffsetVector *= heightOffset;
+                widthOffsetVector = 3 * s;
+                perpS.Normalize();
+                
+                heightOffset = OFFSET + textHeight;
+                heightOffsetVector = perpS * heightOffset;
 
-            var offsetVector = heightOffsetVector + widthOffsetVector;
+                offsetVector = widthOffsetVector + heightOffsetVector;
+                angle = Angle;
+                if(Curved)
+                {
+                    angle += Arrow.BezierAngle;
+                    matrix.Rotate(Arrow.BezierAngle);
+                    offsetVector = Vector.Multiply(offsetVector, matrix);
+                }
+            }
+            else if (changeType.HasFlag(ChangeType.BackProbaTextChange))
+            {
+                offsetPoint = (offsetPoint == StartPoint) ? EndPoint : StartPoint;
+
+                s *= -1;
+
+                widthOffsetVector = (3 + textWidth) * s;
+
+                heightOffset = OFFSET + textHeight;
+                heightOffsetVector = perpS * heightOffset;
+
+                offsetVector = widthOffsetVector + heightOffsetVector;
+
+                angle = Angle;
+                if (Curved)
+                {
+                    angle -= Angle;
+                    matrix.Rotate(-Arrow.BezierAngle);
+                    offsetVector = Vector.Multiply(offsetVector, matrix);
+                }
+            }
+            else
+            {
+                widthOffsetVector = widthOffset * s;
+                if (Curved)
+                {
+                    var bezierPoint = _edgeLine.BezierPoint;
+                    var midPoint = offsetPoint + s * (lineWidth / 2);
+                    var bezierMidVec = bezierPoint - midPoint;
+                    var bezierMidLength = bezierMidVec.Length;
+                    bezierMidVec.Normalize();
+                    heightOffset = OFFSET + textHeight + bezierMidLength / 2.0;
+                    if (offsetPoint == StartPoint && Math.Abs(s.X) > TOLERANCE)
+                    {
+                        heightOffset -= textHeight;
+                    }
+                    heightOffsetVector = bezierMidVec * heightOffset;
+                }
+                else
+                {
+                    heightOffset = OFFSET + textHeight;
+                    heightOffsetVector = perpS * heightOffset;
+                }
+                offsetVector = widthOffsetVector + heightOffsetVector;
+
+                angle = Angle;
+            }
 
             var textBlockPoint = offsetPoint + offsetVector;
-            Canvas.SetLeft(_edgeText, textBlockPoint.X);
-            Canvas.SetTop(_edgeText, textBlockPoint.Y);
-
-            _edgeText.RenderTransform = new RotateTransform(Angle);
+            Canvas.SetLeft(textBlock, textBlockPoint.X);
+            Canvas.SetTop(textBlock, textBlockPoint.Y);
+            textBlock.RenderTransform = new RotateTransform(angle);
         }
-        
+                
         public void AddToCanvas(Canvas canvas)
         {
+            _canvas = canvas;
+
             canvas.Children.Add(_edgeLine);
-            canvas.Children.Add(_edgeText);
+            canvas.Children.Add(_edgeLengthText);
+
+            if (!_showProba)
+            {
+                _showProba = true;
+                canvas.Children.Add(_edgeProbaText);
+            }
+
+            if (!_showBackProba)
+            {
+                _showBackProba = true;
+                canvas.Children.Add(_edgeBackProbaText);
+            }
         }
         
         public void RemoveFromCanvas(Canvas canvas)
         {
-            canvas.Children.Remove(_edgeLine);
-            canvas.Children.Remove(_edgeText);
+            _canvas.Children.Remove(_edgeLine);
+            _canvas.Children.Remove(_edgeLengthText);
+            if (_showProba)
+            {
+                _canvas.Children.Remove(_edgeProbaText);
+            }
+
+            if (_showBackProba)
+            {
+                _canvas.Children.Remove(_edgeBackProbaText);
+            }
         }
         
         public void UpdateEdge() => EdgeChangedEvent?.Invoke(ChangeType.LineChange);
+
+
+        public void UpdatedDegree(int degree, bool isBack)
+        {
+            var proba = SymbolicExpression.Parse("1 / " + degree);
+            if (isBack)
+            {
+                BackProbabilityExpression = proba;
+            }
+            else
+            {
+                ProbabilityExpression = proba;
+            }
+        }
 
         private Edge()
         {
@@ -286,9 +404,16 @@ namespace GraphExpectedValue.GraphWidgets
                 ArrowAngle = 30,
                 IsCurved = Curved
             };
-            _edgeText = new TextBlock();
-            _edgeText.Height = _edgeText.FontSize + 3;
-            _edgeText.Width = 100;
+            _edgeLengthText = new TextBlock();
+            _edgeLengthText.Height = _edgeLengthText.FontSize + 3;
+
+            _edgeProbaText = new TextBlock();
+            _edgeProbaText.Height = _edgeProbaText.FontSize + 3;
+            _edgeProbaText.Foreground = Brushes.Red;
+
+            _edgeBackProbaText = new TextBlock();
+            _edgeBackProbaText.Height = _edgeBackProbaText.FontSize + 3;
+            _edgeBackProbaText.Foreground = Brushes.Red;
         }
 
         public Edge(Vertex from, Vertex to, SymbolicExpression lengthVal) : this()
@@ -306,32 +431,16 @@ namespace GraphExpectedValue.GraphWidgets
             firstCenter += lineBetweenCenters;
             secondCenter -= lineBetweenCenters;
 
-            Text = lengthVal.ToString();
+            LengthExpression = lengthVal;
 
             StartPoint = firstCenter;
             EndPoint = secondCenter;
-            LengthExpression = lengthVal;
         }
 
-        public Edge(Vertex from, Vertex to, SymbolicExpression lengthVal, SymbolicExpression probaVal) : this(from, to, lengthVal)
-        {
-            _showProba = true;
 
-            Metadata = new EdgeMetadata(from, to, lengthVal.ToString(), probaVal.ToString());
-            
-            Text = lengthVal.ToString() + "  /  " + probaVal.ToString();
-            
-            ProbabilityExpression = probaVal;
-        }
-
-        public Edge(Vertex from, Vertex to, EdgeMetadata metadata, bool customProba) : this(from, to, SymbolicExpression.Parse(metadata.Length))
+        public Edge(Vertex from, Vertex to, EdgeMetadata metadata) : this(from, to, SymbolicExpression.Parse(metadata.Length))
         {
-            this.Metadata = metadata;
-            if (customProba)
-            {
-                _showProba = true;
-                ProbabilityExpression = SymbolicExpression.Parse(Metadata.Probability);
-            }
+            Metadata = metadata;
         }
     }
 }
