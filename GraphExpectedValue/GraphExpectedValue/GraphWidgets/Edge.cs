@@ -125,8 +125,8 @@ namespace GraphExpectedValue.GraphWidgets
             set
             {
                 _backProbaExpr = value;
-                ProbaText = _probaExpr.ToString();
-                Metadata.Probability = _probaExpr.ToString();
+                BackProbaText = _backProbaExpr.ToString();
+                Metadata.Probability = _backProbaExpr.ToString();
             }
         }
 
@@ -274,6 +274,14 @@ namespace GraphExpectedValue.GraphWidgets
             var matrix = new Matrix();
             if (changeType.HasFlag(ChangeType.ProbaTextChange))
             {
+                offsetPoint = StartPoint;
+                s = EndPoint - StartPoint;
+                s.Normalize();
+                perpS = new Vector(
+                    -s.Y,
+                    s.X
+                );
+
                 widthOffsetVector = 3 * s;
                 perpS.Normalize();
                 
@@ -284,6 +292,7 @@ namespace GraphExpectedValue.GraphWidgets
                 angle = Angle;
                 if(Curved)
                 {
+                    //offsetVector = widthOffsetVector - heightOffsetVector;
                     angle += Arrow.BezierAngle;
                     matrix.Rotate(Arrow.BezierAngle);
                     offsetVector = Vector.Multiply(offsetVector, matrix);

@@ -46,7 +46,10 @@ namespace GraphExpectedValue.Windows
         private GraphMetadata _graphMetadata = new GraphMetadata();
         
         private List<Vertex> _vertexes = new List<Vertex>();
-        
+        private List<int> _degrees = new List<int>();
+
+        private Vertex clickedVertex = null;
+
         private Dictionary<Tuple<Vertex, Vertex>, Edge> _edges = new Dictionary<Tuple<Vertex, Vertex>, Edge>();
         
         private bool _working;
@@ -130,6 +133,7 @@ namespace GraphExpectedValue.Windows
             _vertexes.Add(vertex);
             _graphMetadata.VertexMetadatas.Add(vertex.Metadata);
             mainCanvas.Children.Add(vertex);
+            _degrees.Add(0);
         }
 
         private void AddEdgeButton_OnClick(object sender, RoutedEventArgs e)
@@ -546,6 +550,21 @@ namespace GraphExpectedValue.Windows
                 }
             }
 
+            if(!_graphMetadata.CustomProbabilities)
+            {
+                var startVertexNumber = edgeStartVertex.Number - 1;
+                _degrees[startVertexNumber]++;
+                edgeStartVertex.DegreeChangedEvent += degree => edge.UpdatedDegree(degree, false);
+                edgeStartVertex.UpdateDegree(_degrees[startVertexNumber]);
+                if(!_graphMetadata.IsOriented)
+                {
+                    var endVertexNumber = edgeEndVertex.Number - 1;
+                    _degrees[endVertexNumber]++;
+                    edgeEndVertex.DegreeChangedEvent += degree => edge.UpdatedDegree(degree, true);
+                    edgeEndVertex.UpdateDegree(_degrees[endVertexNumber]);
+                }
+            }
+
             edge.AddToCanvas(mainCanvas);
             _edges.Add(new Tuple<Vertex, Vertex>(edgeStartVertex, edgeEndVertex), edge);
             if (addToMetadata)
@@ -654,6 +673,7 @@ namespace GraphExpectedValue.Windows
                 var vertex = new Vertex(vertexData);
                 _vertexes.Add(vertex);
                 mainCanvas.Children.Add(vertex);
+                _degrees.Add(0);
             }
 
             foreach (var edgeData in metadata.EdgeMetadatas)
@@ -681,6 +701,8 @@ namespace GraphExpectedValue.Windows
             {
                 mainCanvas.Children.Remove(vertex);
             }
+
+            _degrees = new List<int>();
 
             foreach (var edgePair in _edges)
             {
