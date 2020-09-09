@@ -129,11 +129,8 @@ namespace GraphExpectedValue.Windows
                 point.Y + Vertex.Size / 2.0 > mainCanvas.ActualHeight
             ) return;
             if (!_vertexes.TrueForAll(v => v.CheckIntersection(point))) return;
-            var vertex = new Vertex(point.X, point.Y, _vertexes.Count + 1);
-            _vertexes.Add(vertex);
-            _graphMetadata.VertexMetadatas.Add(vertex.Metadata);
-            mainCanvas.Children.Add(vertex);
-            _degrees.Add(0);
+            var vertexMetadata = new VertexMetadata(_vertexes.Count + 1, VertexType.PathVertex, point);
+            AddVertex(vertexMetadata, true);
         }
 
         private void AddEdgeButton_OnClick(object sender, RoutedEventArgs e)
@@ -536,16 +533,40 @@ namespace GraphExpectedValue.Windows
                 clickedVertex = vertex;
                 return;
             }
+            if (clickedVertex == vertex)
+            {
+                MessageBox.Show("Cant create/edit loop edges");
+                clickedVertex = null;
+                return;
+            }
             Edge edge;
             if (_edges.TryGetValue(new Tuple<Vertex, Vertex>(clickedVertex, vertex), out edge) ||
                 !_graphMetadata.IsOriented && _edges.TryGetValue(new Tuple<Vertex, Vertex>(vertex, clickedVertex), out edge))
             {
                 // TODO: edit edge
+                var edgeParametersWindow = new EdgeParametersWindow()
+                {
+                    InputTitle = $"Edit edge between vertexes {clickedVertex.Number} and {vertex.Number}"
+                };
+                if(edgeParametersWindow.ShowDialog() != true) return;
+                var edgeLength = edgeParametersWindow.EdgeLength;
+                edge.LengthExpression = edgeLength;
             }
             else
             {
-                // TODO: add edge
+                var edgeParametersWindow = new EdgeParametersWindow()
+                {
+                    InputTitle = $"Add edge between vertexes {clickedVertex.Number} and {vertex.Number}"
+                };
+                if(edgeParametersWindow.ShowDialog() != true) return;
+                var edgeLength = edgeParametersWindow.EdgeLength;
+                edge = new Edge(clickedVertex, vertex, edgeLength)
+                {
+                    Backed = !_graphMetadata.IsOriented
+                };
+                AddEdge(edge, clickedVertex, vertex);
             }
+            clickedVertex = null;
         }
 
         private void AddVertex(VertexMetadata vertexMetadata, bool addToMetadata=false)
@@ -555,6 +576,7 @@ namespace GraphExpectedValue.Windows
             _degrees.Add(0);
             mainCanvas.Children.Add(vertex);
             //TODO: add handler for vertex.MouseLeftButtonDown
+            vertex.MouseLeftButtonDown += VertexClicked;
             if(addToMetadata)
             {
                 _graphMetadata.VertexMetadatas.Add(vertexMetadata);
@@ -706,10 +728,7 @@ namespace GraphExpectedValue.Windows
             _edges = new Dictionary<Tuple<Vertex, Vertex>, Edge>();
             foreach (var vertexData in metadata.VertexMetadatas)
             {
-                var vertex = new Vertex(vertexData);
-                _vertexes.Add(vertex);
-                mainCanvas.Children.Add(vertex);
-                _degrees.Add(0);
+                AddVertex(vertexData);
             }
 
             foreach (var edgeData in metadata.EdgeMetadatas)

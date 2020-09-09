@@ -134,6 +134,9 @@
     <Compile Include="Windows\EdgeChooseWindow.xaml.cs">
       <DependentUpon>EdgeChooseWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Windows\EdgeParametersWindow.xaml.cs">
+      <DependentUpon>EdgeParametersWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Windows\EdgePickWindow.xaml.cs">
       <DependentUpon>EdgePickWindow.xaml</DependentUpon>
     </Compile>
@@ -150,6 +153,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Windows\EdgeParametersWindow.xaml" />
     <Page Include="Windows\GraphCreateWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
