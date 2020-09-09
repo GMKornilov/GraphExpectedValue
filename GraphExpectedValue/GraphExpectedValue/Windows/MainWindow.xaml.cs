@@ -525,6 +525,42 @@ namespace GraphExpectedValue.Windows
             }
         }
 
+        private void VertexClicked(object sender, MouseButtonEventArgs e)
+        {
+            if (!(sender is Vertex vertex))
+            {
+                return;
+            }
+            if (clickedVertex == null)
+            {
+                clickedVertex = vertex;
+                return;
+            }
+            Edge edge;
+            if (_edges.TryGetValue(new Tuple<Vertex, Vertex>(clickedVertex, vertex), out edge) ||
+                !_graphMetadata.IsOriented && _edges.TryGetValue(new Tuple<Vertex, Vertex>(vertex, clickedVertex), out edge))
+            {
+                // TODO: edit edge
+            }
+            else
+            {
+                // TODO: add edge
+            }
+        }
+
+        private void AddVertex(VertexMetadata vertexMetadata, bool addToMetadata=false)
+        {
+            var vertex = new Vertex(vertexMetadata);
+            _vertexes.Add(vertex);
+            _degrees.Add(0);
+            mainCanvas.Children.Add(vertex);
+            //TODO: add handler for vertex.MouseLeftButtonDown
+            if(addToMetadata)
+            {
+                _graphMetadata.VertexMetadatas.Add(vertexMetadata);
+            }
+        }
+
         private void AddEdge(Edge edge, Vertex edgeStartVertex, Vertex edgeEndVertex, bool addToMetadata = true)
         {
             // if we have oriented graph and trying to add back edge,
