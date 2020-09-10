@@ -322,20 +322,7 @@ namespace GraphExpectedValue.Windows
             if (vertexPickWindow.ShowDialog() != true) return;
             var chosenVertexNumber = vertexPickWindow.ChosenVertex - 1;
             var chosenVertex = _vertexes[chosenVertexNumber];
-            mainCanvas.Children.Remove(chosenVertex);
-
-            foreach (var (fromVertex, toVertex) in _edges.Keys.Where(item => item.Item1.Number == chosenVertex.Number || item.Item2.Number == chosenVertex.Number).ToList())
-            {
-                RemoveEdge(fromVertex, toVertex);
-            }
-
-            _graphMetadata.VertexMetadatas.Remove(chosenVertex.Metadata);
-            _vertexes.RemoveAt(chosenVertexNumber);
-
-            for (var i = chosenVertexNumber; i < _vertexes.Count; i++)
-            {
-                _vertexes[i].Number--;
-            }
+            RemoveVertex(chosenVertex);
         }
 
         private void AddEndVertexButton_OnClick(object sender, RoutedEventArgs e)
@@ -522,6 +509,48 @@ namespace GraphExpectedValue.Windows
             }
         }
 
+        private void VertexDoubleClicked(object sender, MouseButtonEventArgs e)
+        {
+            if (!(sender is Vertex vertex))
+            {
+                return;
+            }
+
+            var connectedVertexes = (
+                from edgeTuple in _edges
+                where edgeTuple.Value.Metadata.StartVertexNumber == vertex.Number
+                select new Tuple<int, bool>(edgeTuple.Value.Metadata.EndVertexNumber, false)
+            ).ToList();
+            if (!_graphMetadata.IsOriented)
+            {
+                var backConnectedVertexes = (
+                    from edgeTuple in _edges
+                    where edgeTuple.Value.Metadata.EndVertexNumber == vertex.Number
+                    select new Tuple<int, bool>(edgeTuple.Value.Metadata.StartVertexNumber, true)
+                );
+                connectedVertexes.AddRange(backConnectedVertexes);
+            }
+            
+            var probaInputWindow = new ProbaInputWindow(connectedVertexes);
+            if(probaInputWindow.ShowDialog() != true) return;
+            foreach (var (vertexNumber, proba, isBacked) in probaInputWindow.probas)
+            {
+                var edgeVertex = _vertexes.Find(x => x.Number == vertexNumber);
+                Edge edge;
+                if (isBacked)
+                {
+                    edge = _edges[new Tuple<Vertex, Vertex>(edgeVertex, vertex)];
+                    edge.BackProbabilityExpression = proba;
+                }
+                else
+                {
+                    edge = _edges[new Tuple<Vertex, Vertex>(vertex, edgeVertex)];
+                    edge.ProbabilityExpression = proba;
+                }
+                
+            }
+        }
+        
         private void VertexClicked(object sender, MouseButtonEventArgs e)
         {
             if (!(sender is Vertex vertex))
@@ -535,7 +564,7 @@ namespace GraphExpectedValue.Windows
             }
             if (clickedVertex == vertex)
             {
-                MessageBox.Show("Cant create/edit loop edges");
+                // MessageBox.Show("Cant create/edit loop edges");
                 clickedVertex = null;
                 return;
             }
@@ -577,12 +606,39 @@ namespace GraphExpectedValue.Windows
             mainCanvas.Children.Add(vertex);
             //TODO: add handler for vertex.MouseLeftButtonDown
             vertex.MouseLeftButtonDown += VertexClicked;
+
+            if (_graphMetadata.CustomProbabilities)
+            {
+                vertex.MouseDoubleClick += VertexDoubleClicked;
+            }
+            
             if(addToMetadata)
             {
                 _graphMetadata.VertexMetadatas.Add(vertexMetadata);
             }
         }
 
+        private void RemoveVertex(Vertex vertex)
+        {
+            var vertexNumber = vertex.Number;
+            var index = _vertexes.FindIndex(x => x == vertex);
+            _vertexes.RemoveAt(index);
+            _degrees.RemoveAt(index);
+            mainCanvas.Children.Remove(vertex);
+            
+            foreach (var (fromVertex, toVertex) in _edges.Keys.Where(item => item.Item1.Number == vertex.Number || item.Item2.Number == vertex.Number).ToList())
+            {
+                RemoveEdge(fromVertex, toVertex);
+            }
+
+            _graphMetadata.VertexMetadatas.Remove(vertex.Metadata);
+
+            for (var i = vertexNumber; i < _vertexes.Count; i++)
+            {
+                _vertexes[i].Number--;
+            }
+        }
+        
         private void AddEdge(Edge edge, Vertex edgeStartVertex, Vertex edgeEndVertex, bool addToMetadata = true)
         {
             // if we have oriented graph and trying to add back edge,
@@ -754,7 +810,7 @@ namespace GraphExpectedValue.Windows
         {
             foreach (var vertex in _vertexes)
             {
-                mainCanvas.Children.Remove(vertex);
+                RemoveVertex(vertex);
             }
 
             _degrees = new List<int>();
@@ -764,6 +820,8 @@ namespace GraphExpectedValue.Windows
                 var edge = edgePair.Value;
                 edge.RemoveFromCanvas(mainCanvas);
             }
+            
+            _graphMetadata = new GraphMetadata();
         }
 
         private void MenuItem_OnClick(object sender, RoutedEventArgs e)

@@ -130,6 +130,7 @@
     <Compile Include="Utility\InverseAlgorithm.cs" />
     <Compile Include="Utility\Matrix.cs" />
     <Compile Include="Utility\MultiplyAlgorithm.cs" />
+    <Compile Include="Utility\MutableTuple.cs" />
     <Compile Include="Utility\SolutionAlgorithm.cs" />
     <Compile Include="Windows\EdgeChooseWindow.xaml.cs">
       <DependentUpon>EdgeChooseWindow.xaml</DependentUpon>
@@ -142,6 +143,9 @@
     </Compile>
     <Compile Include="Windows\GraphCreateWindow.xaml.cs">
       <DependentUpon>GraphCreateWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\ProbaInputWindow.xaml.cs">
+      <DependentUpon>ProbaInputWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\ResultsWindow.xaml.cs">
       <DependentUpon>ResultsWindow.xaml</DependentUpon>
@@ -182,6 +186,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Windows\ProbaInputWindow.xaml" />
     <Page Include="Windows\ResultsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
