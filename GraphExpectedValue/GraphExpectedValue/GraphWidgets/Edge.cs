@@ -427,6 +427,15 @@ namespace GraphExpectedValue.GraphWidgets
 
         public Edge(Vertex from, Vertex to, SymbolicExpression lengthVal) : this()
         {
+            from.PropertyChanged += (sender, e) =>
+            {
+                Metadata.StartVertexNumber = from.Number;
+            };
+            to.PropertyChanged += (sender, e) =>
+            {
+                Metadata.EndVertexNumber = to.Number;
+            };
+
             Metadata = new EdgeMetadata(from, to, lengthVal.ToString());
 
             var firstCenter = from.Center;

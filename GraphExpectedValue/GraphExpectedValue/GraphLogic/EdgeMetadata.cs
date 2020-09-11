@@ -11,6 +11,8 @@ namespace GraphExpectedValue.GraphLogic
         public string Length;
 
         public string Probability;
+
+        public string BackProbability;
         public EdgeMetadata()
         {
 
@@ -25,20 +27,6 @@ namespace GraphExpectedValue.GraphLogic
             StartVertexNumber = startVertex.Number;
             EndVertexNumber = endVertex.Number;
             Length = length;
-            startVertex.PropertyChanged += (sender, args) =>
-            {
-                if (sender is Vertex vertex)
-                {
-                    StartVertexNumber = vertex.Number;
-                }
-            };
-            endVertex.PropertyChanged += (sender, args) =>
-            {
-                if (sender is Vertex vertex)
-                {
-                    EndVertexNumber = vertex.Number;
-                }
-            };
         }
     }
 }

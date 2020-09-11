@@ -127,6 +127,9 @@
     <Compile Include="Utility\ConcreteAlgorithms\LinearEquationSolutionAlgorithm.cs" />
     <Compile Include="Utility\ConcreteAlgorithms\SimpleMultiplyAlgorithm.cs" />
     <Compile Include="Utility\ConcreteAlgorithms\StrassenMultiplyAlgorithm.cs" />
+    <Compile Include="Utility\ConcreteGraphIO\GraphBinaryIO.cs" />
+    <Compile Include="Utility\GraphReader.cs" />
+    <Compile Include="Utility\GraphWriter.cs" />
     <Compile Include="Utility\InverseAlgorithm.cs" />
     <Compile Include="Utility\Matrix.cs" />
     <Compile Include="Utility\MultiplyAlgorithm.cs" />
