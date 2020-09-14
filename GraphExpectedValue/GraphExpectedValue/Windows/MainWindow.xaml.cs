@@ -16,6 +16,7 @@ using GraphExpectedValue.Utility;
 using GraphExpectedValue.Utility.ConcreteAlgorithms;
 using Microsoft.Win32;
 using MathNet.Symbolics;
+using GraphExpectedValue.Utility.ConcreteGraphIO;
 
 namespace GraphExpectedValue.Windows
 {
@@ -44,14 +45,14 @@ namespace GraphExpectedValue.Windows
     public partial class MainWindow : Window
     {
         private GraphMetadata _graphMetadata = new GraphMetadata();
-        
+
         private List<Vertex> _vertexes = new List<Vertex>();
         private List<int> _degrees = new List<int>();
 
         private Vertex clickedVertex = null;
 
         private Dictionary<Tuple<Vertex, Vertex>, Edge> _edges = new Dictionary<Tuple<Vertex, Vertex>, Edge>();
-        
+
         private bool _working;
 
         public MainWindow()
@@ -81,7 +82,7 @@ namespace GraphExpectedValue.Windows
             mainCanvas.Visibility = Visibility.Hidden;
             canvasBorder.Visibility = Visibility.Hidden;
         }
-        
+
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
             cmbSolution.ItemsSource = new SolutionAlgorithm[]
@@ -395,72 +396,47 @@ namespace GraphExpectedValue.Windows
 
         private void SafeGraphButton_OnClick(object sender, RoutedEventArgs e)
         {
-            if (!_working)
-            {
-                return;
-            }
-            var safeFileDialog = new SaveFileDialog()
-            {
-                Filter = "XML file (*.xml)|*.xml"
-            };
-            if (safeFileDialog.ShowDialog() != true || string.IsNullOrEmpty(safeFileDialog.FileName)) return;
-            try
-            {
-                var serializer = new XmlSerializer(typeof(GraphMetadata));
+            SaveGraph(new GraphBinaryIO(), "Gr file (*.gr)|*.gr");
+        }
 
-                using (var stream = new FileStream(safeFileDialog.FileName, FileMode.Create))
-                {
-                    serializer.Serialize(stream, _graphMetadata);
-                }
-            }
-            catch (IOException)
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            double width, height;
+            if (mainCanvas.Visibility == Visibility.Hidden)
             {
-                MessageBox.Show(
-                    "Error while writing to file",
-                    "",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
+                width = mainCanvas.RenderSize.Width;
+                height = mainCanvas.RenderSize.Height;
             }
-            catch (UnauthorizedAccessException)
+            else
             {
-                MessageBox.Show(
-                    "Not enough rights to write in this path. Try running program with admin rights.",
-                    "",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
+                width = mainCanvas.Width;
+                height = mainCanvas.Height;
             }
-            catch (Exception err)
-            {
-                MessageBox.Show(
-                    $"Unknown error happened:{err.Message}",
-                    "",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
-            }
+            OpenGraph(
+                new GraphMatrixIO(width, height),
+                "All files|*"
+            );
         }
 
         private void OpenGraphButton_OnClick(object sender, RoutedEventArgs e)
         {
+            OpenGraph(new GraphBinaryIO(), "Gr file (*.gr)|*.gr");
+        }
+
+        private void OpenGraph(GraphReader reader, string filter)
+        {
             var openFileDialog = new OpenFileDialog()
             {
-                Filter = "XML file (*.xml)|*.xml"
+                Filter = filter
             };
             if (openFileDialog.ShowDialog() != true || string.IsNullOrEmpty(openFileDialog.FileName)) return;
             try
             {
-                var serializer = new XmlSerializer(typeof(GraphMetadata));
-                GraphMetadata metadata;
-                using (var stream = new FileStream(openFileDialog.FileName, FileMode.OpenOrCreate))
-                {
-                    metadata = (GraphMetadata)serializer.Deserialize(stream);
-                }
+                var metadata = reader.ReadGraph(File.Open(openFileDialog.FileName, FileMode.OpenOrCreate));
 
                 if (!CheckMetadata(metadata))
                 {
-                    throw new XmlException();
+                    throw new ArgumentException();
                 }
 
                 _working = true;
@@ -489,10 +465,54 @@ namespace GraphExpectedValue.Windows
                     MessageBoxImage.Error
                 );
             }
-            catch (XmlException)
+            catch (ArgumentException ex)
             {
                 MessageBox.Show(
-                    "Incorrect xml was written in file",
+                    "Incorrect graph was written in file",
+                    "",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show(
+                    $"Unknown error happened:{err.Message}",
+                    "",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
+            }
+        }
+
+        private void SaveGraph(GraphWriter writer, string filter)
+        {
+            if (!_working)
+            {
+                return;
+            }
+            var safeFileDialog = new SaveFileDialog()
+            {
+                Filter = filter
+            };
+            if (safeFileDialog.ShowDialog() != true || string.IsNullOrEmpty(safeFileDialog.FileName)) return;
+            try
+            {
+                writer.WriteGraph(_graphMetadata, File.OpenWrite(safeFileDialog.FileName));
+            }
+            catch (IOException)
+            {
+                MessageBox.Show(
+                    "Error while writing to file",
+                    "",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
+            }
+            catch (UnauthorizedAccessException)
+            {
+                MessageBox.Show(
+                    "Not enough rights to write in this path. Try running program with admin rights.",
                     "",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error
@@ -530,9 +550,9 @@ namespace GraphExpectedValue.Windows
                 );
                 connectedVertexes.AddRange(backConnectedVertexes);
             }
-            
+
             var probaInputWindow = new ProbaInputWindow(connectedVertexes);
-            if(probaInputWindow.ShowDialog() != true) return;
+            if (probaInputWindow.ShowDialog() != true) return;
             foreach (var (vertexNumber, proba, isBacked) in probaInputWindow.probas)
             {
                 var edgeVertex = _vertexes.Find(x => x.Number == vertexNumber);
@@ -547,10 +567,10 @@ namespace GraphExpectedValue.Windows
                     edge = _edges[new Tuple<Vertex, Vertex>(vertex, edgeVertex)];
                     edge.ProbabilityExpression = proba;
                 }
-                
+
             }
         }
-        
+
         private void VertexClicked(object sender, MouseButtonEventArgs e)
         {
             if (!(sender is Vertex vertex))
@@ -577,7 +597,7 @@ namespace GraphExpectedValue.Windows
                 {
                     InputTitle = $"Edit edge between vertexes {clickedVertex.Number} and {vertex.Number}"
                 };
-                if(edgeParametersWindow.ShowDialog() != true) return;
+                if (edgeParametersWindow.ShowDialog() != true) return;
                 var edgeLength = edgeParametersWindow.EdgeLength;
                 edge.LengthExpression = edgeLength;
             }
@@ -587,7 +607,7 @@ namespace GraphExpectedValue.Windows
                 {
                     InputTitle = $"Add edge between vertexes {clickedVertex.Number} and {vertex.Number}"
                 };
-                if(edgeParametersWindow.ShowDialog() != true) return;
+                if (edgeParametersWindow.ShowDialog() != true) return;
                 var edgeLength = edgeParametersWindow.EdgeLength;
                 edge = new Edge(clickedVertex, vertex, edgeLength)
                 {
@@ -598,7 +618,7 @@ namespace GraphExpectedValue.Windows
             clickedVertex = null;
         }
 
-        private void AddVertex(VertexMetadata vertexMetadata, bool addToMetadata=false)
+        private void AddVertex(VertexMetadata vertexMetadata, bool addToMetadata = false)
         {
             var vertex = new Vertex(vertexMetadata);
             _vertexes.Add(vertex);
@@ -611,8 +631,8 @@ namespace GraphExpectedValue.Windows
             {
                 vertex.MouseDoubleClick += VertexDoubleClicked;
             }
-            
-            if(addToMetadata)
+
+            if (addToMetadata)
             {
                 _graphMetadata.VertexMetadatas.Add(vertexMetadata);
             }
@@ -625,7 +645,7 @@ namespace GraphExpectedValue.Windows
             _vertexes.RemoveAt(index);
             _degrees.RemoveAt(index);
             mainCanvas.Children.Remove(vertex);
-            
+
             foreach (var (fromVertex, toVertex) in _edges.Keys.Where(item => item.Item1.Number == vertex.Number || item.Item2.Number == vertex.Number).ToList())
             {
                 RemoveEdge(fromVertex, toVertex);
@@ -638,7 +658,7 @@ namespace GraphExpectedValue.Windows
                 _vertexes[i].Number--;
             }
         }
-        
+
         private void AddEdge(Edge edge, Vertex edgeStartVertex, Vertex edgeEndVertex, bool addToMetadata = true)
         {
             // if we have oriented graph and trying to add back edge,
@@ -664,13 +684,13 @@ namespace GraphExpectedValue.Windows
                 }
             }
 
-            if(!_graphMetadata.CustomProbabilities)
+            if (!_graphMetadata.CustomProbabilities)
             {
                 var startVertexNumber = edgeStartVertex.Number - 1;
                 _degrees[startVertexNumber]++;
                 edgeStartVertex.DegreeChangedEvent += degree => edge.UpdatedDegree(degree, false);
                 edgeStartVertex.UpdateDegree(_degrees[startVertexNumber]);
-                if(!_graphMetadata.IsOriented)
+                if (!_graphMetadata.IsOriented)
                 {
                     var endVertexNumber = edgeEndVertex.Number - 1;
                     _degrees[endVertexNumber]++;
@@ -773,7 +793,7 @@ namespace GraphExpectedValue.Windows
 
             return true;
         }
-        
+
         private void LoadGraph(GraphMetadata metadata)
         {
             ClearGraph();
@@ -820,7 +840,7 @@ namespace GraphExpectedValue.Windows
                 var edge = edgePair.Value;
                 edge.RemoveFromCanvas(mainCanvas);
             }
-            
+
             _graphMetadata = new GraphMetadata();
         }
 

@@ -26,7 +26,10 @@
         </Grid.ColumnDefinitions>
         <Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" VerticalAlignment="Center">
             <MenuItem Header="New graph" Click="MenuItem_OnClick"/>
-            <MenuItem Header="Open graph" Click="OpenGraphButton_OnClick"/>
+            <MenuItem Header="Open graph">
+                <MenuItem Header="Open from binary file" Click="OpenGraphButton_OnClick"/>
+                <MenuItem Header="Open from matrix file" Click="MenuItem_Click"/>
+            </MenuItem>
             <MenuItem Header="Save graph" Click="SafeGraphButton_OnClick"/>
         </Menu>
         <StackPanel HorizontalAlignment="Center" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Orientation="Horizontal" Name="buttonPanel">
