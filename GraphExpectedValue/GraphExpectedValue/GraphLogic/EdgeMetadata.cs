@@ -10,6 +10,8 @@ namespace GraphExpectedValue.GraphLogic
         
         public string Length;
 
+        public string BackLength;
+
         public string Probability;
 
         public string BackProbability;

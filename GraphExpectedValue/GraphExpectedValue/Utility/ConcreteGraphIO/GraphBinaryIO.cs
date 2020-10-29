@@ -51,12 +51,14 @@ namespace GraphExpectedValue.Utility.ConcreteGraphIO
                 }
             }
 
-            var edgeMetadata = new EdgeMetadata();
-            edgeMetadata.StartVertexNumber = startVertexNumber;
-            edgeMetadata.EndVertexNumber = endVertexNumber;
-            edgeMetadata.Length = length;
-            edgeMetadata.Probability = probability;
-            edgeMetadata.BackProbability = backProbability;
+            var edgeMetadata = new EdgeMetadata
+            {
+                StartVertexNumber = startVertexNumber,
+                EndVertexNumber = endVertexNumber,
+                Length = length,
+                Probability = probability,
+                BackProbability = backProbability
+            };
 
             return edgeMetadata;
         }
@@ -79,13 +81,13 @@ namespace GraphExpectedValue.Utility.ConcreteGraphIO
                 vertexMetadatas = new List<VertexMetadata>(vertexes);
                 edgeMetadatas = new List<EdgeMetadata>(edges);
 
-                for(int i = 0; i < vertexes; i++)
+                for(var i = 0; i < vertexes; i++)
                 {
                     var vertexMetadata = ReadVertex(reader);
                     vertexMetadatas.Add(vertexMetadata);
                 }
 
-                for(int i = 0; i < edges; i++)
+                for(var i = 0; i < edges; i++)
                 {
                     var edgeMetadata = ReadEdge(reader, isOriented, customProbas);
                     edgeMetadatas.Add(edgeMetadata);
@@ -97,12 +99,28 @@ namespace GraphExpectedValue.Utility.ConcreteGraphIO
             return res;
         }
 
+        public void WriteEdge(BinaryWriter writer, EdgeMetadata metadata, bool customProba, bool isOriented)
+        {
+            writer.Write(metadata.StartVertexNumber);
+            writer.Write(metadata.EndVertexNumber);
+            writer.Write(metadata.Length);
+            if (customProba)
+            {
+                writer.Write(metadata.Probability);
+                if (!isOriented)
+                {
+                    writer.Write(metadata.BackProbability);
+                }
+            }
+        }
+
         public void WriteGraph(GraphMetadata metadata, Stream stream)
         {
+            var edgeCount = metadata.EdgeMetadatas.Count + metadata.EdgeMetadatas.Count(edgeMetadata => !string.IsNullOrEmpty(edgeMetadata.BackLength));
             using(var writer = new BinaryWriter(stream))
             {
                 writer.Write(metadata.VertexMetadatas.Count);
-                writer.Write(metadata.EdgeMetadatas.Count);
+                writer.Write(edgeCount);
                 
                 writer.Write(metadata.IsOriented);
                 writer.Write(metadata.CustomProbabilities);
@@ -117,16 +135,18 @@ namespace GraphExpectedValue.Utility.ConcreteGraphIO
 
                 foreach(var edgeMetadata in metadata.EdgeMetadatas)
                 {
-                    writer.Write(edgeMetadata.StartVertexNumber);
-                    writer.Write(edgeMetadata.EndVertexNumber);
-                    writer.Write(edgeMetadata.Length);
-                    if(metadata.CustomProbabilities)
+                    WriteEdge(writer, edgeMetadata, metadata.CustomProbabilities, metadata.IsOriented);
+                    if (!string.IsNullOrEmpty(edgeMetadata.BackLength))
                     {
-                        writer.Write(edgeMetadata.Probability);
-                        if(!metadata.IsOriented)
+                        var tempMetadata = new EdgeMetadata()
                         {
-                            writer.Write(edgeMetadata.BackProbability);
-                        }
+                            StartVertexNumber = edgeMetadata.EndVertexNumber,
+                            EndVertexNumber = edgeMetadata.StartVertexNumber,
+                            Length = edgeMetadata.BackLength,
+                            Probability = edgeMetadata.BackProbability,
+                            BackProbability = edgeMetadata.Probability
+                        };
+                        WriteEdge(writer, tempMetadata, metadata.CustomProbabilities, metadata.IsOriented);
                     }
                 }
             }

@@ -13,10 +13,11 @@ namespace GraphExpectedValue.GraphWidgets
     {
         LineChange = 0,
         LengthTextChange = (1 << 0),
-        ProbaTextChange = (1 << 1),
-        BackProbaTextChange = (1 << 2),
-        CurvedChanged = (1 << 3),
-        BackedChanged = (1 << 4)
+        BackLengthTextChange = (1 << 1),
+        ProbaTextChange = (1 << 2),
+        BackProbaTextChange = (1 << 3),
+        CurvedChanged = (1 << 4),
+        BackedChanged = (1 << 5)
     }
     
     public class Edge
@@ -28,6 +29,7 @@ namespace GraphExpectedValue.GraphWidgets
         private event Action<ChangeType> EdgeChangedEvent;
 
         private string _lengthText;
+        private string _backLengthText;
         private string _probaText;
         private string _backProbaText;
         
@@ -36,13 +38,16 @@ namespace GraphExpectedValue.GraphWidgets
         private readonly Arrow _edgeLine;
 
         private readonly TextBlock _edgeLengthText;
+        private readonly TextBlock _edgeBackLengthText;
+
         private readonly TextBlock _edgeProbaText;
         private readonly TextBlock _edgeBackProbaText;
 
-        private SymbolicExpression _lengthExpr, _probaExpr, _backProbaExpr;
+        private SymbolicExpression _lengthExpr, _backLengthExpr, _probaExpr, _backProbaExpr;
 
-        private bool _showProba = false;
-        private bool _showBackProba = false;
+        private bool _showProba;
+        private bool _showBackProba;
+        private bool _showBackLength;
 
         private bool _backed;
         private bool _curved;
@@ -63,6 +68,24 @@ namespace GraphExpectedValue.GraphWidgets
             }
         }
 
+        public string BackLengthText
+        {
+            get => _backLengthText;
+            private set
+            {
+                _backLengthText = value;
+                _edgeBackLengthText.Text = _backLengthText;
+
+                if (!_showBackLength && _canvas != null)
+                {
+                    _showBackLength = true;
+                    _canvas.Children.Add(_edgeBackLengthText);
+                }
+
+                EdgeChangedEvent?.Invoke(ChangeType.BackLengthTextChange);
+            }
+        }
+
         public string ProbaText
         {
             get => _probaText;
@@ -76,6 +99,8 @@ namespace GraphExpectedValue.GraphWidgets
                     _showProba = true;
                     _canvas.Children.Add(_edgeProbaText);
                 }
+
+                EdgeChangedEvent?.Invoke(ChangeType.ProbaTextChange);
             }
         }
 
@@ -94,7 +119,6 @@ namespace GraphExpectedValue.GraphWidgets
                 }
 
                 EdgeChangedEvent?.Invoke(ChangeType.BackProbaTextChange);
-                //TODO: update dege metadata
             }
         }
         public SymbolicExpression LengthExpression
@@ -105,6 +129,17 @@ namespace GraphExpectedValue.GraphWidgets
                 _lengthExpr = value;
                 LengthText = _lengthExpr.ToString();
                 Metadata.Length = _lengthExpr.ToString();
+            }
+        }
+
+        public SymbolicExpression BackLengthExpression
+        {
+            get => _backLengthExpr;
+            set
+            {
+                _backLengthExpr = value;
+                BackLengthText = _backLengthExpr.ToString();
+                Metadata.BackLength = BackLengthText;
             }
         }
 
@@ -126,7 +161,7 @@ namespace GraphExpectedValue.GraphWidgets
             {
                 _backProbaExpr = value;
                 BackProbaText = _backProbaExpr.ToString();
-                Metadata.Probability = _backProbaExpr.ToString();
+                Metadata.BackProbability = BackProbaText;
             }
         }
 
@@ -224,6 +259,7 @@ namespace GraphExpectedValue.GraphWidgets
                     break;
                 case ChangeType.BackedChanged:
                     _edgeLine.IsBacked = Backed;
+                    Transform(changeType | ChangeType.LengthTextChange, _edgeLengthText);
                     break;
                 case ChangeType.CurvedChanged:
                     _edgeLine.IsCurved = Curved;
@@ -232,10 +268,22 @@ namespace GraphExpectedValue.GraphWidgets
                     Transform(changeType | ChangeType.BackProbaTextChange, _edgeBackProbaText);
                     break;
                 case ChangeType.LengthTextChange:
-                    Transform(changeType | ChangeType.ProbaTextChange, _edgeProbaText);
+                    //Transform(changeType | ChangeType.ProbaTextChange, _edgeProbaText);
+                    Transform(changeType, _edgeLengthText);
+                    break;
+                case ChangeType.BackLengthTextChange:
+                    Transform(changeType, _edgeBackLengthText);
+                    break;
+                case ChangeType.ProbaTextChange:
+                    Transform(changeType, _edgeProbaText);
+                    if (Backed)
+                    {
+                        Transform(ChangeType.LengthTextChange, _edgeLengthText);
+                    }
                     break;
                 case ChangeType.BackProbaTextChange:
-                    Transform(changeType | ChangeType.BackProbaTextChange, _edgeBackProbaText);
+                    Transform(changeType, _edgeBackProbaText);
+                    Transform(ChangeType.BackLengthTextChange, _edgeBackLengthText);
                     break;
             }
         }
@@ -269,7 +317,7 @@ namespace GraphExpectedValue.GraphWidgets
                 -s.X
             );
 
-            Vector widthOffsetVector, heightOffsetVector, offsetVector = new Vector();
+            Vector widthOffsetVector, heightOffsetVector, offsetVector;
             double heightOffset, angle;
             var matrix = new Matrix();
             if (changeType.HasFlag(ChangeType.ProbaTextChange))
@@ -282,7 +330,12 @@ namespace GraphExpectedValue.GraphWidgets
                     s.X
                 );
 
-                widthOffsetVector = 3 * s;
+                widthOffset = 3;
+                if (s.X < 0)
+                {
+                    widthOffset += textWidth;
+                }
+                widthOffsetVector = widthOffset * s;
                 perpS.Normalize();
                 
                 heightOffset = OFFSET + textHeight;
@@ -300,11 +353,78 @@ namespace GraphExpectedValue.GraphWidgets
             }
             else if (changeType.HasFlag(ChangeType.BackProbaTextChange))
             {
-                offsetPoint = (offsetPoint == StartPoint) ? EndPoint : StartPoint;
+                offsetPoint = EndPoint;
+                s = StartPoint - EndPoint;
+                s.Normalize();
+                //offsetPoint = (offsetPoint == StartPoint) ? EndPoint : StartPoint;
 
-                s *= -1;
+                //s *= -1;
+                widthOffset = 3 + textWidth;
+                if (s.X >= 0)
+                {
+                    widthOffset -= textWidth;
+                }
 
-                widthOffsetVector = (3 + textWidth) * s;
+                widthOffsetVector = widthOffset * s;
+
+                heightOffset = OFFSET + textHeight;
+                heightOffsetVector = perpS * heightOffset;
+
+                offsetVector = widthOffsetVector + heightOffsetVector;
+
+                angle = Angle;
+                if (Curved)
+                {
+                    angle -= Angle;
+                    matrix.Rotate(-Arrow.BezierAngle);
+                    offsetVector = Vector.Multiply(offsetVector, matrix);
+                }
+            }
+            else if (changeType.HasFlag(ChangeType.LengthTextChange) && Backed)
+            {
+                offsetPoint = StartPoint;
+                s = EndPoint - StartPoint;
+                s.Normalize();
+                perpS = new Vector(
+                    -s.Y,
+                    s.X
+                );
+
+                widthOffset = 3 + OFFSET + TextSize(_edgeProbaText).Width;
+                if (s.X < 0)
+                {
+                    widthOffset += textWidth;
+                }
+                widthOffsetVector = widthOffset * s;
+                perpS.Normalize();
+
+                heightOffset = OFFSET + textHeight;
+                heightOffsetVector = perpS * heightOffset;
+
+                offsetVector = widthOffsetVector + heightOffsetVector;
+                angle = Angle;
+                if (Curved)
+                {
+                    //offsetVector = widthOffsetVector - heightOffsetVector;
+                    angle += Arrow.BezierAngle;
+                    matrix.Rotate(Arrow.BezierAngle);
+                    offsetVector = Vector.Multiply(offsetVector, matrix);
+                }
+            }
+            else if (changeType.HasFlag(ChangeType.BackLengthTextChange))
+            {
+                offsetPoint = EndPoint;
+                s = StartPoint - EndPoint;
+                s.Normalize();
+                //s *= -1;
+
+                var backProbaWidth = TextSize(_edgeBackProbaText).Width;
+                widthOffset = 3 + textWidth + OFFSET + backProbaWidth;
+                if (s.X >= 0)
+                {
+                    widthOffset -= textWidth;
+                }
+                widthOffsetVector = widthOffset * s;
 
                 heightOffset = OFFSET + textHeight;
                 heightOffsetVector = perpS * heightOffset;
@@ -385,6 +505,11 @@ namespace GraphExpectedValue.GraphWidgets
             {
                 _canvas.Children.Remove(_edgeBackProbaText);
             }
+
+            if (_showBackLength)
+            {
+                _canvas.Children.Remove(_edgeBackLengthText);
+            }
         }
         
         public void UpdateEdge() => EdgeChangedEvent?.Invoke(ChangeType.LineChange);
@@ -415,6 +540,9 @@ namespace GraphExpectedValue.GraphWidgets
             };
             _edgeLengthText = new TextBlock();
             _edgeLengthText.Height = _edgeLengthText.FontSize + 3;
+
+            _edgeBackLengthText = new TextBlock();
+            _edgeBackLengthText.Height = _edgeLengthText.FontSize + 3;
 
             _edgeProbaText = new TextBlock();
             _edgeProbaText.Height = _edgeProbaText.FontSize + 3;

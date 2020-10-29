@@ -19,7 +19,7 @@ namespace GraphExpectedValue.GraphWidgets
     public class Arrow : Shape, INotifyPropertyChanged
     {
         public const int BezierAngle = 15;
-        
+
         public static readonly DependencyProperty X1Property;
         public static readonly DependencyProperty X2Property;
         public static readonly DependencyProperty Y1Property;
@@ -28,44 +28,44 @@ namespace GraphExpectedValue.GraphWidgets
         public static readonly DependencyProperty ArrowAngleProperty;
         public static readonly DependencyProperty IsCurvedProperty;
         public static readonly DependencyProperty IsBackedProperty;
-        
+
         public double X1
         {
             get => (double)GetValue(X1Property);
             set => SetValue(X1Property, value);
         }
-        
+
         public double X2
         {
             get => (double)GetValue(X2Property);
             set => SetValue(X2Property, value);
         }
-        
+
         public double Y1
         {
             get => (double)GetValue(Y1Property);
             set => SetValue(Y1Property, value);
         }
-        
+
         public double Y2
         {
             get => (double)GetValue(Y2Property);
             set => SetValue(Y2Property, value);
         }
-        
+
         public double ArrowLength
         {
             get => (double)GetValue(ArrowLengthProperty);
             set => SetValue(ArrowLengthProperty, value);
         }
-        
+
         public double ArrowAngle
         {
             get => (double)GetValue(ArrowAngleProperty);
             set => SetValue(ArrowAngleProperty, value);
 
         }
-        
+
         public bool IsCurved
         {
             get => (bool)GetValue(IsCurvedProperty);
@@ -75,17 +75,17 @@ namespace GraphExpectedValue.GraphWidgets
                 OnPropertyChanged();
             }
         }
-        
+
         public bool IsBacked
         {
-            get => (bool) GetValue(IsBackedProperty);
+            get => (bool)GetValue(IsBackedProperty);
             set
             {
                 SetValue(IsBackedProperty, value);
                 OnPropertyChanged();
             }
         }
-        
+
         public Point BezierPoint
         {
             get
@@ -105,7 +105,7 @@ namespace GraphExpectedValue.GraphWidgets
                 return ptMid;
             }
         }
-        
+
         static Arrow()
         {
             X1Property = DependencyProperty.Register(
@@ -138,13 +138,13 @@ namespace GraphExpectedValue.GraphWidgets
                 nameof(ArrowAngle),
                 typeof(double),
                 typeof(Arrow)
-            );  
+            );
             IsCurvedProperty = DependencyProperty.Register(
                 nameof(IsCurved),
                 typeof(bool),
                 typeof(Arrow),
                 new FrameworkPropertyMetadata(
-                    defaultValue:false,
+                    defaultValue: false,
                     FrameworkPropertyMetadataOptions.AffectsRender
                 )
             );
@@ -158,7 +158,7 @@ namespace GraphExpectedValue.GraphWidgets
                 )
             );
         }
-        
+
         protected override Geometry DefiningGeometry
         {
             get
@@ -186,7 +186,7 @@ namespace GraphExpectedValue.GraphWidgets
 
             }
         }
-        
+
         private void Draw(StreamGeometryContext context, DrawType drawType)
         {
             var pt1 = new Point(X1, Y1);
@@ -236,7 +236,7 @@ namespace GraphExpectedValue.GraphWidgets
             firstArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
             pt3 = pt1 + firstArrowVector;
 
-            rotateMatrix.Rotate( -2 * ArrowAngle);
+            rotateMatrix.Rotate(-2 * ArrowAngle);
             secondArrowVector = Vector.Multiply(endStartVector, rotateMatrix);
             pt4 = pt1 + secondArrowVector;
 

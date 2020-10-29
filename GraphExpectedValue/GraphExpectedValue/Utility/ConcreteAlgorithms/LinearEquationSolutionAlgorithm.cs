@@ -56,7 +56,7 @@ namespace GraphExpectedValue.Utility.ConcreteAlgorithms
             foreach (var edge in metadata.EdgeMetadatas)
             {
                 vertexDegrees[edge.StartVertexNumber - 1]++;
-                if (!metadata.IsOriented)
+                if (!metadata.IsOriented || !string.IsNullOrEmpty(edge.BackLength))
                 {
                     vertexDegrees[edge.EndVertexNumber - 1]++;
                 }
@@ -86,6 +86,22 @@ namespace GraphExpectedValue.Utility.ConcreteAlgorithms
 
                     matrix[vertexMatrixIndex[startVertexIndex], matrix.Cols - 1] += startProba * lengthExpr;
                 }
+
+                // we have back index
+                if (!string.IsNullOrEmpty(edge.BackLength) && !isEnding[endVertexIndex])
+                {
+                    lengthExpr = SymbolicExpression.Parse(edge.BackLength);
+                    var parseEndString = metadata.CustomProbabilities ? edge.BackProbability : "1.0 / " + endVertexDegree;
+                    var endProba = SymbolicExpression.Parse(parseEndString);
+                    // start vertex is not ending
+                    if (!isEnding[startVertexIndex])
+                    {
+                        matrix[vertexMatrixIndex[endVertexIndex], vertexMatrixIndex[startVertexIndex]] += -endProba;
+                    }
+
+                    matrix[vertexMatrixIndex[endVertexIndex], matrix.Cols - 1] += endProba * lengthExpr;
+                }
+
                 // unoriented and end vertex is not ending
                 if (!metadata.IsOriented && !isEnding[endVertexIndex])
                 {

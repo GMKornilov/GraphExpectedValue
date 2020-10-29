@@ -41,7 +41,8 @@ namespace GraphExpectedValue.Windows
 
         public event EventHandler CanExecuteChanged;
     }
-
+    //TODO: change counting of graph data
+    //TODO: change reading\writing graph
     public partial class MainWindow : Window
     {
         private GraphMetadata _graphMetadata = new GraphMetadata();
@@ -173,22 +174,10 @@ namespace GraphExpectedValue.Windows
             var chosenEdgeEndVertex = _vertexes[chosenEndVertexNumber];
             var edgeLengthExpr = edgePickWindow.LengthExpression;
 
-            Edge edge;
-            if (_graphMetadata.CustomProbabilities)
+            var edge = new Edge(chosenEdgeStartVertex, chosenEdgeEndVertex, edgeLengthExpr)
             {
-                var edgeProbaExpr = edgePickWindow.ProbabilityExpression;
-                edge = new Edge(chosenEdgeStartVertex, chosenEdgeEndVertex, edgeLengthExpr)
-                {
-                    Backed = !_graphMetadata.IsOriented,
-                };
-            }
-            else
-            {
-                edge = new Edge(chosenEdgeStartVertex, chosenEdgeEndVertex, edgeLengthExpr)
-                {
-                    Backed = !_graphMetadata.IsOriented
-                };
-            }
+                Backed = !_graphMetadata.IsOriented
+            };
             edge.UpdateEdge();
             AddEdge(edge, chosenEdgeStartVertex, chosenEdgeEndVertex);
         }
@@ -592,12 +581,15 @@ namespace GraphExpectedValue.Windows
             if (_edges.TryGetValue(new Tuple<Vertex, Vertex>(clickedVertex, vertex), out edge) ||
                 !_graphMetadata.IsOriented && _edges.TryGetValue(new Tuple<Vertex, Vertex>(vertex, clickedVertex), out edge))
             {
-                // TODO: edit edge
                 var edgeParametersWindow = new EdgeParametersWindow()
                 {
                     InputTitle = $"Edit edge between vertexes {clickedVertex.Number} and {vertex.Number}"
                 };
-                if (edgeParametersWindow.ShowDialog() != true) return;
+                if (edgeParametersWindow.ShowDialog() != true)
+                {
+                    clickedVertex = null;
+                    return;
+                };
                 var edgeLength = edgeParametersWindow.EdgeLength;
                 edge.LengthExpression = edgeLength;
             }
@@ -607,7 +599,11 @@ namespace GraphExpectedValue.Windows
                 {
                     InputTitle = $"Add edge between vertexes {clickedVertex.Number} and {vertex.Number}"
                 };
-                if (edgeParametersWindow.ShowDialog() != true) return;
+                if (edgeParametersWindow.ShowDialog() != true)
+                {
+                    clickedVertex = null;
+                    return;
+                }
                 var edgeLength = edgeParametersWindow.EdgeLength;
                 edge = new Edge(clickedVertex, vertex, edgeLength)
                 {
@@ -624,7 +620,6 @@ namespace GraphExpectedValue.Windows
             _vertexes.Add(vertex);
             _degrees.Add(0);
             mainCanvas.Children.Add(vertex);
-            //TODO: add handler for vertex.MouseLeftButtonDown
             vertex.MouseLeftButtonDown += VertexClicked;
 
             if (_graphMetadata.CustomProbabilities)
@@ -663,14 +658,19 @@ namespace GraphExpectedValue.Windows
         {
             // if we have oriented graph and trying to add back edge,
             // we need to draw it as a back edge
+            var needToAdd = true;
             if (_edges.TryGetValue(new Tuple<Vertex, Vertex>(edgeEndVertex, edgeStartVertex), out var backEdge))
             {
                 if (_graphMetadata.IsOriented)
                 {
-                    backEdge.Curved = true;
-                    backEdge.UpdateEdge();
-                    edge.Curved = true;
-                    edge.UpdateEdge();
+                    needToAdd = false;
+                    backEdge.BackLengthExpression = edge.LengthExpression;
+                    backEdge.Backed = true;
+                    edge = backEdge;
+                    //backEdge.Curved = true;
+                    //backEdge.UpdateEdge();
+                    //edge.Curved = true;
+                    //edge.UpdateEdge();
                 }
                 else
                 {
@@ -687,16 +687,21 @@ namespace GraphExpectedValue.Windows
             if (!_graphMetadata.CustomProbabilities)
             {
                 var startVertexNumber = edgeStartVertex.Number - 1;
+                var endVertexNumber = edgeEndVertex.Number - 1;
                 _degrees[startVertexNumber]++;
-                edgeStartVertex.DegreeChangedEvent += degree => edge.UpdatedDegree(degree, false);
+                edgeStartVertex.DegreeChangedEvent += degree => edge.UpdatedDegree(degree, !needToAdd);
                 edgeStartVertex.UpdateDegree(_degrees[startVertexNumber]);
                 if (!_graphMetadata.IsOriented)
                 {
-                    var endVertexNumber = edgeEndVertex.Number - 1;
                     _degrees[endVertexNumber]++;
                     edgeEndVertex.DegreeChangedEvent += degree => edge.UpdatedDegree(degree, true);
                     edgeEndVertex.UpdateDegree(_degrees[endVertexNumber]);
                 }
+            }
+
+            if (!needToAdd)
+            {
+                return;
             }
 
             edge.AddToCanvas(mainCanvas);
@@ -799,12 +804,18 @@ namespace GraphExpectedValue.Windows
             ClearGraph();
 
             metadata.VertexMetadatas.Sort(((metadata1, metadata2) => metadata1.Number.CompareTo(metadata2.Number)));
-            _graphMetadata = metadata;
+
+            _graphMetadata = new GraphMetadata
+            {
+                IsOriented = metadata.IsOriented,
+                CustomProbabilities = metadata.CustomProbabilities
+            };
+
             _vertexes = new List<Vertex>(metadata.VertexMetadatas.Count);
             _edges = new Dictionary<Tuple<Vertex, Vertex>, Edge>();
             foreach (var vertexData in metadata.VertexMetadatas)
             {
-                AddVertex(vertexData);
+                AddVertex(vertexData, true);
             }
 
             foreach (var edgeData in metadata.EdgeMetadatas)
@@ -818,7 +829,8 @@ namespace GraphExpectedValue.Windows
                 );
                 edge.Backed = !_graphMetadata.IsOriented;
                 edge.UpdateEdge();
-                AddEdge(edge, edgeStartVertex, edgeEndVertex, false);
+
+                AddEdge(edge, edgeStartVertex, edgeEndVertex);
             }
 
             GraphMetadata.SolutionAlgorithm = cmbSolution.SelectedItem as SolutionAlgorithm;
@@ -828,7 +840,7 @@ namespace GraphExpectedValue.Windows
 
         private void ClearGraph()
         {
-            foreach (var vertex in _vertexes)
+            foreach (var vertex in _vertexes.ToArray())
             {
                 RemoveVertex(vertex);
             }
