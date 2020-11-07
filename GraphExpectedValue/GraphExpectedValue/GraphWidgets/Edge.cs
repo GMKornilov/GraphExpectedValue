@@ -112,6 +112,13 @@ namespace GraphExpectedValue.GraphWidgets
                 _backProbaText = value;
                 _edgeBackProbaText.Text = _backProbaText;
 
+                if (value == null && _showBackProba && _canvas != null)
+                {
+                    _showBackProba = false;
+                    _canvas.Children.Remove(_edgeBackProbaText);
+                    return;
+                }
+
                 if(!_showBackProba && _canvas != null)
                 {
                     _showBackProba = true;
@@ -138,7 +145,7 @@ namespace GraphExpectedValue.GraphWidgets
             set
             {
                 _backLengthExpr = value;
-                BackLengthText = _backLengthExpr.ToString();
+                BackLengthText = _backLengthExpr?.ToString();
                 Metadata.BackLength = BackLengthText;
             }
         }
@@ -160,7 +167,7 @@ namespace GraphExpectedValue.GraphWidgets
             set
             {
                 _backProbaExpr = value;
-                BackProbaText = _backProbaExpr.ToString();
+                BackProbaText = _backProbaExpr?.ToString();
                 Metadata.BackProbability = BackProbaText;
             }
         }
@@ -339,6 +346,10 @@ namespace GraphExpectedValue.GraphWidgets
                 perpS.Normalize();
                 
                 heightOffset = OFFSET + textHeight;
+                if (perpS.Y > 0)
+                {
+                    heightOffset -= textHeight;
+                }
                 heightOffsetVector = perpS * heightOffset;
 
                 offsetVector = widthOffsetVector + heightOffsetVector;
@@ -368,6 +379,10 @@ namespace GraphExpectedValue.GraphWidgets
                 widthOffsetVector = widthOffset * s;
 
                 heightOffset = OFFSET + textHeight;
+                if (perpS.Y > 0)
+                {
+                    heightOffset -= textHeight;
+                }
                 heightOffsetVector = perpS * heightOffset;
 
                 offsetVector = widthOffsetVector + heightOffsetVector;
@@ -399,6 +414,10 @@ namespace GraphExpectedValue.GraphWidgets
                 perpS.Normalize();
 
                 heightOffset = OFFSET + textHeight;
+                if (perpS.Y > 0)
+                {
+                    heightOffset -= textHeight;
+                }
                 heightOffsetVector = perpS * heightOffset;
 
                 offsetVector = widthOffsetVector + heightOffsetVector;
@@ -427,6 +446,10 @@ namespace GraphExpectedValue.GraphWidgets
                 widthOffsetVector = widthOffset * s;
 
                 heightOffset = OFFSET + textHeight;
+                if (perpS.Y > 0)
+                {
+                    heightOffset -= textHeight;
+                }
                 heightOffsetVector = perpS * heightOffset;
 
                 offsetVector = widthOffsetVector + heightOffsetVector;

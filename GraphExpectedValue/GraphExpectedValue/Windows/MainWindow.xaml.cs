@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -530,15 +531,26 @@ namespace GraphExpectedValue.Windows
                 where edgeTuple.Value.Metadata.StartVertexNumber == vertex.Number
                 select new Tuple<int, bool>(edgeTuple.Value.Metadata.EndVertexNumber, false)
             ).ToList();
+            IEnumerable<Tuple<int, bool>> backConnectedVertexes;
             if (!_graphMetadata.IsOriented)
             {
-                var backConnectedVertexes = (
+                backConnectedVertexes = (
                     from edgeTuple in _edges
                     where edgeTuple.Value.Metadata.EndVertexNumber == vertex.Number
                     select new Tuple<int, bool>(edgeTuple.Value.Metadata.StartVertexNumber, true)
                 );
-                connectedVertexes.AddRange(backConnectedVertexes);
             }
+            else
+            {
+                backConnectedVertexes = (
+                    from edgeTuple in _edges
+                    let metadata = edgeTuple.Value.Metadata
+                    where metadata.EndVertexNumber == vertex.Number && metadata.BackLength != null
+                    select new Tuple<int, bool>(edgeTuple.Value.Metadata.StartVertexNumber, true)
+                );
+            }
+            connectedVertexes.AddRange(backConnectedVertexes);
+
 
             var probaInputWindow = new ProbaInputWindow(connectedVertexes);
             if (probaInputWindow.ShowDialog() != true) return;
@@ -665,6 +677,10 @@ namespace GraphExpectedValue.Windows
                 {
                     needToAdd = false;
                     backEdge.BackLengthExpression = edge.LengthExpression;
+                    if (edge.ProbabilityExpression != null)
+                    {
+                        backEdge.BackProbabilityExpression = edge.ProbabilityExpression;
+                    }
                     backEdge.Backed = true;
                     edge = backEdge;
                     //backEdge.Curved = true;
@@ -716,9 +732,11 @@ namespace GraphExpectedValue.Windows
         {
             // if we are trying to remove unexisting edge,
             // show error message
+            bool isBacked = false;
             if (!_edges.TryGetValue(new Tuple<Vertex, Vertex>(chosenStartVertex, chosenEndVertex), out var edge))
             {
-                if (_graphMetadata.IsOriented || !_edges.TryGetValue(new Tuple<Vertex, Vertex>(chosenEndVertex, chosenStartVertex), out _))
+                isBacked = _edges.TryGetValue(new Tuple<Vertex, Vertex>(chosenEndVertex, chosenStartVertex), out edge);
+                if (!isBacked)
                 {
                     MessageBox.Show(
                         "There is no such edge in graph",
@@ -731,12 +749,28 @@ namespace GraphExpectedValue.Windows
             }
             // if we have oriented graph and trying to delete one of back edges,
             // set another back edge as normal
-            if (_graphMetadata.IsOriented && _edges.TryGetValue(new Tuple<Vertex, Vertex>(chosenEndVertex, chosenStartVertex), out var backEdge))
+            //if (_graphMetadata.IsOriented && _edges.TryGetValue(new Tuple<Vertex, Vertex>(chosenEndVertex, chosenStartVertex), out var backEdge))
+            //{
+            //    backEdge.Curved = false;
+            //    backEdge.UpdateEdge();
+            //}
+            //_edges.Remove(new Tuple<Vertex, Vertex>(chosenStartVertex, chosenEndVertex));
+            //_graphMetadata.EdgeMetadatas.Remove(edge.Metadata);
+            //edge.RemoveFromCanvas(mainCanvas);
+            if (isBacked)
             {
-                backEdge.Curved = false;
-                backEdge.UpdateEdge();
+                if (_graphMetadata.IsOriented)
+                {
+                    if (edge.BackProbabilityExpression != null)
+                    {
+                        edge.BackProbabilityExpression = null;
+                    }
+
+                    edge.BackLengthExpression = null;
+                    return;
+                }
+                _edges.Remove(new Tuple<Vertex, Vertex>(chosenEndVertex, chosenStartVertex));
             }
-            _edges.Remove(new Tuple<Vertex, Vertex>(chosenStartVertex, chosenEndVertex));
             _graphMetadata.EdgeMetadatas.Remove(edge.Metadata);
             edge.RemoveFromCanvas(mainCanvas);
         }
@@ -828,6 +862,20 @@ namespace GraphExpectedValue.Windows
                     edgeData
                 );
                 edge.Backed = !_graphMetadata.IsOriented;
+                if (!string.IsNullOrEmpty(edgeData.BackLength))
+                {
+                    edge.BackLengthExpression = Infix.ParseOrThrow(edgeData.BackLength);
+                }
+
+                if (!string.IsNullOrEmpty(edgeData.BackProbability))
+                {
+                    edge.BackProbabilityExpression = Infix.ParseOrThrow(edgeData.BackProbability);
+                }
+
+                if (!string.IsNullOrEmpty(edgeData.Probability))
+                {
+                    edge.ProbabilityExpression = Infix.ParseOrThrow(edgeData.Probability);
+                }
                 edge.UpdateEdge();
 
                 AddEdge(edge, edgeStartVertex, edgeEndVertex);
