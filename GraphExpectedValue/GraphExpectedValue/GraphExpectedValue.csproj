@@ -64,7 +64,7 @@
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="FParsec, Version=1.0.0.0, Culture=neutral, PublicKeyToken=40ccfc0a09edbb5d, processorArchitecture=MSIL">
@@ -127,18 +127,29 @@
     <Compile Include="Utility\ConcreteAlgorithms\LinearEquationSolutionAlgorithm.cs" />
     <Compile Include="Utility\ConcreteAlgorithms\SimpleMultiplyAlgorithm.cs" />
     <Compile Include="Utility\ConcreteAlgorithms\StrassenMultiplyAlgorithm.cs" />
+    <Compile Include="Utility\ConcreteGraphIO\GraphBinaryIO.cs" />
+    <Compile Include="Utility\ConcreteGraphIO\GraphMatrixIO.cs" />
+    <Compile Include="Utility\GraphReader.cs" />
+    <Compile Include="Utility\GraphWriter.cs" />
     <Compile Include="Utility\InverseAlgorithm.cs" />
     <Compile Include="Utility\Matrix.cs" />
     <Compile Include="Utility\MultiplyAlgorithm.cs" />
+    <Compile Include="Utility\MutableTuple.cs" />
     <Compile Include="Utility\SolutionAlgorithm.cs" />
     <Compile Include="Windows\EdgeChooseWindow.xaml.cs">
       <DependentUpon>EdgeChooseWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\EdgeParametersWindow.xaml.cs">
+      <DependentUpon>EdgeParametersWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\EdgePickWindow.xaml.cs">
       <DependentUpon>EdgePickWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\GraphCreateWindow.xaml.cs">
       <DependentUpon>GraphCreateWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\ProbaInputWindow.xaml.cs">
+      <DependentUpon>ProbaInputWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\ResultsWindow.xaml.cs">
       <DependentUpon>ResultsWindow.xaml</DependentUpon>
@@ -150,6 +161,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Windows\EdgeParametersWindow.xaml" />
     <Page Include="Windows\GraphCreateWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -178,6 +190,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Windows\ProbaInputWindow.xaml" />
     <Page Include="Windows\ResultsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

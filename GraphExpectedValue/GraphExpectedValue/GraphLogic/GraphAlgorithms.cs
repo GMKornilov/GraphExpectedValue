@@ -22,7 +22,7 @@ namespace GraphExpectedValue.GraphLogic
         private List<List<int>> reversedAdjacencyList;
 
         private List<List<SymbolicExpression>> adjProbaList;
-        
+
         private List<bool> used;
 
         private int _endVertexesAmount;
@@ -43,7 +43,12 @@ namespace GraphExpectedValue.GraphLogic
                 foreach (var edge in metadata.EdgeMetadatas)
                 {
                     var startVertexNumber = edge.StartVertexNumber - 1;
+                    var endVertexNumber = edge.EndVertexNumber - 1;
                     adjProbaList[startVertexNumber].Add(Infix.ParseOrThrow(edge.Probability));
+                    if (!string.IsNullOrEmpty(edge.BackLength))
+                    {
+                        adjProbaList[endVertexNumber].Add(Infix.ParseOrThrow(edge.BackProbability));
+                    }
                 }
             }
         }
@@ -99,14 +104,14 @@ namespace GraphExpectedValue.GraphLogic
                 var end = edge.EndVertexNumber - 1;
                 adjacencyList[start].Add(end);
                 reversedAdjacencyList[end].Add(start);
-                if (!metadata.IsOriented)
+                if (!metadata.IsOriented || !string.IsNullOrEmpty(edge.BackLength))
                 {
                     adjacencyList[end].Add(start);
                     reversedAdjacencyList[start].Add(end);
                 }
             }
         }
-        
+
         private void DFS(
             int vertexNumber,
             List<List<int>> adjList,
@@ -120,7 +125,7 @@ namespace GraphExpectedValue.GraphLogic
             }
             content.Add(vertexNumber);
         }
-        
+
         private List<List<int>> StrongComponents()
         {
             var order = new List<int>();
@@ -132,7 +137,7 @@ namespace GraphExpectedValue.GraphLogic
                 }
             }
             order.Reverse();
-            
+
             var res = new List<List<int>>();
             used = new List<bool>(Enumerable.Repeat(false, adjacencyList.Count));
             foreach (var vertex in order)
@@ -152,7 +157,7 @@ namespace GraphExpectedValue.GraphLogic
         {
             foreach (var vertexAdjList in adjProbaList)
             {
-                if(vertexAdjList.Count == 0)continue;
+                if (vertexAdjList.Count == 0) continue;
                 var sum = vertexAdjList.Aggregate(SymbolicExpression.Zero, (current, proba) => current + proba);
                 var realSumValue = sum.Evaluate(null).RealValue;
                 if (Math.Abs(realSumValue - 1) > 1e-6)

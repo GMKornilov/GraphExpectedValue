@@ -23,6 +23,8 @@ namespace GraphExpectedValue.GraphWidgets
         public static DependencyProperty NumberProperty;
         public static DependencyProperty VertexTypeProperty;
         public static DependencyProperty ColorProperty;
+
+        public event Action<int> DegreeChangedEvent;
         
         public static int Size { get; set; } = 30;
         
@@ -136,6 +138,11 @@ namespace GraphExpectedValue.GraphWidgets
         public Vertex(VertexMetadata metadata):this(metadata.Position.X, metadata.Position.Y, metadata.Number, metadata.Type)
         {
             Metadata = metadata;
+        }
+
+        public void UpdateDegree(int degree)
+        {
+            DegreeChangedEvent?.Invoke(degree);
         }
         
         public event PropertyChangedEventHandler PropertyChanged;
